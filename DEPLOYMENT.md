@@ -8,7 +8,7 @@ Deze Laravel-app staat in `revrace/`. De documentatie en het oude HTML-prototype
 - Composer 2
 - MariaDB/MySQL voor productie
 - Webserver document root naar `revrace/public`
-- HTTPS-certificaat voor `rev-race.nl`
+- HTTPS-certificaat voor `www.rev-race.nl` (en `rev-race.nl` voor de redirect)
 - Cron voor Laravel scheduler:
 
 ```bash
@@ -23,7 +23,7 @@ Zet minimaal:
 APP_NAME=RevRace
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://rev-race.nl
+APP_URL=https://www.rev-race.nl
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1

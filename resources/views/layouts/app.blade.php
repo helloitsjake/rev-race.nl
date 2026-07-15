@@ -55,7 +55,7 @@
 @unless($embedded ?? false)
     <footer class="footer">
         <div class="footer-inner">
-            <span>© {{ date('Y') }} RevRace - rev-race.nl</span>
+            <span>© {{ date('Y') }} RevRace - www.rev-race.nl</span>
             <span>
                 <a href="{{ route('privacy') }}">Privacy</a> ·
                 <a href="{{ route('contact') }}">Contact</a> ·
