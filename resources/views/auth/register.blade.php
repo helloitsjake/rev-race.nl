@@ -26,11 +26,11 @@
             </div>
             <div class="sim-grid">
                 <div class="form-row">
-                    <label class="form-label" for="weight_kg">Gewicht incl. uitrusting</label>
+                    <label class="form-label" for="weight_kg">Gewicht incl. uitrusting (kg)</label>
                     <input class="input" id="weight_kg" name="weight_kg" type="number" min="35" max="180" value="{{ old('weight_kg') }}">
                 </div>
                 <div class="form-row">
-                    <label class="form-label" for="height_cm">Lengte</label>
+                    <label class="form-label" for="height_cm">Lengte (cm)</label>
                     <input class="input" id="height_cm" name="height_cm" type="number" min="120" max="230" value="{{ old('height_cm') }}">
                 </div>
             </div>

@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'RevRace - Vergelijk motoren op snelheid, koppel en grip')
-@section('description', 'Gratis motorsimulatie voor sprint en kronkelweg. Vergelijk twee motoren op droog, vochtig en nat asfalt.')
+@section('title', 'RevRace - Welke motor past bij jou? Vergelijk en simuleer')
+@section('description', 'Ontdek welke motor bij jouw rijstijl past. Vergelijk motoren op vermogen, gewicht en wegconditie met een gratis rijsimulatie.')
 
 @section('content')
     <section class="hero">
         <div>
             <span class="eyebrow">Server-side motorsimulatie</span>
-            <h1>Vergelijk elke motor op <span>grip, koppel en gewicht</span>.</h1>
-            <p>Aan de bar heeft iedereen wel een mening over welke motor sneller is. Op rev-race.nl reken je het gewoon uit: vergelijk twee motoren op vermogen, gewicht en grip, van een knallende sprint tot de eerste bocht, op droog asfalt of kletsnat. Race, deel de uitslag, en zet je gelijk zwart op wit.</p>
+            <h1>Welke motor past nou echt <span>bij jou</span>?</h1>
+            <p>Wil je toeren door de Duitse bergen of het liefst knallen op het circuit? Op RevRace vergelijk je motoren niet met natte vingers, maar met een echte rijsimulatie op basis van vermogen, gewicht en jouw manier van rijden. Zo weet je niet alleen wie er wint, maar ook welke motor daadwerkelijk bij je past.</p>
             <div class="hero-actions">
                 <a class="btn primary" href="{{ route('simulation.index') }}">Start simulatie</a>
                 @guest
@@ -70,6 +70,31 @@
                 <h3 class="card-title">Deel je gelijk</h3>
                 <p class="section-sub">Race gedraaid? Stuur de uitslag door naar je maat, de dealer, of dat ene forum waar de discussie al jaren loopt.</p>
             </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <span class="eyebrow">Populair</span>
+        <h2 class="section-title">Meest gezochte motoren</h2>
+        <p class="section-sub">De modellen die andere bezoekers het vaakst tegen elkaar laten racen.</p>
+        <div class="top-grid">
+            @foreach($mostSearched as $motor)
+                <div class="card">
+                    <h3 class="card-title">{{ $motor->label() }}</h3>
+                    <p class="section-sub" style="margin-bottom:0">{{ $motor->power_hp }} pk · {{ $motor->weight_kg }} kg · {{ $motor->engine_type }}</p>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="panel" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
+            <div>
+                <span class="eyebrow">Voor bedrijven</span>
+                <h2 class="section-title" style="font-size:clamp(26px,4vw,38px)">Wil jij partner worden van RevRace?</h2>
+                <p class="section-sub" style="margin-bottom:0">We werken toe naar een groeiend platform vol gebruikers die net hun droommotor aan het uitzoeken zijn, het perfecte moment om zichtbaar te zijn. Als dealer, verzekeraar, onderhoudsbedrijf of accessoiremerk kun je aanhaken als partner.</p>
+            </div>
+            <a class="btn primary" href="{{ route('partners.apply') }}">Word partner</a>
         </div>
     </section>
 @endsection

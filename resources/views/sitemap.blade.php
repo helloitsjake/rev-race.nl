@@ -3,6 +3,9 @@
     <url><loc>{{ route('home') }}</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
     <url><loc>{{ route('simulation.index') }}</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
     <url><loc>{{ route('partners.index') }}</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+    <url><loc>{{ route('partners.apply') }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
+    <url><loc>{{ route('how-it-works') }}</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+    <url><loc>{{ route('about') }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
     <url><loc>{{ route('privacy') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
     <url><loc>{{ route('contact') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
 </urlset>

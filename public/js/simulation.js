@@ -298,6 +298,11 @@ function renderResult(result) {
     share.textContent = result.share_url;
   }
 
+  const searchA = qs('[data-search-online="A"]');
+  if (searchA) searchA.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
+  const searchB = qs('[data-search-online="B"]');
+  if (searchB) searchB.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
+
   renderChart(result);
   panel.classList.add('show');
 }

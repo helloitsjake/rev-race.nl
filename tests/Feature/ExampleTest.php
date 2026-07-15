@@ -78,7 +78,7 @@ class ExampleTest extends TestCase
             'name' => $user->name,
             'weight_kg' => 84,
             'height_cm' => 183,
-            'age' => 33,
+            'birthdate' => '1993-04-12',
             'riding_style' => 'sportief',
             'riding_experience_years' => 9,
             'license_category' => 'A',

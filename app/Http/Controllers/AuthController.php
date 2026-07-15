@@ -48,7 +48,6 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             'weight_kg' => ['nullable', 'integer', 'between:35,180'],
             'height_cm' => ['nullable', 'integer', 'between:120,230'],
-            'age' => ['nullable', 'integer', 'between:16,90'],
             'riding_style' => ['nullable', 'in:recreatief,sportief,track'],
         ]);
 
@@ -58,7 +57,6 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
             'weight_kg' => $data['weight_kg'] ?? null,
             'height_cm' => $data['height_cm'] ?? null,
-            'age' => $data['age'] ?? null,
             'riding_style' => $data['riding_style'] ?? 'recreatief',
         ]);
 

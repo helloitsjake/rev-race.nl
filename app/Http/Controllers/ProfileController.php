@@ -19,7 +19,7 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'weight_kg' => ['nullable', 'integer', 'between:35,180'],
             'height_cm' => ['nullable', 'integer', 'between:120,230'],
-            'age' => ['nullable', 'integer', 'between:16,90'],
+            'birthdate' => ['nullable', 'date', 'before:today', 'after:1920-01-01'],
             'riding_style' => ['required', 'in:recreatief,sportief,track'],
             'riding_experience_years' => ['nullable', 'integer', 'between:0,70'],
             'license_category' => ['required', 'in:A,A2,A1'],

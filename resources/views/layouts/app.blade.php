@@ -15,10 +15,12 @@
         <a class="brand" href="{{ route('home') }}">REV<span>RACE</span></a>
         <div class="nav-links">
             <a class="nav-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
-            <a class="nav-link @if(request()->routeIs('partners.*')) active @endif" href="{{ route('partners.index') }}">Partners</a>
+            <a class="nav-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}">Partners</a>
+            <a class="nav-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}">Hoe het werkt</a>
+            <a class="nav-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}">Over ons</a>
             @auth
                 <a class="nav-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}">Garage</a>
-                <a class="nav-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}">Profiel</a>
+                <a class="nav-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}">Mijn account</a>
             @endauth
         </div>
         <div class="nav-actions">
@@ -57,6 +59,7 @@
         <div class="footer-inner">
             <span>© {{ date('Y') }} RevRace - www.rev-race.nl</span>
             <span>
+                <a href="{{ route('partners.apply') }}">Partner worden</a> ·
                 <a href="{{ route('privacy') }}">Privacy</a> ·
                 <a href="{{ route('contact') }}">Contact</a> ·
                 <a href="{{ route('sitemap') }}">Sitemap</a>

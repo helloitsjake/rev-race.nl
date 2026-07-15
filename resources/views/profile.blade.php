@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Rijdersprofiel - RevRace')
+@section('title', 'Mijn account - RevRace')
 
 @section('content')
     <header>
-        <h1 class="page-title">Rijdersprofiel</h1>
+        <h1 class="page-title">Mijn account</h1>
         <p class="page-sub">Deze waarden kunnen optioneel worden meegenomen in simulaties.</p>
     </header>
 
@@ -17,16 +17,16 @@
                     <input class="input" id="name" name="name" value="{{ old('name', $user->name) }}" required>
                 </div>
                 <div class="form-row">
-                    <label class="form-label" for="weight_kg">Rijdersgewicht incl. uitrusting</label>
+                    <label class="form-label" for="weight_kg">Rijdersgewicht incl. uitrusting (kg)</label>
                     <input class="input" id="weight_kg" name="weight_kg" type="number" min="35" max="180" value="{{ old('weight_kg', $user->weight_kg) }}">
                 </div>
                 <div class="form-row">
-                    <label class="form-label" for="height_cm">Lengte</label>
+                    <label class="form-label" for="height_cm">Lengte (cm)</label>
                     <input class="input" id="height_cm" name="height_cm" type="number" min="120" max="230" value="{{ old('height_cm', $user->height_cm) }}">
                 </div>
                 <div class="form-row">
-                    <label class="form-label" for="age">Leeftijd</label>
-                    <input class="input" id="age" name="age" type="number" min="16" max="90" value="{{ old('age', $user->age) }}">
+                    <label class="form-label" for="birthdate">Geboortedatum</label>
+                    <input class="input" id="birthdate" name="birthdate" type="date" value="{{ old('birthdate', $user->birthdate?->format('Y-m-d')) }}">
                 </div>
             </div>
             <div>

@@ -100,6 +100,10 @@
     <div class="panel result-panel" data-result>
         <h2 class="card-title" data-result-title></h2>
         <p class="section-sub">Deelbare link: <a class="accent" data-share href="#"></a></p>
+        <div class="hero-actions" style="margin-top:0">
+            <a class="btn ghost" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
+            <a class="btn ghost" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
+        </div>
 
         <div class="chart-wrap">
             <div class="chart-head">

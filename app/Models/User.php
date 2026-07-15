@@ -20,7 +20,7 @@ class User extends Authenticatable
         'password',
         'weight_kg',
         'height_cm',
-        'age',
+        'birthdate',
         'riding_style',
         'riding_experience_years',
         'license_category',
@@ -55,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthdate' => 'date',
             'premium_until' => 'datetime',
             'is_premium' => 'boolean',
         ];
