@@ -298,7 +298,139 @@ function renderResult(result) {
     share.textContent = result.share_url;
   }
 
+  renderChart(result);
   panel.classList.add('show');
+}
+
+const CHART = { W: 640, H: 220, PAD: { left: 40, right: 12, top: 12, bottom: 26 } };
+
+function niceMax(value) {
+  if (value <= 0) return 10;
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  const residual = value / magnitude;
+  const step = residual <= 1 ? 1 : residual <= 2 ? 2 : residual <= 5 ? 5 : 10;
+  return step * magnitude;
+}
+
+function svgEl(tag, attrs = {}) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+  return el;
+}
+
+function interpolateSpeed(samples, x) {
+  if (!samples.length) return 0;
+  if (x <= samples[0].x) return samples[0].v;
+  for (let i = 0; i < samples.length - 1; i++) {
+    if (samples[i].x <= x && samples[i + 1].x >= x) {
+      const span = samples[i + 1].x - samples[i].x;
+      const t = span === 0 ? 0 : (x - samples[i].x) / span;
+      return samples[i].v + t * (samples[i + 1].v - samples[i].v);
+    }
+  }
+  return samples[samples.length - 1].v;
+}
+
+function renderChart(result) {
+  const svg = qs('[data-chart-svg]');
+  const readout = qs('[data-chart-readout]');
+  if (!svg) return;
+
+  const samplesA = result.samples?.a || [];
+  const samplesB = result.samples?.b || [];
+  if (!samplesA.length && !samplesB.length) return;
+
+  const { W, H, PAD } = CHART;
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const xMax = Math.max(samplesA[samplesA.length - 1]?.x || 0, samplesB[samplesB.length - 1]?.x || 0) || 1;
+  const yValues = [...samplesA, ...samplesB].map((point) => point.v);
+  const yMax = niceMax(Math.max(...yValues, 1));
+
+  const mapX = (x) => PAD.left + (x / xMax) * plotW;
+  const mapY = (v) => PAD.top + plotH - (v / yMax) * plotH;
+
+  svg.textContent = '';
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const ySteps = 4;
+  for (let i = 0; i <= ySteps; i++) {
+    const value = (yMax / ySteps) * i;
+    const y = mapY(value);
+    svg.appendChild(svgEl('line', { x1: PAD.left, x2: W - PAD.right, y1: y, y2: y, class: 'chart-grid' }));
+    const label = svgEl('text', { x: PAD.left - 8, y: y + 3, class: 'chart-axis-label', 'text-anchor': 'end' });
+    label.textContent = String(Math.round(value));
+    svg.appendChild(label);
+  }
+
+  const xSteps = 5;
+  for (let i = 0; i <= xSteps; i++) {
+    const value = (xMax / xSteps) * i;
+    const label = svgEl('text', { x: mapX(value), y: H - 6, class: 'chart-axis-label', 'text-anchor': 'middle' });
+    label.textContent = `${Math.round(value)}m`;
+    svg.appendChild(label);
+  }
+
+  const buildPath = (samples) => samples
+    .map((point, i) => `${i === 0 ? 'M' : 'L'}${mapX(point.x).toFixed(1)},${mapY(point.v).toFixed(1)}`)
+    .join(' ');
+
+  const drawSeries = (samples, color) => {
+    if (!samples.length) return;
+    svg.appendChild(svgEl('path', {
+      d: buildPath(samples), fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+    }));
+    const last = samples[samples.length - 1];
+    svg.appendChild(svgEl('circle', {
+      cx: mapX(last.x), cy: mapY(last.v), r: 4, fill: color, class: 'chart-dot',
+    }));
+  };
+
+  drawSeries(samplesA, '#e85d00');
+  drawSeries(samplesB, '#0d9488');
+
+  const crosshair = svgEl('line', {
+    x1: PAD.left, x2: PAD.left, y1: PAD.top, y2: H - PAD.bottom, class: 'chart-crosshair',
+  });
+  svg.appendChild(crosshair);
+
+  const hitRect = svgEl('rect', {
+    x: PAD.left, y: PAD.top, width: plotW, height: plotH, fill: 'transparent',
+  });
+  svg.appendChild(hitRect);
+
+  const nameA = qs('[data-lane-name="A"]')?.textContent || 'Motor A';
+  const nameB = qs('[data-lane-name="B"]')?.textContent || 'Motor B';
+  const legendA = qs('[data-legend-a]');
+  const legendB = qs('[data-legend-b]');
+  if (legendA) legendA.textContent = nameA;
+  if (legendB) legendB.textContent = nameB;
+
+  const defaultReadout = 'Beweeg over de grafiek om de snelheid per punt te vergelijken.';
+
+  const updateReadout = (clientX) => {
+    const rect = svg.getBoundingClientRect();
+    const scale = W / rect.width;
+    const localX = (clientX - rect.left) * scale;
+    const clamped = Math.min(Math.max(localX, PAD.left), W - PAD.right);
+    const distance = ((clamped - PAD.left) / plotW) * xMax;
+
+    crosshair.setAttribute('x1', clamped);
+    crosshair.setAttribute('x2', clamped);
+    crosshair.style.opacity = 1;
+
+    const parts = [`Op ${Math.round(distance)}m:`];
+    if (samplesA.length) parts.push(`${nameA} ${Math.round(interpolateSpeed(samplesA, distance))} km/h`);
+    if (samplesB.length) parts.push(`${nameB} ${Math.round(interpolateSpeed(samplesB, distance))} km/h`);
+    if (readout) readout.textContent = parts.join(' · ');
+  };
+
+  hitRect.addEventListener('pointermove', (event) => updateReadout(event.clientX));
+  hitRect.addEventListener('pointerleave', () => {
+    crosshair.style.opacity = 0;
+    if (readout) readout.textContent = defaultReadout;
+  });
 }
 
 async function runSimulation(event) {

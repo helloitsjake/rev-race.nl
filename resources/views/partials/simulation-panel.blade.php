@@ -100,6 +100,20 @@
     <div class="panel result-panel" data-result>
         <h2 class="card-title" data-result-title></h2>
         <p class="section-sub">Deelbare link: <a class="accent" data-share href="#"></a></p>
+
+        <div class="chart-wrap">
+            <div class="chart-head">
+                <span class="form-label">Snelheid over afstand</span>
+                <div class="chart-legend">
+                    <span class="legend-item"><span class="legend-key" style="background:#e85d00"></span><span data-legend-a>Motor A</span></span>
+                    <span class="legend-item"><span class="legend-key" style="background:#0d9488"></span><span data-legend-b>Motor B</span></span>
+                </div>
+            </div>
+            <div class="chart-canvas" data-chart-canvas>
+                <svg data-chart-svg viewBox="0 0 640 220" role="img" aria-label="Snelheidsverloop over de afstand voor beide motoren"></svg>
+            </div>
+            <p class="small" data-chart-readout aria-live="polite">Beweeg over de grafiek om de snelheid per punt te vergelijken.</p>
+        </div>
     </div>
 </section>
 

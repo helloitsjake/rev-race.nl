@@ -495,6 +495,74 @@ a {
   display: block;
 }
 
+.chart-wrap {
+  margin-top: 20px;
+}
+
+.chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.legend-key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+}
+
+.chart-canvas {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.chart-canvas svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.chart-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--dim);
+  font-size: 10px;
+}
+
+.chart-crosshair {
+  stroke: var(--line-2);
+  stroke-width: 1;
+  opacity: 0;
+}
+
+.chart-dot {
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+
 .notice,
 .errors {
   margin: 14px 0;
