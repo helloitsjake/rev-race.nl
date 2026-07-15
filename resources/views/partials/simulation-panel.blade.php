@@ -113,5 +113,5 @@
             limit: @json($limit)
         };
     </script>
-    <script src="{{ asset('js/simulation.js') }}"></script>
+    <script src="{{ asset('js/simulation.js') }}?v={{ filemtime(public_path('js/simulation.js')) }}"></script>
 @endpush

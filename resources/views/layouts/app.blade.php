@@ -7,7 +7,7 @@
     <title>@yield('title', 'RevRace - Motorsimulatie')</title>
     <meta name="description" content="@yield('description', 'Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.')">
     <link rel="canonical" href="{{ url()->current() }}">
-    <link rel="stylesheet" href="{{ asset('css/revrace.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/revrace.css') }}?v={{ filemtime(public_path('css/revrace.css')) }}">
 </head>
 <body>
 @unless($embedded ?? false)
