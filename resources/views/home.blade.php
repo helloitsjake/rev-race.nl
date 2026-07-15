@@ -8,7 +8,7 @@
         <div>
             <span class="eyebrow">Server-side motorsimulatie</span>
             <h1>Vergelijk elke motor op <span>grip, koppel en gewicht</span>.</h1>
-            <p>RevRace berekent races op de server met vermogen, koppel, gewicht, luchtweerstand, wegconditie en rijdersgewicht. Resultaten zijn deelbaar en tellen mee voor je rolling 24-uurslimiet.</p>
+            <p>Aan de bar heeft iedereen wel een mening over welke motor sneller is. Op rev-race.nl reken je het gewoon uit: vergelijk twee motoren op vermogen, gewicht en grip, van een knallende sprint tot de eerste bocht, op droog asfalt of kletsnat. Race, deel de uitslag, en zet je gelijk zwart op wit.</p>
             <div class="hero-actions">
                 <a class="btn primary" href="{{ route('simulation.index') }}">Start simulatie</a>
                 @guest
