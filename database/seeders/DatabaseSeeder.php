@@ -57,9 +57,9 @@ class DatabaseSeeder extends Seeder
     private function partners(): array
     {
         return [
-            ['name' => 'MotoPlus NL', 'slug' => 'motoplus-nl', 'category' => 'Dealer & Onderhoud', 'description' => 'Dealer en onderhoudspartner voor sportieve straat- en trackmotoren.', 'website_url' => null, 'contact_email' => 'partners@revrace.nl', 'sort_order' => 1],
-            ['name' => 'Vroom Verzekert', 'slug' => 'vroom-verzekert', 'category' => 'Verzekering', 'description' => 'Motorverzekering op maat voor sport-, naked- en toermotoren.', 'website_url' => null, 'contact_email' => 'partners@revrace.nl', 'sort_order' => 2],
-            ['name' => 'TT Circuit Events', 'slug' => 'tt-circuit-events', 'category' => 'Trackdays & Events', 'description' => 'Trackdays, rijtrainingen en vrije sessies voor verschillende niveaus.', 'website_url' => null, 'contact_email' => 'partners@revrace.nl', 'sort_order' => 3],
+            ['name' => 'MotoPlus NL', 'slug' => 'motoplus-nl', 'category' => 'Dealer & Onderhoud', 'description' => 'Dealer en onderhoudspartner voor sportieve straat- en trackmotoren.', 'website_url' => null, 'contact_email' => 'partners@rev-race.nl', 'sort_order' => 1],
+            ['name' => 'Vroom Verzekert', 'slug' => 'vroom-verzekert', 'category' => 'Verzekering', 'description' => 'Motorverzekering op maat voor sport-, naked- en toermotoren.', 'website_url' => null, 'contact_email' => 'partners@rev-race.nl', 'sort_order' => 2],
+            ['name' => 'TT Circuit Events', 'slug' => 'tt-circuit-events', 'category' => 'Trackdays & Events', 'description' => 'Trackdays, rijtrainingen en vrije sessies voor verschillende niveaus.', 'website_url' => null, 'contact_email' => 'partners@rev-race.nl', 'sort_order' => 3],
         ];
     }
 }
