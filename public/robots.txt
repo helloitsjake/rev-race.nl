@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /garage
+Disallow: /profiel
+Disallow: /mollie/
+
+Sitemap: https://revrace.nl/sitemap.xml
