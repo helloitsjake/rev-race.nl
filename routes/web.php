@@ -37,6 +37,9 @@ Route::get('/api/motors', [MotorController::class, 'search'])->name('api.motors.
 Route::post('/api/motors/lookup', [MotorController::class, 'lookup'])
     ->middleware('throttle:15,1')
     ->name('api.motors.lookup');
+Route::post('/api/motors/manual', [MotorController::class, 'storeManual'])
+    ->middleware('throttle:15,1')
+    ->name('api.motors.manual');
 Route::get('/api/simulatie/limiet', [SimulationController::class, 'limit'])->name('api.simulation.limit');
 Route::post('/api/simulatie', [SimulationController::class, 'run'])->name('api.simulation.run');
 

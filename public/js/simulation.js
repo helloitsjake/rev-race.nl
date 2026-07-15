@@ -100,6 +100,32 @@ async function searchMotors(side, query) {
   list.classList.toggle('show', data.motors.length > 0);
 }
 
+function guessMotorParts(query) {
+  const yearMatch = query.match(/\b(19[5-9]\d|20\d{2})\b/);
+  const year = yearMatch ? yearMatch[0] : '';
+  const rest = query.replace(year, '').trim().split(/\s+/);
+  const brand = rest.shift() || '';
+  const model = rest.join(' ');
+
+  return { brand, model, year };
+}
+
+function showManualForm(side, query) {
+  const form = qs(`[data-manual-form="${side}"]`);
+  if (!form) return;
+
+  const guess = guessMotorParts(query);
+  const setValue = (field, value) => {
+    const field_el = qs(`[data-manual="${field}"]`, form);
+    if (field_el && !field_el.value) field_el.value = value;
+  };
+  setValue('brand', guess.brand);
+  setValue('model', guess.model);
+  setValue('year', guess.year);
+
+  form.hidden = false;
+}
+
 async function lookupWithAi(side) {
   const input = qs(`[data-motor-input="${side}"]`);
   const button = qs(`[data-lookup-ai="${side}"]`);
@@ -128,7 +154,8 @@ async function lookupWithAi(side) {
     const data = await response.json();
 
     if (!response.ok) {
-      showMessage(data.message || 'Kon geen betrouwbare specs vinden voor deze motor.', 'errors');
+      showMessage(data.message || 'Kon geen betrouwbare specs vinden voor deze motor. Vul ze hieronder zelf in.', 'errors');
+      showManualForm(side, query);
       return;
     }
 
@@ -136,6 +163,60 @@ async function lookupWithAi(side) {
     showMessage(`${data.motor.label} gevonden en opgeslagen voor volgende keer.`);
   } catch (error) {
     showMessage('Er ging iets mis bij het zoeken met AI. Probeer het nog eens.', 'errors');
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+async function submitManualMotor(side) {
+  const form = qs(`[data-manual-form="${side}"]`);
+  const button = qs(`[data-manual-submit="${side}"]`);
+  if (!form) return;
+
+  const fields = ['brand', 'model', 'year', 'engine_type', 'power_hp', 'torque_nm', 'weight_kg', 'displacement_cc'];
+  const values = {};
+  let missing = false;
+
+  fields.forEach((field) => {
+    const el = qs(`[data-manual="${field}"]`, form);
+    const value = el?.value.trim();
+    if (!value) missing = true;
+    values[field] = ['year', 'power_hp', 'torque_nm', 'weight_kg', 'displacement_cc'].includes(field) ? Number(value) : value;
+  });
+
+  if (missing) {
+    showMessage('Vul alle velden in voordat je opslaat.', 'errors');
+    return;
+  }
+
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Opslaan...';
+
+  try {
+    const response = await fetch(cfg.routes.manual, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrf(),
+      },
+      body: JSON.stringify(values),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(data.message || 'Kon deze specs niet opslaan, check de ingevulde waarden.', 'errors');
+      return;
+    }
+
+    pickMotor(side, data.motor);
+    form.hidden = true;
+    showMessage(`${data.motor.label} opgeslagen en geselecteerd.`);
+  } catch (error) {
+    showMessage('Er ging iets mis bij het opslaan. Probeer het nog eens.', 'errors');
   } finally {
     button.disabled = false;
     button.textContent = originalText;
@@ -150,6 +231,9 @@ function bindPickers() {
 
     const lookupButton = qs(`[data-lookup-ai="${side}"]`);
     lookupButton?.addEventListener('click', () => lookupWithAi(side));
+
+    const manualButton = qs(`[data-manual-submit="${side}"]`);
+    manualButton?.addEventListener('click', () => submitManualMotor(side));
   });
 
   document.addEventListener('click', (event) => {

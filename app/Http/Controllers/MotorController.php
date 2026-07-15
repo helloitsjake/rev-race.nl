@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Motor;
 use App\Services\MotorLookupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,38 @@ class MotorController extends Controller
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
+
+        return response()->json(['motor' => $this->serialize($motor)]);
+    }
+
+    public function storeManual(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'brand' => ['required', 'string', 'max:80'],
+            'model' => ['required', 'string', 'max:120'],
+            'year' => ['required', 'integer', 'between:1950,'.((int) date('Y') + 1)],
+            'power_hp' => ['required', 'integer', 'between:1,600'],
+            'torque_nm' => ['required', 'integer', 'between:1,600'],
+            'weight_kg' => ['required', 'integer', 'between:50,500'],
+            'engine_type' => ['required', 'string', 'max:40'],
+            'displacement_cc' => ['required', 'integer', 'between:49,3000'],
+            'top_speed_kmh' => ['nullable', 'integer', 'between:50,400'],
+            'zero_to_hundred_s' => ['nullable', 'numeric', 'between:1,15'],
+        ]);
+
+        $motor = Motor::query()->updateOrCreate(
+            [
+                'brand' => $data['brand'],
+                'model' => $data['model'],
+                'year' => $data['year'],
+            ],
+            $data + [
+                'drag_coefficient' => 0.55,
+                'frontal_area_m2' => 0.6,
+                'source' => 'manual',
+                'api_fetched_at' => now(),
+            ],
+        );
 
         return response()->json(['motor' => $this->serialize($motor)]);
     }
