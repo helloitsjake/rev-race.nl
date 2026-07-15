@@ -18,6 +18,7 @@
                 <input type="hidden" data-motor-id="A">
                 <div class="suggestions" data-suggestions="A"></div>
             </div>
+            <button class="btn ghost" type="button" data-lookup-ai="A" style="margin-top:8px;width:100%">Staat er niet bij? Zoek 'm op met AI</button>
             <div class="card" data-specs="A" style="margin-top:12px"></div>
         </div>
         <div>
@@ -27,6 +28,7 @@
                 <input type="hidden" data-motor-id="B">
                 <div class="suggestions" data-suggestions="B"></div>
             </div>
+            <button class="btn ghost" type="button" data-lookup-ai="B" style="margin-top:8px;width:100%">Staat er niet bij? Zoek 'm op met AI</button>
             <div class="card" data-specs="B" style="margin-top:12px"></div>
         </div>
     </div>
@@ -104,6 +106,7 @@
         window.REVRACE = {
             routes: {
                 motors: @json(route('api.motors.search')),
+                lookup: @json(route('api.motors.lookup')),
                 simulate: @json(route('api.simulation.run')),
                 limit: @json(route('api.simulation.limit'))
             },

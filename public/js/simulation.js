@@ -100,11 +100,56 @@ async function searchMotors(side, query) {
   list.classList.toggle('show', data.motors.length > 0);
 }
 
+async function lookupWithAi(side) {
+  const input = qs(`[data-motor-input="${side}"]`);
+  const button = qs(`[data-lookup-ai="${side}"]`);
+  const query = input?.value.trim();
+
+  if (!query || query.length < 3) {
+    showMessage('Vul eerst merk, model en bouwjaar in, dan kan de AI ernaar zoeken.', 'errors');
+    return;
+  }
+
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Zoeken met AI...';
+
+  try {
+    const response = await fetch(cfg.routes.lookup, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrf(),
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(data.message || 'Kon geen betrouwbare specs vinden voor deze motor.', 'errors');
+      return;
+    }
+
+    pickMotor(side, data.motor);
+    showMessage(`${data.motor.label} gevonden en opgeslagen voor volgende keer.`);
+  } catch (error) {
+    showMessage('Er ging iets mis bij het zoeken met AI. Probeer het nog eens.', 'errors');
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 function bindPickers() {
   ['A', 'B'].forEach((side) => {
     const input = qs(`[data-motor-input="${side}"]`);
     if (!input) return;
     input.addEventListener('input', debounce((event) => searchMotors(side, event.target.value)));
+
+    const lookupButton = qs(`[data-lookup-ai="${side}"]`);
+    lookupButton?.addEventListener('click', () => lookupWithAi(side));
   });
 
   document.addEventListener('click', (event) => {
