@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\MotorController;
 use App\Http\Controllers\PageController;
@@ -16,6 +17,9 @@ Route::get('/over-ons', [PageController::class, 'about'])->name('about');
 Route::get('/hoe-het-werkt', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.store');
 Route::get('/embed', [PageController::class, 'embed'])->name('embed');
 Route::get('/s/{code}', [SimulationController::class, 'showShared'])->name('share.show');
 
