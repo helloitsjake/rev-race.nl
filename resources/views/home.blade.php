@@ -51,21 +51,24 @@
     </section>
 
     <section class="section">
-        <span class="eyebrow">Productie-MVP</span>
-        <h2 class="section-title">Wat staat nu echt liveklaar?</h2>
-        <p class="section-sub">Geen demo-login meer: de kernfuncties lopen via Laravel, sessies, database en server-side validatie.</p>
+        <span class="eyebrow">Zo werkt het</span>
+        <h2 class="section-title">Van gokwerk naar keihard bewijs</h2>
+        <p class="section-sub">Geen fabrieksfolder en geen meningen van je maat: RevRace rekent per race uit welke motor wint, op basis van vermogen, gewicht en de wegconditie van dat moment.</p>
         <div class="card-grid">
-            <div class="card">
-                <h3 class="card-title">Echte accounts</h3>
-                <p class="section-sub">Registreren, inloggen, uitloggen en profiel opslaan via Laravel sessions en hashing.</p>
+            <div class="card card-glow">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 1 8 -8"/><path d="M12 12l4 -4"/><circle cx="12" cy="12" r="1"/></svg>
+                <h3 class="card-title">Rekenwerk, geen giswerk</h3>
+                <p class="section-sub">Vermogen, koppel, gewicht en luchtweerstand: elke race wordt uitgerekend met dezelfde cijfers die op het asfalt het verschil maken.</p>
             </div>
-            <div class="card">
-                <h3 class="card-title">Serverlimiet</h3>
-                <p class="section-sub">Gasten en gratis accounts krijgen 10 simulaties per rolling 24 uur, gemeten in de database.</p>
+            <div class="card card-glow card-glow-teal">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16a4 4 0 0 1 0 -8 5 5 0 0 1 9.6 -1.5A4.5 4.5 0 0 1 17 16H7z"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg>
+                <h3 class="card-title">Drie soorten asfalt</h3>
+                <p class="section-sub">Droog, vochtig of kletsnat: de wegconditie verandert de uitslag volledig. Zo weet je ook welke motor wint als het weer tegenzit.</p>
             </div>
-            <div class="card">
-                <h3 class="card-title">Deelbare links</h3>
-                <p class="section-sub">Elke simulatie wordt opgeslagen en krijgt een echte `/s/{code}` URL.</p>
+            <div class="card card-glow">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 11l8 -4M8 13l8 4"/></svg>
+                <h3 class="card-title">Deel je gelijk</h3>
+                <p class="section-sub">Race gedraaid? Stuur de uitslag door naar je maat, de dealer, of dat ene forum waar de discussie al jaren loopt.</p>
             </div>
         </div>
     </section>

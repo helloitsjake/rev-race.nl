@@ -272,6 +272,32 @@ a {
   font-size: 22px;
 }
 
+.card-icon {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 14px;
+  color: var(--orange);
+}
+
+.card-glow {
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.card-glow:hover {
+  transform: translateY(-3px);
+  border-color: rgba(232, 93, 0, .45);
+  box-shadow: 0 0 28px rgba(232, 93, 0, .16), var(--shadow);
+}
+
+.card-glow-teal .card-icon {
+  color: var(--teal);
+}
+
+.card-glow-teal:hover {
+  border-color: rgba(20, 184, 166, .45);
+  box-shadow: 0 0 28px rgba(20, 184, 166, .16), var(--shadow);
+}
+
 .spec-row,
 .result-row,
 .limit-row,
