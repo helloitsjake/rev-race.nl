@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\MotorController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SimulationController;
+use App\Http\Controllers\ToplijstController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -23,6 +25,8 @@ Route::post('/contact', [ContactController::class, 'store'])
     ->name('contact.store');
 Route::get('/embed', [PageController::class, 'embed'])->name('embed');
 Route::get('/s/{code}', [SimulationController::class, 'showShared'])->name('share.show');
+Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->name('compare.show');
+Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->name('toplijst.show');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
@@ -51,8 +55,4 @@ Route::post('/api/motors/manual', [MotorController::class, 'storeManual'])
 Route::get('/api/simulatie/limiet', [SimulationController::class, 'limit'])->name('api.simulation.limit');
 Route::post('/api/simulatie', [SimulationController::class, 'run'])->name('api.simulation.run');
 
-Route::get('/sitemap.xml', function () {
-    return response()
-        ->view('sitemap')
-        ->header('Content-Type', 'application/xml');
-})->name('sitemap');
+Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');

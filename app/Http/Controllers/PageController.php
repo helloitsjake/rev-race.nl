@@ -6,6 +6,8 @@ use App\Models\Motor;
 use App\Models\Partner;
 use App\Models\SimulationResult;
 use App\Services\SimulationLimitService;
+use App\Http\Controllers\ComparisonController;
+use App\Http\Controllers\ToplijstController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -106,5 +108,16 @@ class PageController extends Controller
             'limit' => $limits->status($request->user(), $request->ip()),
             'embedded' => true,
         ]);
+    }
+
+    public function sitemap()
+    {
+        return response()
+            ->view('sitemap', [
+                'partners' => Partner::query()->where('is_active', true)->get(),
+                'toplijsten' => array_keys(ToplijstController::lists()),
+                'pairs' => ComparisonController::pairs(),
+            ])
+            ->header('Content-Type', 'application/xml');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Motor extends Model
 {
@@ -49,5 +50,15 @@ class Motor extends Model
     public function label(): string
     {
         return "{$this->brand} {$this->model} {$this->year}";
+    }
+
+    public function slug(): string
+    {
+        return Str::slug("{$this->brand} {$this->model} {$this->year}");
+    }
+
+    public function powerToWeight(): float
+    {
+        return $this->weight_kg > 0 ? $this->power_hp / $this->weight_kg : 0.0;
     }
 }

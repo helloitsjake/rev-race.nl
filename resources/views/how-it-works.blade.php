@@ -3,6 +3,41 @@
 @section('title', 'Hoe RevRace jouw motorvergelijking berekent')
 @section('description', 'Ontdek hoe RevRace motoren simuleert op basis van vermogen, gewicht, luchtweerstand en wegconditie, en waarom die berekening zo nauwkeurig is.')
 
+@push('scripts')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => [
+        [
+            '@type' => 'Question',
+            'name' => 'Is deze simulatie echt nauwkeurig?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Ja, we gebruiken dezelfde natuurkundige principes die ook in de motorsport en voertuigontwikkeling gebruikt worden: vermogen tegen gewicht, luchtweerstand en de tractielimiet per wegconditie. We houden onze motorendatabase voortdurend up to date zodat de simulatie relevant blijft naarmate nieuwe modellen uitkomen.',
+            ],
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'Waarom laten jullie de formule niet zien?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Net als bij elk goed recept zit het verschil in de details. De rekenmethode is het resultaat van veel testen en fijnslijpen, en dat is precies waarom RevRace anders aanvoelt dan een simpele tabel met specificaties naast elkaar.',
+            ],
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'Kan ik mijn eigen rijdersgewicht meenemen?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Zeker, met een gratis account vul je je rijdersprofiel in en reken je dat automatisch mee in elke race.',
+            ],
+        ],
+    ],
+]) !!}
+</script>
+@endpush
+
 @section('content')
     <header>
         <span class="eyebrow">Hoe het werkt</span>

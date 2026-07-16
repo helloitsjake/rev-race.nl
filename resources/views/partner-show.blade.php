@@ -3,6 +3,20 @@
 @section('title', $partner->name . ' - RevRace partners')
 @section('description', $partner->description)
 
+@push('scripts')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Partners', 'item' => route('partners.index')],
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $partner->name],
+    ],
+]) !!}
+</script>
+@endpush
+
 @section('content')
     <a class="small" href="{{ route('partners.index') }}">&larr; Alle partners</a>
 

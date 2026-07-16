@@ -440,6 +440,26 @@ h1, h2, h3,
   border-bottom: 0;
 }
 
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-row:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .compare-row {
+    grid-template-columns: .8fr 1fr 1fr;
+    font-size: 13px;
+  }
+}
+
 .spec-value {
   color: var(--text);
   font-family: "IBM Plex Mono", monospace;
