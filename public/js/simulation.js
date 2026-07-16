@@ -280,7 +280,7 @@ function bindChoices() {
 
 function payload() {
   const useProfile = qs('[data-use-profile]')?.checked;
-  const riderA = useProfile ? Number(qs('[name="rider_a_kg"]')?.value || 0) : 0;
+  const riderA = useProfile ? Number(qs('[name="rider_a_kg"]')?.value || 0) : Number(cfg.preselectRiderA || 0);
   const riderB = useProfile ? Number(qs('[name="rider_b_kg"]')?.value || riderA) : 0;
 
   const body = {

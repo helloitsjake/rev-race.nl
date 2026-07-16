@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Welke motor past bij mij - RevRace')
-@section('description', 'Beantwoord twee vragen over je rijstijl en ervaring en zie welke motoren uit de RevRace database bij je passen.')
+@section('description', 'Beantwoord een paar vragen over je rijstijl en gebruik en krijg advies welke motoren uit de RevRace database bij je passen.')
 
 @push('scripts')
 <script type="application/ld+json">
@@ -19,20 +19,26 @@
 @section('content')
     <header>
         <span class="eyebrow">Welke motor past bij mij</span>
-        <h1 class="page-title">Twee vragen, en je weet waar je moet zoeken</h1>
-        <p class="page-sub">Geen specs vergelijken tussen modellen die je toevallig al kende. Kies je rijstijl en ervaring, en zie welke motoren uit onze database erbij passen.</p>
+        <h1 class="page-title">Vertel hoe je rijdt, wij zoeken uit wat past</h1>
+        <p class="page-sub">Geen vakjargon om zelf te kiezen. Vertel iets over jezelf en hoe je het liefst rijdt, en we vertalen dat naar motoren die daar echt bij passen.</p>
     </header>
 
     <form class="panel" method="get" action="{{ route('wizard.index') }}">
         <div class="form-row">
-            <span class="form-label">Wat voor rijstijl past het best bij jou?</span>
-            <div class="choice-row">
-                @foreach($categories as $key => $label)
-                    <label class="choice">
-                        <input type="radio" name="rijstijl" value="{{ $key }}" @checked($selectedRijstijl === $key)>
-                        {{ $label }}
-                    </label>
-                @endforeach
+            <span class="form-label">Over jou (optioneel)</span>
+            <div class="sim-grid">
+                <div>
+                    <label class="form-label" for="leeftijd">Leeftijd</label>
+                    <input class="input" id="leeftijd" name="leeftijd" type="number" min="16" max="99" value="{{ $leeftijd }}" placeholder="Bijv. 28">
+                </div>
+                <div>
+                    <label class="form-label" for="lengte">Lengte (cm)</label>
+                    <input class="input" id="lengte" name="lengte" type="number" min="140" max="220" value="{{ $lengte }}" placeholder="Bijv. 180">
+                </div>
+                <div>
+                    <label class="form-label" for="gewicht">Gewicht (kg)</label>
+                    <input class="input" id="gewicht" name="gewicht" type="number" min="30" max="180" value="{{ $gewicht }}" placeholder="Bijv. 75">
+                </div>
             </div>
         </div>
 
@@ -48,13 +54,49 @@
             </div>
         </div>
 
-        <button class="btn primary" type="submit">Toon match</button>
+        <div class="form-row">
+            <span class="form-label">Wat past het best bij jouw rijstijl?</span>
+            <div class="choice-row">
+                @foreach($voorkeuren as $key => $label)
+                    <label class="choice">
+                        <input type="radio" name="voorkeur" value="{{ $key }}" @checked($selectedVoorkeur === $key)>
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="form-row">
+            <span class="form-label">Waar rijd je vooral? (meerdere mogelijk)</span>
+            <div class="choice-row">
+                @foreach($terreinen as $key => $label)
+                    <label class="choice">
+                        <input type="checkbox" name="terrein[]" value="{{ $key }}" @checked(in_array($key, $selectedTerrein, true))>
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+        </div>
+
+        <button class="btn primary" type="submit">Geef me advies</button>
     </form>
 
-    @if($selectedRijstijl && $selectedErvaring)
+    @if($matches !== null)
         <section class="section">
             @if($matches->isNotEmpty())
-                <h2 class="section-title">{{ $matches->count() === 1 ? 'Deze motor past bij je' : 'Deze motoren passen bij je' }}</h2>
+                @php
+                    $profielZin = ($lengte || $gewicht) ? ', en rekening houdend met je lengte en gewicht' : '';
+                @endphp
+                <div class="panel" style="margin-bottom:20px">
+                    <h2 class="card-title">Ons advies voor jou</h2>
+                    <p style="margin-top:8px">
+                        @if(count($reasonParts))
+                            Omdat je aangaf: {{ implode(' en ', $reasonParts) }}{{ $profielZin }}, passen deze motoren het best bij je.
+                        @else
+                            Op basis van je antwoorden passen deze motoren het best bij je.
+                        @endif
+                    </p>
+                </div>
                 <div class="card-grid">
                     @foreach($matches as $motor)
                         <article class="card">
@@ -74,7 +116,7 @@
                                 <span class="spec-value">{{ $motor->weight_kg }} kg</span>
                             </div>
                             <div class="hero-actions" style="margin-top:14px">
-                                <a class="btn primary" href="{{ route('simulation.index', ['motor_a' => $motor->id]) }}">Simuleer met deze motor</a>
+                                <a class="btn primary" href="{{ route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht])) }}">Simuleer met deze motor</a>
                             </div>
                         </article>
                     @endforeach
@@ -82,10 +124,10 @@
             @else
                 <div class="panel">
                     <h2 class="card-title">Nog geen match in deze combinatie</h2>
-                    <p style="margin-top:8px">Voor {{ Str::lower($categories[$selectedRijstijl]) }} in combinatie met {{ Str::lower($experienceLevels[$selectedErvaring]) }} staat op dit moment geen motor in onze database. De database groeit nog, probeer een andere rijstijl of bekijk de volledige toplijst.</p>
+                    <p style="margin-top:8px">Voor deze combinatie van antwoorden staat op dit moment geen motor in onze database die volledig past. De database groeit nog, probeer een andere rijstijl of bekijk de volledige toplijst.</p>
 
                     @if($fallback && $fallback->isNotEmpty())
-                        <p class="small" style="margin-top:14px;color:var(--dim)">Wel A2 geschikt, in een andere categorie:</p>
+                        <p class="small" style="margin-top:14px;color:var(--dim)">Wel A2 geschikt, in andere categorieën:</p>
                         <div class="card-grid" style="margin-top:12px">
                             @foreach($fallback as $motor)
                                 <article class="card">

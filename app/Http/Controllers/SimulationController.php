@@ -17,11 +17,14 @@ class SimulationController extends Controller
     public function index(Request $request, SimulationLimitService $limits): View
     {
         $preselect = Motor::query()->find($request->query('motor_a'));
+        $preselectKg = $request->query('gewicht');
+        $preselectKg = is_numeric($preselectKg) && $preselectKg > 0 && $preselectKg < 250 ? (int) $preselectKg : null;
 
         return view('simulation', [
             'motors' => Motor::query()->orderBy('brand')->orderBy('model')->get(),
             'limit' => $limits->status($request->user(), $request->ip()),
             'preselect' => $preselect,
+            'preselectKg' => $preselectKg,
         ]);
     }
 

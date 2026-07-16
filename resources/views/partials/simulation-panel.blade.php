@@ -99,6 +99,12 @@
         </div>
     @endauth
 
+    @guest
+        @if($preselectKg ?? null)
+            <p class="small" style="margin-top:10px;color:var(--dim)">Rijdersgewicht van {{ $preselectKg }} kg (uit de wizard) wordt meegenomen voor Motor A.</p>
+        @endif
+    @endguest
+
     <div hidden data-message></div>
 
     @guest
@@ -174,7 +180,8 @@
                 limit: @json(route('api.simulation.limit'))
             },
             limit: @json($limit),
-            preselectA: @json($preselectAData)
+            preselectA: @json($preselectAData),
+            preselectRiderA: @json($preselectKg ?? null)
         };
     </script>
     <script src="{{ asset('js/simulation.js') }}?v={{ filemtime(public_path('js/simulation.js')) }}"></script>

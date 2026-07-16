@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Motor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class WizardController extends Controller
@@ -20,41 +21,164 @@ class WizardController extends Controller
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public static function voorkeuren(): array
+    {
+        return [
+            'bochten' => 'Ik houd van bochten en leunhoek',
+            'snelheid' => 'Ik wil vooral snel zijn op het rechte stuk',
+            'relax' => 'Geen voorkeur, ik rij voor het plezier',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function terreinen(): array
+    {
+        return [
+            'snelweg' => 'Snelweg, lange afstanden',
+            'binnendoor' => 'Binnendoor, kronkelwegen',
+            'bergen' => 'Bergen, pashaarspeldbochten',
+        ];
+    }
+
+    /**
+     * Scorepunten per categorie op basis van elk antwoord. Geen exacte wetenschap, een redelijke
+     * vertaling van rijstijl/gebruik naar het type motor dat daar doorgaans het best bij past.
+     *
+     * @return array<string, array<string, array<string, int>>>
+     */
+    private static function scoring(): array
+    {
+        return [
+            'voorkeur' => [
+                'bochten' => ['sport' => 3, 'naked' => 2, 'adventure' => 1],
+                'snelheid' => ['sport' => 2, 'naked' => 2, 'tourer' => 1],
+                'relax' => ['cruiser' => 2, 'retro' => 2, 'tourer' => 1],
+            ],
+            'terrein' => [
+                'snelweg' => ['tourer' => 3, 'adventure' => 1, 'cruiser' => 1],
+                'binnendoor' => ['naked' => 3, 'sport' => 1, 'retro' => 1],
+                'bergen' => ['adventure' => 2, 'sport' => 2, 'naked' => 1],
+            ],
+        ];
+    }
+
     public function index(Request $request): View
     {
-        $rijstijl = $request->query('rijstijl');
         $ervaring = $request->query('ervaring');
-
-        $rijstijl = array_key_exists((string) $rijstijl, Motor::CATEGORIES) ? $rijstijl : null;
         $ervaring = array_key_exists((string) $ervaring, self::experienceLevels()) ? $ervaring : null;
+
+        $voorkeur = $request->query('voorkeur');
+        $voorkeur = array_key_exists((string) $voorkeur, self::voorkeuren()) ? $voorkeur : null;
+
+        $terrein = array_values(array_intersect((array) $request->query('terrein', []), array_keys(self::terreinen())));
+
+        $leeftijd = $request->query('leeftijd');
+        $lengte = $request->query('lengte');
+        $gewicht = $request->query('gewicht');
+
+        $hasAnswers = $ervaring && ($voorkeur || $terrein);
 
         $matches = null;
         $fallback = null;
+        $topCategories = [];
+        $reasonParts = [];
 
-        if ($rijstijl && $ervaring) {
-            $matches = $this->match($rijstijl, $ervaring);
+        if ($hasAnswers) {
+            $scores = $this->scoreCategories($voorkeur, $terrein);
+            $topCategories = $this->topCategories($scores);
+            $matches = $this->match($topCategories, $ervaring);
 
             if ($matches->isEmpty() && $ervaring === 'beginner') {
-                $fallback = $this->match(null, 'beginner');
+                $fallback = $this->match([], 'beginner');
+            }
+
+            if ($voorkeur) {
+                $reasonParts[] = Str::lower(self::voorkeuren()[$voorkeur]);
+            }
+            foreach ($terrein as $key) {
+                $reasonParts[] = Str::lower(self::terreinen()[$key]);
             }
         }
 
         return view('wizard', [
-            'categories' => Motor::CATEGORIES,
+            'voorkeuren' => self::voorkeuren(),
+            'terreinen' => self::terreinen(),
             'experienceLevels' => self::experienceLevels(),
-            'selectedRijstijl' => $rijstijl,
             'selectedErvaring' => $ervaring,
+            'selectedVoorkeur' => $voorkeur,
+            'selectedTerrein' => $terrein,
+            'leeftijd' => $leeftijd,
+            'lengte' => $lengte,
+            'gewicht' => $gewicht,
             'matches' => $matches,
             'fallback' => $fallback,
+            'topCategories' => $topCategories,
+            'reasonParts' => $reasonParts,
         ]);
     }
 
-    private function match(?string $rijstijl, string $ervaring): Collection
+    /**
+     * @param  array<int, string>  $terrein
+     * @return array<string, int>
+     */
+    private function scoreCategories(?string $voorkeur, array $terrein): array
+    {
+        $scoring = self::scoring();
+        $scores = array_fill_keys(array_keys(Motor::CATEGORIES), 0);
+
+        if ($voorkeur && isset($scoring['voorkeur'][$voorkeur])) {
+            foreach ($scoring['voorkeur'][$voorkeur] as $category => $points) {
+                $scores[$category] += $points;
+            }
+        }
+
+        foreach ($terrein as $key) {
+            if (! isset($scoring['terrein'][$key])) {
+                continue;
+            }
+
+            foreach ($scoring['terrein'][$key] as $category => $points) {
+                $scores[$category] += $points;
+            }
+        }
+
+        return $scores;
+    }
+
+    /**
+     * De categorie(ën) die het dichtst bij de hoogste score liggen (binnen 1 punt), max 2, zodat
+     * het advies niet onnodig smal is bij een gelijkspel tussen twee logische richtingen.
+     *
+     * @param  array<string, int>  $scores
+     * @return array<int, string>
+     */
+    private function topCategories(array $scores): array
+    {
+        $max = max($scores);
+
+        if ($max <= 0) {
+            return [];
+        }
+
+        $top = array_keys(array_filter($scores, fn ($score) => $score >= $max - 1 && $score > 0));
+
+        return array_slice($top, 0, 2);
+    }
+
+    /**
+     * @param  array<int, string>  $categories
+     */
+    private function match(array $categories, string $ervaring): Collection
     {
         $query = Motor::query()->whereNotNull('category');
 
-        if ($rijstijl) {
-            $query->where('category', $rijstijl);
+        if (! empty($categories)) {
+            $query->whereIn('category', $categories);
         }
 
         return $query->get()
