@@ -10,9 +10,11 @@ use App\Http\Controllers\PartnerApplicationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SimulationController;
 use App\Http\Controllers\ToplijstController;
+use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/welke-motor-past-bij-mij', [WizardController::class, 'index'])->name('wizard.index');
 Route::get('/simulatie', [SimulationController::class, 'index'])->name('simulation.index');
 Route::get('/partners', [PageController::class, 'partners'])->name('partners.index');
 Route::get('/partners/{partner}', [PageController::class, 'partnerShow'])->name('partners.show');

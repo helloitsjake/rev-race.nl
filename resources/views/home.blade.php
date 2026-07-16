@@ -11,11 +11,12 @@
                 <h1>Welke motor past nou echt <span>bij jou</span>?</h1>
                 <p>Wil je toeren door de Duitse bergen of het liefst knallen op het circuit? Op RevRace vergelijk je motoren niet met natte vingers, maar met een echte rijsimulatie op basis van vermogen, gewicht en jouw manier van rijden. Zo weet je niet alleen wie er wint, maar ook welke motor daadwerkelijk bij je past.</p>
                 <div class="hero-actions">
-                    <a class="btn primary" href="{{ route('simulation.index') }}">Start simulatie</a>
+                    <a class="btn primary" href="{{ route('wizard.index') }}">Welke motor past bij mij?</a>
+                    <a class="btn secondary" href="{{ route('simulation.index') }}">Start simulatie</a>
                     @guest
-                        <a class="btn secondary" href="{{ route('register') }}">Maak account</a>
+                        <a class="btn ghost" href="{{ route('register') }}">Maak account</a>
                     @else
-                        <a class="btn secondary" href="{{ route('garage.index') }}">Mijn garage</a>
+                        <a class="btn ghost" href="{{ route('garage.index') }}">Mijn garage</a>
                     @endguest
                 </div>
             </div>

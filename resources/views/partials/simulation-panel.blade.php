@@ -155,6 +155,14 @@
     </div>
 </section>
 
+@php
+    $preselectAData = (isset($preselect) && $preselect) ? [
+        'id' => $preselect->id,
+        'label' => $preselect->label(),
+        'power_hp' => $preselect->power_hp,
+        'weight_kg' => $preselect->weight_kg,
+    ] : null;
+@endphp
 @push('scripts')
     <script>
         window.REVRACE = {
@@ -165,7 +173,8 @@
                 simulate: @json(route('api.simulation.run')),
                 limit: @json(route('api.simulation.limit'))
             },
-            limit: @json($limit)
+            limit: @json($limit),
+            preselectA: @json($preselectAData)
         };
     </script>
     <script src="{{ asset('js/simulation.js') }}?v={{ filemtime(public_path('js/simulation.js')) }}"></script>

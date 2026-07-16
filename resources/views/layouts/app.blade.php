@@ -46,6 +46,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a class="brand" href="{{ route('home') }}">REV<span>RACE</span></a>
         <div class="nav-links">
             <a class="nav-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}">Home</a>
+            <a class="nav-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
             <a class="nav-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
             <a class="nav-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}">Partners</a>
             <a class="nav-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}">Hoe het werkt</a>
@@ -81,10 +82,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div class="mobile-menu-links">
             <a class="mobile-menu-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}"><span>Home</span><span class="num">01</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}"><span>Simulatie</span><span class="num">02</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">03</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">04</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">05</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}"><span>Welke motor past bij mij</span><span class="num">02</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}"><span>Simulatie</span><span class="num">03</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">04</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">05</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">06</span></a>
             @auth
                 <a class="mobile-menu-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}"><span>Garage</span></a>
                 <a class="mobile-menu-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}"><span>Mijn account</span></a>

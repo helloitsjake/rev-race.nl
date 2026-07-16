@@ -8,6 +8,15 @@ use Illuminate\Support\Str;
 
 class Motor extends Model
 {
+    public const CATEGORIES = [
+        'naked' => 'Naked',
+        'sport' => 'Sportmotor',
+        'tourer' => 'Toermotor',
+        'adventure' => 'Adventure',
+        'cruiser' => 'Cruiser',
+        'retro' => 'Retro',
+    ];
+
     protected $fillable = [
         'brand',
         'model',
@@ -16,6 +25,7 @@ class Motor extends Model
         'torque_nm',
         'weight_kg',
         'engine_type',
+        'category',
         'displacement_cc',
         'top_speed_kmh',
         'zero_to_hundred_s',
@@ -60,5 +70,26 @@ class Motor extends Model
     public function powerToWeight(): float
     {
         return $this->weight_kg > 0 ? $this->power_hp / $this->weight_kg : 0.0;
+    }
+
+    /**
+     * EU A2 rijbewijs: vermogen maximaal 35kW en vermogen/gewicht maximaal 0,20 kW/kg.
+     * Alleen gebaseerd op de ongedrosseerde specificaties in de database; sommige modellen
+     * hebben daarnaast een gedrosseerde fabrieksversie die hier niet in meegenomen wordt.
+     */
+    public function isA2Eligible(): bool
+    {
+        $powerKw = $this->power_hp * 0.7457;
+
+        if ($powerKw > 35) {
+            return false;
+        }
+
+        return $this->weight_kg > 0 && ($powerKw / $this->weight_kg) <= 0.20;
+    }
+
+    public function categoryLabel(): string
+    {
+        return self::CATEGORIES[$this->category] ?? $this->category ?? 'Onbekend';
     }
 }

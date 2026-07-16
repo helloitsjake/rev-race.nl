@@ -76,9 +76,11 @@ class MotorLookupService
         $prompt = <<<PROMPT
 Geef technische specificaties voor deze motorfiets: {$query}.
 Antwoord uitsluitend als JSON met exact deze velden:
-brand, model, year, power_hp, torque_nm, weight_kg, engine_type, displacement_cc,
+brand, model, year, power_hp, torque_nm, weight_kg, engine_type, category, displacement_cc,
 top_speed_kmh, zero_to_hundred_s, drag_coefficient, frontal_area_m2, photo_url.
 Vermogen, koppel, gewicht, motortype en cilinderinhoud zijn altijd bekend en verplicht.
+category moet exact een van deze waarden zijn: naked, sport, tourer, adventure, cruiser, retro.
+Kies de categorie die het beste past bij hoe de motor in de markt gepositioneerd wordt.
 Cd-waarde en frontaal oppervlak zijn geen officiele fabrieksspecificaties: geef hiervoor
 altijd een realistische schatting op basis van het motortype en carrosserie (bijv. naked
 ~0.55-0.65 Cd, sportief/fairing ~0.35-0.45 Cd, adventure/toermotor ~0.5-0.6 Cd), nooit null.
@@ -120,6 +122,7 @@ PROMPT;
             'torque_nm' => (int) $data['torque_nm'],
             'weight_kg' => (int) $data['weight_kg'],
             'engine_type' => (string) $data['engine_type'],
+            'category' => array_key_exists((string) ($data['category'] ?? ''), Motor::CATEGORIES) ? $data['category'] : null,
             'displacement_cc' => (int) $data['displacement_cc'],
             'top_speed_kmh' => isset($data['top_speed_kmh']) ? (int) $data['top_speed_kmh'] : null,
             'zero_to_hundred_s' => isset($data['zero_to_hundred_s']) ? (float) $data['zero_to_hundred_s'] : null,

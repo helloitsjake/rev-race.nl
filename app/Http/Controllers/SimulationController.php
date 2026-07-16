@@ -16,9 +16,12 @@ class SimulationController extends Controller
 {
     public function index(Request $request, SimulationLimitService $limits): View
     {
+        $preselect = Motor::query()->find($request->query('motor_a'));
+
         return view('simulation', [
             'motors' => Motor::query()->orderBy('brand')->orderBy('model')->get(),
             'limit' => $limits->status($request->user(), $request->ip()),
+            'preselect' => $preselect,
         ]);
     }
 

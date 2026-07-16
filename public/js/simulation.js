@@ -600,6 +600,7 @@ function bindSimulation() {
   bindChoices();
   bindShareCopy();
   renderLimit(cfg.limit);
+  if (cfg.preselectA) pickMotor('A', cfg.preselectA);
   form.addEventListener('submit', runSimulation);
 }
 

@@ -654,10 +654,21 @@ textarea.input {
 }
 
 .choice.active,
-.filter-pill.active {
+.filter-pill.active,
+label.choice:has(input:checked) {
   border-color: var(--text);
   background: var(--text);
   color: #fff;
+}
+
+label.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+label.choice input {
+  margin: 0;
 }
 
 .band-dark .choice {
