@@ -28,6 +28,9 @@
                     <span class="badge">{{ $partner->category }}</span>
                 </div>
                 <h2 class="card-title">{{ $partner->name }}</h2>
+                @if($partner->address_city)
+                    <p class="small" style="color:var(--dim);margin-top:2px">{{ $partner->address_city }}</p>
+                @endif
                 <p class="section-sub">{{ $partner->description }}</p>
                 <div class="hero-actions" style="margin-top:6px;align-items:center">
                     @if($partner->website_url)

@@ -24,9 +24,14 @@ geen root-toegang).
 2. `git commit` + `git push` naar `github.com/helloitsjake/rev-race.nl` (branch `main`).
 3. Gewijzigde bestanden direct via `scp` naar de server kopiëren, bijvoorbeeld:
    ```bash
-   scp -i <ssh-key> resources/views/home.blade.php \
+   scp -i ~/.ssh/rev-race-nl resources/views/home.blade.php \
      rev-race.nl_rifnwrwo9e@37.128.144.80:/rev-race-app/resources/views/home.blade.php
    ```
+   SSH-key: `~/.ssh/rev-race-nl` (ed25519, aangemaakt 16 juli 2026). Deze key staat **niet** in
+   Google Drive/git (privékey hoort niet gesynct te worden), dus op een nieuw apparaat moet een
+   nieuwe key gegenereerd en de public key via Plesk (SSH Keys instellingen van de subscription)
+   toegevoegd worden aan `rev-race.nl_rifnwrwo9e`. Fingerprint check: `ssh-keygen -E md5 -lf
+   ~/.ssh/rev-race-nl.pub` moet matchen met wat Plesk toont.
 4. CSS/JS in `public/` hebben cache busting via `filemtime()` in de querystring
    (`layouts/app.blade.php`, `partials/simulation-panel.blade.php`) — geen handmatige
    cache-clear nodig na een update.

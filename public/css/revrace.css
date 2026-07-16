@@ -29,6 +29,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   background: var(--bg);
   scroll-behavior: smooth;
@@ -375,6 +379,11 @@ h1, h2, h3,
 .section-title,
 .page-title {
   font-size: clamp(28px, 4.2vw, 42px);
+  margin-bottom: 0;
+}
+
+.page > header {
+  margin-bottom: 32px;
 }
 
 .section-sub,
@@ -503,6 +512,35 @@ h1, h2, h3,
   min-height: 0;
   font-size: 8px;
   flex-shrink: 0;
+}
+
+/* ── Partner landing page ──────────────────────────────── */
+
+.partner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: 24px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.partner-usp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.partner-usp-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--orange);
+}
+
+.partner-usp-list li span {
+  color: var(--text);
 }
 
 /* ── Forms ──────────────────────────────────────────────── */
@@ -1056,7 +1094,8 @@ textarea.input {
   .card-grid,
   .garage-list,
   .stat-band,
-  .account-shell {
+  .account-shell,
+  .partner-layout {
     grid-template-columns: 1fr;
   }
 
