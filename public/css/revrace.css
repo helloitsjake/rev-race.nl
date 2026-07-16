@@ -379,7 +379,14 @@ h1, h2, h3,
 .section-title,
 .page-title {
   font-size: clamp(28px, 4.2vw, 42px);
+}
+
+.page-title {
   margin-bottom: 0;
+}
+
+.section-title {
+  margin-bottom: 20px;
 }
 
 .page > header {
