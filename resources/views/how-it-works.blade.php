@@ -33,6 +33,22 @@
                 'text' => 'Zeker, met een gratis account vul je je rijdersprofiel in en reken je dat automatisch mee in elke race.',
             ],
         ],
+        [
+            '@type' => 'Question',
+            'name' => 'Kan ik ook topsnelheid en remafstand vergelijken?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Ja. Naast de rechte lijn en de kronkelweg kun je op de simulatiepagina ook kiezen voor topsnelheid (op basis van de opgegeven fabrieksspecificatie) en remafstand vanaf een zelf gekozen snelheid en wegconditie.',
+            ],
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'Is RevRace ook geschikt als dit mijn eerste motor wordt?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Juist dan is RevRace handig. Twijfel je tussen een instapper en iets stoerders, vergelijk ze naast elkaar op gewicht, vermogen en hoe ze zich gedragen bij regen of in de bocht, in plaats van te varen op wat de verkoper zegt.',
+            ],
+        ],
     ],
 ]) !!}
 </script>
@@ -69,6 +85,14 @@
             <div class="card">
                 <h3 class="card-title">Kan ik mijn eigen rijdersgewicht meenemen?</h3>
                 <p class="section-sub">Zeker, met een gratis account vul je je rijdersprofiel in en reken je dat automatisch mee in elke race.</p>
+            </div>
+            <div class="card card-accent-a">
+                <h3 class="card-title">Kan ik ook topsnelheid en remafstand vergelijken?</h3>
+                <p class="section-sub">Ja. Naast de rechte lijn en de kronkelweg kun je op de simulatiepagina ook kiezen voor topsnelheid (op basis van de opgegeven fabrieksspecificatie) en remafstand vanaf een zelf gekozen snelheid en wegconditie.</p>
+            </div>
+            <div class="card card-accent-b">
+                <h3 class="card-title">Is RevRace ook geschikt als dit mijn eerste motor wordt?</h3>
+                <p class="section-sub">Juist dan is RevRace handig. Twijfel je tussen een instapper en iets stoerders, vergelijk ze naast elkaar op gewicht, vermogen en hoe ze zich gedragen bij regen of in de bocht, in plaats van te varen op wat de verkoper zegt.</p>
             </div>
         </div>
     </section>

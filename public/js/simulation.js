@@ -51,6 +51,7 @@ const options = {
   road_type: 'straight',
   road_condition: 'dry',
   distance_m: 500,
+  speed_kmh: 100,
 };
 
 function motorSpec(motor) {
@@ -245,6 +246,22 @@ function bindPickers() {
   });
 }
 
+const NUMERIC_GROUPS = ['distance_m', 'speed_kmh'];
+
+function toggleModeControls() {
+  const mode = options.road_type;
+  const showDistance = mode === 'straight' || mode === 'twisty';
+  const showSpeed = mode === 'braking';
+  const showCondition = mode !== 'topspeed';
+
+  const distanceControl = qs('[data-control="distance"]');
+  if (distanceControl) distanceControl.hidden = !showDistance;
+  const speedControl = qs('[data-control="speed"]');
+  if (speedControl) speedControl.hidden = !showSpeed;
+  const conditionControl = qs('[data-control="condition"]');
+  if (conditionControl) conditionControl.hidden = !showCondition;
+}
+
 function bindChoices() {
   qsa('[data-choice]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -252,9 +269,13 @@ function bindChoices() {
       const value = button.dataset.value;
       qsa(`[data-choice][data-group="${group}"]`).forEach((el) => el.classList.remove('active'));
       button.classList.add('active');
-      options[group] = group === 'distance_m' ? Number(value) : value;
+      options[group] = NUMERIC_GROUPS.includes(group) ? Number(value) : value;
+
+      if (group === 'road_type') toggleModeControls();
     });
   });
+
+  toggleModeControls();
 }
 
 function payload() {
@@ -262,15 +283,24 @@ function payload() {
   const riderA = useProfile ? Number(qs('[name="rider_a_kg"]')?.value || 0) : 0;
   const riderB = useProfile ? Number(qs('[name="rider_b_kg"]')?.value || riderA) : 0;
 
-  return {
+  const body = {
     motor_a_id: Number(qs('[data-motor-id="A"]').value),
     motor_b_id: Number(qs('[data-motor-id="B"]').value),
     road_type: options.road_type,
     road_condition: options.road_condition,
-    distance_m: options.distance_m,
     rider_a_kg: riderA,
     rider_b_kg: riderB,
   };
+
+  if (options.road_type === 'straight' || options.road_type === 'twisty') {
+    body.distance_m = options.distance_m;
+  }
+
+  if (options.road_type === 'braking') {
+    body.speed_kmh = options.speed_kmh;
+  }
+
+  return body;
 }
 
 function showMessage(text, type = 'notice') {
@@ -281,9 +311,43 @@ function showMessage(text, type = 'notice') {
   box.hidden = false;
 }
 
-function renderResult(result) {
-  const panel = qs('[data-result]');
-  if (!panel) return;
+function setVisualMode(mode) {
+  const showRaceVisual = mode === 'race';
+  qsa('[data-race-visual]').forEach((el) => { el.hidden = !showRaceVisual; });
+  const simpleVisual = qs('[data-simple-visual]');
+  if (simpleVisual) simpleVisual.hidden = showRaceVisual;
+  const chartWrap = qs('[data-chart-wrap]');
+  if (chartWrap) chartWrap.hidden = !showRaceVisual;
+  qsa('[data-share-row]').forEach((el) => { el.hidden = !showRaceVisual; });
+}
+
+function bindSocialShare(winnerName, shareLine, shareUrl) {
+  const share = qs('[data-share]');
+  if (share) {
+    share.href = shareUrl || '#';
+    share.textContent = shareUrl || '';
+  }
+
+  const shareCopy = qs('[data-share-copy]');
+  if (shareCopy) shareCopy.dataset.shareUrl = shareUrl || '';
+
+  const whatsapp = qs('[data-share-social="whatsapp"]');
+  if (whatsapp) whatsapp.href = `https://wa.me/?text=${encodeURIComponent(`${shareLine} ${shareUrl || ''}`)}`;
+  const x = qs('[data-share-social="x"]');
+  if (x) x.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareLine)}&url=${encodeURIComponent(shareUrl || '')}`;
+  const facebook = qs('[data-share-social="facebook"]');
+  if (facebook) facebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl || '')}`;
+}
+
+function bindSearchOnline(result) {
+  const searchA = qs('[data-search-online="A"]');
+  if (searchA) searchA.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
+  const searchB = qs('[data-search-online="B"]');
+  if (searchB) searchB.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
+}
+
+function renderRaceResult(result) {
+  setVisualMode('race');
 
   const winnerName = result.winner === 'A' ? result.motor_a : result.motor_b;
   setText('[data-result-title]', `${winnerName} wint met ${result.delta_s.toFixed(3)}s verschil`);
@@ -294,29 +358,49 @@ function renderResult(result) {
   qs('[data-bar-a]').style.width = `${(result.time_a_s / slowest) * 100}%`;
   qs('[data-bar-b]').style.width = `${(result.time_b_s / slowest) * 100}%`;
 
-  const share = qs('[data-share]');
-  if (share) {
-    share.href = result.share_url;
-    share.textContent = result.share_url;
+  bindSearchOnline(result);
+  bindSocialShare(winnerName, `${winnerName} wint met ${result.delta_s.toFixed(2)}s verschil op RevRace!`, result.share_url);
+  renderChart(result);
+}
+
+function renderTopSpeedResult(result) {
+  setVisualMode('topspeed');
+
+  const winnerName = result.winner === 'A' ? result.motor_a : result.motor_b;
+  setText('[data-result-title]', `${winnerName} heeft de hoogste opgegeven topsnelheid`);
+  setText('[data-simple-label-a]', result.motor_a);
+  setText('[data-simple-label-b]', result.motor_b);
+  setText('[data-simple-value-a]', `${result.top_speed_kmh_a} km/h`);
+  setText('[data-simple-value-b]', `${result.top_speed_kmh_b} km/h`);
+
+  bindSearchOnline(result);
+}
+
+function renderBrakingResult(result) {
+  setVisualMode('braking');
+
+  const winnerName = result.winner === 'A' ? result.motor_a : result.motor_b;
+  setText('[data-result-title]', `${winnerName} remt het kortst vanaf ${result.speed_kmh} km/h`);
+  setText('[data-simple-label-a]', result.motor_a);
+  setText('[data-simple-label-b]', result.motor_b);
+  setText('[data-simple-value-a]', `${result.braking_distance_m_a} m`);
+  setText('[data-simple-value-b]', `${result.braking_distance_m_b} m`);
+
+  bindSearchOnline(result);
+}
+
+function renderResult(result) {
+  const panel = qs('[data-result]');
+  if (!panel) return;
+
+  if (result.mode === 'topspeed') {
+    renderTopSpeedResult(result);
+  } else if (result.mode === 'braking') {
+    renderBrakingResult(result);
+  } else {
+    renderRaceResult(result);
   }
 
-  const shareCopy = qs('[data-share-copy]');
-  if (shareCopy) shareCopy.dataset.shareUrl = result.share_url;
-
-  const searchA = qs('[data-search-online="A"]');
-  if (searchA) searchA.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
-  const searchB = qs('[data-search-online="B"]');
-  if (searchB) searchB.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
-
-  const shareText = `${winnerName} wint met ${result.delta_s.toFixed(2)}s verschil op RevRace!`;
-  const whatsapp = qs('[data-share-social="whatsapp"]');
-  if (whatsapp) whatsapp.href = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${result.share_url}`)}`;
-  const x = qs('[data-share-social="x"]');
-  if (x) x.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(result.share_url)}`;
-  const facebook = qs('[data-share-social="facebook"]');
-  if (facebook) facebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(result.share_url)}`;
-
-  renderChart(result);
   panel.classList.add('show');
 }
 
@@ -480,7 +564,11 @@ async function runSimulation(event) {
   cfg.limit = data.limit;
   renderLimit(data.limit);
   renderResult(data.result);
-  showMessage('Simulatie opgeslagen. De deelbare link staat bij het resultaat.');
+  showMessage(
+    data.result.mode === 'race'
+      ? 'Simulatie opgeslagen. De deelbare link staat bij het resultaat.'
+      : 'Resultaat berekend.',
+  );
   if (run) run.disabled = Boolean(data.limit?.blocked) || !selected.A || !selected.B;
 }
 

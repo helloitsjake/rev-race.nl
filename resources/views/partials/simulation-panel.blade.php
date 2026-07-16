@@ -44,13 +44,15 @@
     <div class="section" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px;justify-content:space-between">
         <div style="display:flex;flex-wrap:wrap;gap:24px">
             <div class="form-row" style="margin-bottom:0">
-                <span class="form-label">Wegtype</span>
+                <span class="form-label">Simulatietype</span>
                 <div class="choice-row">
                     <button class="choice active" type="button" data-choice data-group="road_type" data-value="straight">Rechte lijn</button>
                     <button class="choice" type="button" data-choice data-group="road_type" data-value="twisty">Kronkelweg</button>
+                    <button class="choice" type="button" data-choice data-group="road_type" data-value="topspeed">Topsnelheid</button>
+                    <button class="choice" type="button" data-choice data-group="road_type" data-value="braking">Remafstand</button>
                 </div>
             </div>
-            <div class="form-row" style="margin-bottom:0">
+            <div class="form-row" style="margin-bottom:0" data-control="condition">
                 <span class="form-label">Wegconditie</span>
                 <div class="choice-row">
                     <button class="choice active" type="button" data-choice data-group="road_condition" data-value="dry">Droog</button>
@@ -58,7 +60,7 @@
                     <button class="choice" type="button" data-choice data-group="road_condition" data-value="rain">Nat</button>
                 </div>
             </div>
-            <div class="form-row" style="margin-bottom:0">
+            <div class="form-row" style="margin-bottom:0" data-control="distance">
                 <span class="form-label">Afstand</span>
                 <div class="choice-row">
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="100">100m</button>
@@ -66,6 +68,15 @@
                     <button class="choice active" type="button" data-choice data-group="distance_m" data-value="500">500m</button>
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="1000">1000m</button>
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="2000">2km</button>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0" data-control="speed" hidden>
+                <span class="form-label">Snelheid</span>
+                <div class="choice-row">
+                    <button class="choice" type="button" data-choice data-group="speed_kmh" data-value="50">50 km/h</button>
+                    <button class="choice active" type="button" data-choice data-group="speed_kmh" data-value="100">100 km/h</button>
+                    <button class="choice" type="button" data-choice data-group="speed_kmh" data-value="130">130 km/h</button>
+                    <button class="choice" type="button" data-choice data-group="speed_kmh" data-value="160">160 km/h</button>
                 </div>
             </div>
         </div>
@@ -96,29 +107,39 @@
 </form>
 
 <section class="race-track">
-    <div class="lane">
+    <div class="lane" data-race-visual>
         <div class="lane-head"><span data-lane-name="A">Motor A</span><span data-time-a>-</span></div>
         <div class="bar-bg"><div class="bar-fill a" data-bar-a></div></div>
     </div>
-    <div class="lane">
+    <div class="lane" data-race-visual>
         <div class="lane-head"><span data-lane-name="B">Motor B</span><span data-time-b>-</span></div>
         <div class="bar-bg"><div class="bar-fill b" data-bar-b></div></div>
     </div>
+    <div class="top-grid" data-simple-visual hidden style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+        <div class="card" style="padding:16px">
+            <span class="form-label" data-simple-label-a style="color:var(--orange)">Motor A</span>
+            <div class="metric-value" data-simple-value-a style="font-size:30px">-</div>
+        </div>
+        <div class="card" style="padding:16px">
+            <span class="form-label" data-simple-label-b style="color:var(--teal)">Motor B</span>
+            <div class="metric-value" data-simple-value-b style="font-size:30px">-</div>
+        </div>
+    </div>
     <div class="band-dark result-panel" data-result style="border-radius:var(--radius);padding:20px">
         <h2 class="card-title" data-result-title style="text-transform:none"></h2>
-        <p style="color:var(--dark-muted)">Deelbare link: <a class="accent" data-share href="#" style="color:var(--teal)"></a></p>
+        <p style="color:var(--dark-muted)" data-share-row>Deelbare link: <a class="accent" data-share href="#" style="color:var(--teal)"></a></p>
         <div class="hero-actions" style="margin-top:0">
-            <a class="btn secondary" data-share-copy href="#">Deel uitslag</a>
+            <a class="btn secondary" data-share-copy href="#" data-share-row>Deel uitslag</a>
             <a class="btn secondary" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
             <a class="btn secondary" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
         </div>
-        <div class="hero-actions" style="margin-top:8px">
+        <div class="hero-actions" style="margin-top:8px" data-share-row>
             <a class="btn secondary" data-share-social="whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
             <a class="btn secondary" data-share-social="x" href="#" target="_blank" rel="noopener">X</a>
             <a class="btn secondary" data-share-social="facebook" href="#" target="_blank" rel="noopener">Facebook</a>
         </div>
 
-        <div class="chart-wrap">
+        <div class="chart-wrap" data-chart-wrap>
             <div class="chart-head">
                 <span class="form-label" style="margin-bottom:0">Snelheid over afstand</span>
                 <div class="chart-legend">

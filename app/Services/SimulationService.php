@@ -33,6 +33,27 @@ class SimulationService
     }
 
     /**
+     * Remafstand vanaf een gekozen snelheid. Remvertraging is vooral wegconditie
+     * afhankelijk, met een lichte correctie voor gewicht (meer massa, iets meer
+     * remweg bij gelijke bandengrip).
+     *
+     * @return array{distance_m: float, decel_ms2: float}
+     */
+    public function brakingDistance(Motor $motor, float $speedKmh, string $roadCondition): array
+    {
+        $condition = $this->condition($roadCondition);
+        $speedMs = $speedKmh / 3.6;
+        $weightFactor = (200 / max($motor->weight_kg, 1)) ** 0.15;
+        $decel = 9.5 * $condition['mu_b'] * $weightFactor;
+        $distance = ($speedMs ** 2) / (2 * $decel);
+
+        return [
+            'distance_m' => round($distance, 1),
+            'decel_ms2' => round($decel, 2),
+        ];
+    }
+
+    /**
      * @return array<string, float>
      */
     private function condition(string $condition): array
