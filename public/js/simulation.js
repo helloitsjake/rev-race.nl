@@ -308,6 +308,14 @@ function renderResult(result) {
   const searchB = qs('[data-search-online="B"]');
   if (searchB) searchB.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
 
+  const shareText = `${winnerName} wint met ${result.delta_s.toFixed(2)}s verschil op RevRace!`;
+  const whatsapp = qs('[data-share-social="whatsapp"]');
+  if (whatsapp) whatsapp.href = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${result.share_url}`)}`;
+  const x = qs('[data-share-social="x"]');
+  if (x) x.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(result.share_url)}`;
+  const facebook = qs('[data-share-social="facebook"]');
+  if (facebook) facebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(result.share_url)}`;
+
   renderChart(result);
   panel.classList.add('show');
 }

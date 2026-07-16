@@ -3,11 +3,21 @@
 @section('title', 'Mijn garage - RevRace')
 
 @section('content')
-    <header>
-        <span class="eyebrow">Garage</span>
-        <h1 class="page-title">Mijn garage</h1>
-        <p class="page-sub">Sla maximaal 2 motoren op in het gratis account en laad ze snel in de simulatie.</p>
-    </header>
+    <div class="chart-head" style="align-items:flex-start">
+        <header>
+            <span class="eyebrow">Garage</span>
+            <h1 class="page-title">Mijn garage</h1>
+            <p class="page-sub">Sla maximaal 2 motoren op in het gratis account en laad ze snel in de simulatie.</p>
+        </header>
+        <form method="post" action="{{ route('garage.share') }}">
+            @csrf
+            <button class="btn secondary" type="submit">Deel mijn garage</button>
+        </form>
+    </div>
+
+    @if(auth()->user()->garage_token)
+        <p class="small">Publieke link: <a class="accent" href="{{ route('garage.public', auth()->user()->garage_token) }}">{{ route('garage.public', auth()->user()->garage_token) }}</a></p>
+    @endif
 
     <form class="panel" method="post" action="{{ route('garage.store') }}">
         @csrf

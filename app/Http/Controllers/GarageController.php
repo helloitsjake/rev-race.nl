@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GarageMotor;
 use App\Models\Motor;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +16,23 @@ class GarageController extends Controller
         return view('garage', [
             'garage' => $request->user()->garageMotors()->with('motor')->orderBy('sort_order')->get(),
             'motors' => Motor::query()->orderBy('brand')->orderBy('model')->get(),
+        ]);
+    }
+
+    public function share(Request $request): RedirectResponse
+    {
+        $token = $request->user()->ensureGarageToken();
+
+        return back()->with('status', 'Je garage is nu deelbaar: ' . route('garage.public', $token));
+    }
+
+    public function publicShow(string $token): View
+    {
+        $user = User::query()->where('garage_token', $token)->firstOrFail();
+
+        return view('garage-public', [
+            'owner' => $user,
+            'garage' => $user->garageMotors()->with('motor')->orderBy('sort_order')->get(),
         ]);
     }
 

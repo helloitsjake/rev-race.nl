@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Gedeeld resultaat - RevRace')
+@php
+    $winnerMotor = $result->winner === 'A' ? $result->motorA : $result->motorB;
+    $shareText = "{$winnerMotor->label()} wint met " . number_format(abs($result->time_a_s - $result->time_b_s), 2) . "s verschil op RevRace!";
+    $shareUrl = url()->current();
+@endphp
+
+@section('title', "{$result->motorA->label()} vs {$result->motorB->label()} - Gedeeld resultaat - RevRace")
+@section('description', $shareText)
 
 @section('content')
     <header>
@@ -30,6 +37,12 @@
         <div class="spec-row"><span class="spec-label">Afstand</span><span class="spec-value">{{ $result->distance_m }}m</span></div>
         <div class="hero-actions">
             <a class="btn primary" href="{{ route('simulation.index') }}">Nieuwe simulatie</a>
+        </div>
+
+        <div class="hero-actions" style="margin-top:10px">
+            <a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text={{ urlencode($shareText . ' ' . $shareUrl) }}">WhatsApp</a>
+            <a class="btn secondary" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text={{ urlencode($shareText) }}&url={{ urlencode($shareUrl) }}">X</a>
+            <a class="btn secondary" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}">Facebook</a>
         </div>
     </section>
 @endsection

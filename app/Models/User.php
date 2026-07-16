@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -43,6 +44,16 @@ class User extends Authenticatable
     {
         return (bool) $this->is_premium
             && ($this->premium_until === null || $this->premium_until->isFuture());
+    }
+
+    public function ensureGarageToken(): string
+    {
+        if (! $this->garage_token) {
+            $this->garage_token = (string) Str::ulid();
+            $this->save();
+        }
+
+        return $this->garage_token;
     }
 
     /**

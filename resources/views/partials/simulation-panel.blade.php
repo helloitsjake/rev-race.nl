@@ -112,6 +112,11 @@
             <a class="btn secondary" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
             <a class="btn secondary" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
         </div>
+        <div class="hero-actions" style="margin-top:8px">
+            <a class="btn secondary" data-share-social="whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn secondary" data-share-social="x" href="#" target="_blank" rel="noopener">X</a>
+            <a class="btn secondary" data-share-social="facebook" href="#" target="_blank" rel="noopener">Facebook</a>
+        </div>
 
         <div class="chart-wrap">
             <div class="chart-head">
