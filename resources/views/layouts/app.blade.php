@@ -129,8 +129,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <span>
                 <a href="{{ route('partners.apply') }}">Partner worden</a> ·
                 <a href="{{ route('privacy') }}">Privacy</a> ·
-                <a href="{{ route('contact') }}">Contact</a> ·
-                <a href="{{ route('sitemap') }}">Sitemap</a>
+                <a href="{{ route('contact') }}">Contact</a>
             </span>
             <span>© {{ date('Y') }} RevRace - www.rev-race.nl</span>
         </div>

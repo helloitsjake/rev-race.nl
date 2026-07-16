@@ -10,7 +10,6 @@
     </header>
 
     <section class="panel">
-        <div class="spec-row"><span class="spec-label">E-mail</span><span class="spec-value"><a class="accent" href="mailto:jake@helloitsme.online">jake@helloitsme.online</a></span></div>
         <div class="spec-row"><span class="spec-label">Partners</span><span class="spec-value"><a class="accent" href="mailto:partners@rev-race.nl">partners@rev-race.nl</a></span></div>
     </section>
 
