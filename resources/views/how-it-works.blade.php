@@ -5,6 +5,7 @@
 
 @section('content')
     <header>
+        <span class="eyebrow">Hoe het werkt</span>
         <h1 class="page-title">Hoe RevRace jouw motorvergelijking berekent</h1>
     </header>
 
@@ -22,11 +23,11 @@
     <section class="section">
         <h2 class="section-title">Veelgestelde vragen</h2>
         <div class="card-grid">
-            <div class="card">
+            <div class="card card-accent-a">
                 <h3 class="card-title">Is deze simulatie echt nauwkeurig?</h3>
                 <p class="section-sub">Ja, we gebruiken dezelfde natuurkundige principes die ook in de motorsport en voertuigontwikkeling gebruikt worden: vermogen tegen gewicht, luchtweerstand en de tractielimiet per wegconditie. We houden onze motorendatabase voortdurend up to date zodat de simulatie relevant blijft naarmate nieuwe modellen uitkomen.</p>
             </div>
-            <div class="card">
+            <div class="card card-accent-b">
                 <h3 class="card-title">Waarom laten jullie de formule niet zien?</h3>
                 <p class="section-sub">Net als bij elk goed recept zit het verschil in de details. De rekenmethode is het resultaat van veel testen en fijnslijpen, en dat is precies waarom RevRace anders aanvoelt dan een simpele tabel met specificaties naast elkaar.</p>
             </div>

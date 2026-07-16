@@ -4,6 +4,7 @@
 
 @section('content')
     <header>
+        <span class="eyebrow">Garage</span>
         <h1 class="page-title">Mijn garage</h1>
         <p class="page-sub">Sla maximaal 2 motoren op in het gratis account en laad ze snel in de simulatie.</p>
     </header>

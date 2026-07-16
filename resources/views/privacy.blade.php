@@ -4,6 +4,7 @@
 
 @section('content')
     <header>
+        <span class="eyebrow">Privacy</span>
         <h1 class="page-title">Privacy</h1>
         <p class="page-sub">Korte productieverklaring voor de MVP. Laat deze juridisch nalopen voor brede lancering.</p>
     </header>

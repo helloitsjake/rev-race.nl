@@ -11,8 +11,11 @@
 
 <form class="panel" data-simulation-form>
     <div class="sim-grid">
-        <div>
-            <label class="form-label" for="motor-a">Motor A</label>
+        <div class="card card-accent-a" style="padding:16px">
+            <div class="chart-head" style="margin-bottom:10px">
+                <span class="form-label" style="margin-bottom:0;color:var(--orange)">Motor A</span>
+                <span class="form-label" style="margin-bottom:0">Lane 01</span>
+            </div>
             <div class="suggest-wrap">
                 <input class="input" id="motor-a" data-motor-input="A" autocomplete="off" placeholder="Bijv. BMW S1000XR 2017">
                 <input type="hidden" data-motor-id="A">
@@ -20,10 +23,13 @@
             </div>
             <button class="btn ghost" type="button" data-lookup-ai="A" style="margin-top:8px;width:100%">Staat er niet bij? Zoek 'm op met AI</button>
             @include('partials.manual-motor-form', ['side' => 'A'])
-            <div class="card" data-specs="A" style="margin-top:12px"></div>
+            <div data-specs="A" style="margin-top:12px"></div>
         </div>
-        <div>
-            <label class="form-label" for="motor-b">Motor B</label>
+        <div class="card card-accent-b" style="padding:16px">
+            <div class="chart-head" style="margin-bottom:10px">
+                <span class="form-label" style="margin-bottom:0;color:var(--teal)">Motor B</span>
+                <span class="form-label" style="margin-bottom:0">Lane 02</span>
+            </div>
             <div class="suggest-wrap">
                 <input class="input" id="motor-b" data-motor-input="B" autocomplete="off" placeholder="Bijv. Ducati Panigale V4 2022">
                 <input type="hidden" data-motor-id="B">
@@ -31,64 +37,65 @@
             </div>
             <button class="btn ghost" type="button" data-lookup-ai="B" style="margin-top:8px;width:100%">Staat er niet bij? Zoek 'm op met AI</button>
             @include('partials.manual-motor-form', ['side' => 'B'])
-            <div class="card" data-specs="B" style="margin-top:12px"></div>
+            <div data-specs="B" style="margin-top:12px"></div>
         </div>
     </div>
 
-    <div class="section">
-        <div class="form-row">
-            <span class="form-label">Wegtype</span>
-            <div class="choice-row">
-                <button class="choice active" type="button" data-choice data-group="road_type" data-value="straight">Rechte lijn</button>
-                <button class="choice" type="button" data-choice data-group="road_type" data-value="twisty">Kronkelweg</button>
-            </div>
-        </div>
-        <div class="form-row">
-            <span class="form-label">Wegconditie</span>
-            <div class="choice-row">
-                <button class="choice active" type="button" data-choice data-group="road_condition" data-value="dry">Droog</button>
-                <button class="choice" type="button" data-choice data-group="road_condition" data-value="wet">Vochtig</button>
-                <button class="choice" type="button" data-choice data-group="road_condition" data-value="rain">Nat</button>
-            </div>
-        </div>
-        <div class="form-row">
-            <span class="form-label">Afstand</span>
-            <div class="choice-row">
-                <button class="choice" type="button" data-choice data-group="distance_m" data-value="100">100m</button>
-                <button class="choice" type="button" data-choice data-group="distance_m" data-value="250">250m</button>
-                <button class="choice active" type="button" data-choice data-group="distance_m" data-value="500">500m</button>
-                <button class="choice" type="button" data-choice data-group="distance_m" data-value="1000">1000m</button>
-                <button class="choice" type="button" data-choice data-group="distance_m" data-value="2000">2km</button>
-            </div>
-        </div>
-        @auth
-            <div class="form-row">
-                <label><input type="checkbox" data-use-profile> Rijdersprofiel meenemen</label>
-                <div class="sim-grid" style="margin-top:10px">
-                    <div>
-                        <label class="form-label">Rijder A gewicht</label>
-                        <input class="input" name="rider_a_kg" type="number" value="{{ auth()->user()->weight_kg }}" min="0" max="180">
-                    </div>
-                    <div>
-                        <label class="form-label">Rijder B gewicht</label>
-                        <input class="input" name="rider_b_kg" type="number" min="0" max="180" placeholder="Optioneel">
-                    </div>
+    <div class="section" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px;justify-content:space-between">
+        <div style="display:flex;flex-wrap:wrap;gap:24px">
+            <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">Wegtype</span>
+                <div class="choice-row">
+                    <button class="choice active" type="button" data-choice data-group="road_type" data-value="straight">Rechte lijn</button>
+                    <button class="choice" type="button" data-choice data-group="road_type" data-value="twisty">Kronkelweg</button>
                 </div>
             </div>
-        @endauth
+            <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">Wegconditie</span>
+                <div class="choice-row">
+                    <button class="choice active" type="button" data-choice data-group="road_condition" data-value="dry">Droog</button>
+                    <button class="choice" type="button" data-choice data-group="road_condition" data-value="wet">Vochtig</button>
+                    <button class="choice" type="button" data-choice data-group="road_condition" data-value="rain">Nat</button>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">Afstand</span>
+                <div class="choice-row">
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="100">100m</button>
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="250">250m</button>
+                    <button class="choice active" type="button" data-choice data-group="distance_m" data-value="500">500m</button>
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="1000">1000m</button>
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="2000">2km</button>
+                </div>
+            </div>
+        </div>
+        <button class="btn primary" type="submit" data-run @if($limit['blocked']) disabled @endif>Start simulatie</button>
     </div>
+
+    @auth
+        <div class="form-row">
+            <label><input type="checkbox" data-use-profile> Rijdersprofiel meenemen</label>
+            <div class="sim-grid" style="margin-top:10px">
+                <div>
+                    <label class="form-label">Rijder A gewicht</label>
+                    <input class="input" name="rider_a_kg" type="number" value="{{ auth()->user()->weight_kg }}" min="0" max="180">
+                </div>
+                <div>
+                    <label class="form-label">Rijder B gewicht</label>
+                    <input class="input" name="rider_b_kg" type="number" min="0" max="180" placeholder="Optioneel">
+                </div>
+            </div>
+        </div>
+    @endauth
 
     <div hidden data-message></div>
 
-    <div class="hero-actions">
-        <button class="btn primary" type="submit" data-run @if($limit['blocked']) disabled @endif>Start simulatie</button>
-        @guest
-            <a class="btn secondary" href="{{ route('login') }}">Inloggen voor garage/profiel</a>
-        @endguest
-    </div>
+    @guest
+        <p class="small" style="margin-top:10px"><a class="accent" href="{{ route('login') }}">Inloggen</a> voor garage en rijdersprofiel.</p>
+    @endguest
 </form>
 
-<section class="panel race-track">
+<section class="race-track">
     <div class="lane">
         <div class="lane-head"><span data-lane-name="A">Motor A</span><span data-time-a>-</span></div>
         <div class="bar-bg"><div class="bar-fill a" data-bar-a></div></div>
@@ -97,17 +104,18 @@
         <div class="lane-head"><span data-lane-name="B">Motor B</span><span data-time-b>-</span></div>
         <div class="bar-bg"><div class="bar-fill b" data-bar-b></div></div>
     </div>
-    <div class="panel result-panel" data-result>
-        <h2 class="card-title" data-result-title></h2>
-        <p class="section-sub">Deelbare link: <a class="accent" data-share href="#"></a></p>
+    <div class="band-dark result-panel" data-result style="border-radius:var(--radius);padding:20px">
+        <h2 class="card-title" data-result-title style="text-transform:none"></h2>
+        <p style="color:var(--dark-muted)">Deelbare link: <a class="accent" data-share href="#" style="color:var(--teal)"></a></p>
         <div class="hero-actions" style="margin-top:0">
-            <a class="btn ghost" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
-            <a class="btn ghost" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
+            <a class="btn secondary" data-share-copy href="#">Deel uitslag</a>
+            <a class="btn secondary" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
+            <a class="btn secondary" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
         </div>
 
         <div class="chart-wrap">
             <div class="chart-head">
-                <span class="form-label">Snelheid over afstand</span>
+                <span class="form-label" style="margin-bottom:0">Snelheid over afstand</span>
                 <div class="chart-legend">
                     <span class="legend-item"><span class="legend-key" style="background:#e85d00"></span><span data-legend-a>Motor A</span></span>
                     <span class="legend-item"><span class="legend-key" style="background:#0d9488"></span><span data-legend-b>Motor B</span></span>

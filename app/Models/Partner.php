@@ -25,4 +25,9 @@ class Partner extends Model
             'is_active' => 'boolean',
         ];
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

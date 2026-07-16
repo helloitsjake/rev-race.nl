@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/simulatie', [SimulationController::class, 'index'])->name('simulation.index');
 Route::get('/partners', [PageController::class, 'partners'])->name('partners.index');
+Route::get('/partners/{partner}', [PageController::class, 'partnerShow'])->name('partners.show');
 Route::get('/partner-worden', [PageController::class, 'partnerApply'])->name('partners.apply');
 Route::get('/over-ons', [PageController::class, 'about'])->name('about');
 Route::get('/hoe-het-werkt', [PageController::class, 'howItWorks'])->name('how-it-works');

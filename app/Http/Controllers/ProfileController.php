@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SimulationLimitService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function edit(Request $request): View
+    public function edit(Request $request, SimulationLimitService $limits): View
     {
-        return view('profile', ['user' => $request->user()]);
+        return view('profile', [
+            'user' => $request->user(),
+            'limit' => $limits->status($request->user(), $request->ip()),
+        ]);
     }
 
     public function update(Request $request): RedirectResponse

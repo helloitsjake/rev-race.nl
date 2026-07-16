@@ -5,8 +5,9 @@
 
 @section('content')
     <header>
-        <h1 class="page-title">Simulatie</h1>
-        <p class="page-sub">Zoek twee motoren, kies wegtype en conditie, en laat Laravel de race berekenen en opslaan.</p>
+        <span class="eyebrow">Simulatie</span>
+        <h1 class="page-title">Motor A vs. Motor B</h1>
+        <p class="page-sub">Zoek twee motoren, kies wegtype en conditie, en laat de server de race berekenen.</p>
     </header>
 
     @include('partials.simulation-panel')

@@ -54,12 +54,14 @@ const options = {
 };
 
 function motorSpec(motor) {
+  const ratio = (motor.power_hp / motor.weight_kg).toFixed(2);
+
   return `
-    <div class="spec-row"><span class="spec-label">Vermogen</span><span class="spec-value">${motor.power_hp} pk</span></div>
-    <div class="spec-row"><span class="spec-label">Koppel</span><span class="spec-value">${motor.torque_nm} Nm</span></div>
-    <div class="spec-row"><span class="spec-label">Gewicht</span><span class="spec-value">${motor.weight_kg} kg</span></div>
-    <div class="spec-row"><span class="spec-label">Motorblok</span><span class="spec-value">${motor.engine_type}</span></div>
-    <div class="spec-row"><span class="spec-label">Inhoud</span><span class="spec-value">${motor.displacement_cc} cc</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div><div class="metric-value" style="font-size:24px">${motor.power_hp}</div><div class="metric-label">pk</div></div>
+      <div><div class="metric-value" style="font-size:24px">${motor.weight_kg}</div><div class="metric-label">kg</div></div>
+      <div><div class="metric-value" style="font-size:24px">${ratio}</div><div class="metric-label">pk/kg</div></div>
+    </div>
   `;
 }
 
@@ -298,6 +300,9 @@ function renderResult(result) {
     share.textContent = result.share_url;
   }
 
+  const shareCopy = qs('[data-share-copy]');
+  if (shareCopy) shareCopy.dataset.shareUrl = result.share_url;
+
   const searchA = qs('[data-search-online="A"]');
   if (searchA) searchA.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
   const searchB = qs('[data-search-online="B"]');
@@ -471,12 +476,33 @@ async function runSimulation(event) {
   if (run) run.disabled = Boolean(data.limit?.blocked) || !selected.A || !selected.B;
 }
 
+function bindShareCopy() {
+  const button = qs('[data-share-copy]');
+  if (!button) return;
+
+  button.addEventListener('click', async (event) => {
+    event.preventDefault();
+    const url = button.dataset.shareUrl;
+    if (!url) return;
+
+    const originalText = button.textContent;
+    try {
+      await navigator.clipboard.writeText(url);
+      button.textContent = 'Link gekopieerd';
+    } catch (error) {
+      button.textContent = url;
+    }
+    setTimeout(() => { button.textContent = originalText; }, 2000);
+  });
+}
+
 function bindSimulation() {
   const form = qs('[data-simulation-form]');
   if (!form) return;
 
   bindPickers();
   bindChoices();
+  bindShareCopy();
   renderLimit(cfg.limit);
   form.addEventListener('submit', runSimulation);
 }

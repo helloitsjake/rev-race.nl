@@ -28,7 +28,9 @@ class PageController extends Controller
 
     public function about(): View
     {
-        return view('about');
+        return view('about', [
+            'motors' => Motor::query()->get(),
+        ]);
     }
 
     public function howItWorks(): View
@@ -72,9 +74,19 @@ class PageController extends Controller
 
     public function partners(): View
     {
+        $partners = Partner::query()->where('is_active', true)->orderBy('sort_order')->get();
+
         return view('partners', [
-            'partners' => Partner::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'partners' => $partners,
+            'categories' => $partners->pluck('category')->unique()->values(),
         ]);
+    }
+
+    public function partnerShow(Partner $partner): View
+    {
+        abort_unless($partner->is_active, 404);
+
+        return view('partner-show', ['partner' => $partner]);
     }
 
     public function privacy(): View

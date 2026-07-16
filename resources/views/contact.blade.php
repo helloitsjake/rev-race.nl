@@ -4,6 +4,7 @@
 
 @section('content')
     <header>
+        <span class="eyebrow">Contact</span>
         <h1 class="page-title">Contact</h1>
         <p class="page-sub">Voor partners, bugs en inhoudelijke correcties.</p>
     </header>
