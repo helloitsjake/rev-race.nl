@@ -41,15 +41,25 @@ class ComparisonController extends Controller
     }
 
     /**
+     * Alleen vergelijkingen binnen dezelfde categorie, voor de sitemap. Alle motorcombinaties
+     * uitschrijven zou bij een grotere database (300+) ver boven de sitemap limiet van Google
+     * (50.000 URL's) uitkomen, en zou vooral onzinnige combinaties bevatten (bv. cruiser tegen
+     * supersport) die niemand daadwerkelijk zoekt. De /vergelijk/{slug} route zelf blijft open voor
+     * elke twee motoren, dit beperkt alleen wat er in de sitemap gepubliceerd wordt.
+     *
      * @return array<int, string>
      */
     public static function pairs(): Collection
     {
-        $motors = Motor::query()->orderBy('brand')->orderBy('model')->get();
+        $motors = Motor::query()->whereNotNull('category')->orderBy('category')->orderBy('brand')->orderBy('model')->get();
         $pairs = collect();
 
         foreach ($motors as $i => $motorA) {
             foreach ($motors->slice($i + 1) as $motorB) {
+                if ($motorA->category !== $motorB->category) {
+                    continue;
+                }
+
                 $pairs->push("{$motorA->slug()}-vs-{$motorB->slug()}");
             }
         }
