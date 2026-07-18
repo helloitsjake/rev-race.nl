@@ -32,6 +32,8 @@ class Motor extends Model
         'drag_coefficient',
         'frontal_area_m2',
         'photo_url',
+        'photo_credit',
+        'photo_source_url',
         'source',
         'api_fetched_at',
     ];

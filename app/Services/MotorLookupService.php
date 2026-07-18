@@ -91,14 +91,14 @@ merk+model: antwoord dan uitsluitend met exact dit JSON object:
 
 Is de invoer wel een motorfiets, antwoord dan uitsluitend als JSON met exact deze velden:
 brand, model, year, power_hp, torque_nm, weight_kg, engine_type, category, displacement_cc,
-top_speed_kmh, zero_to_hundred_s, drag_coefficient, frontal_area_m2, photo_url.
+top_speed_kmh, zero_to_hundred_s, drag_coefficient, frontal_area_m2.
 Vermogen, koppel, gewicht, motortype en cilinderinhoud zijn altijd bekend en verplicht.
 category moet exact een van deze waarden zijn: naked, sport, tourer, adventure, cruiser, retro.
 Kies de categorie die het beste past bij hoe de motor in de markt gepositioneerd wordt.
 Cd-waarde en frontaal oppervlak zijn geen officiele fabrieksspecificaties: geef hiervoor
 altijd een realistische schatting op basis van het motortype en carrosserie (bijv. naked
 ~0.55-0.65 Cd, sportief/fairing ~0.35-0.45 Cd, adventure/toermotor ~0.5-0.6 Cd), nooit null.
-Gebruik null alleen voor top_speed_kmh, zero_to_hundred_s of photo_url als die echt onbekend zijn.
+Gebruik null alleen voor top_speed_kmh of zero_to_hundred_s als die echt onbekend zijn.
 SYSTEM;
 
         $response = Http::withHeaders([
@@ -161,7 +161,10 @@ SYSTEM;
             'zero_to_hundred_s' => isset($data['zero_to_hundred_s']) ? (float) $data['zero_to_hundred_s'] : null,
             'drag_coefficient' => is_numeric($data['drag_coefficient'] ?? null) ? (float) $data['drag_coefficient'] : 0.55,
             'frontal_area_m2' => is_numeric($data['frontal_area_m2'] ?? null) ? (float) $data['frontal_area_m2'] : 0.6,
-            'photo_url' => $data['photo_url'] ?? null,
+            // Foto's komen via een aparte, geverifieerde pijplijn (echte bron, gedownload en
+            // zelf gehost), niet via de AI-lookup: die verzon eerder plausibel klinkende maar
+            // kapotte URL's (bijv. voor Yamaha MT-09 en Suzuki Katana, allebei 404).
+            'photo_url' => null,
         ];
     }
 }

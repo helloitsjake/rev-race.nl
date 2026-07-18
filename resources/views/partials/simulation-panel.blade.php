@@ -165,8 +165,13 @@
     $preselectAData = (isset($preselect) && $preselect) ? [
         'id' => $preselect->id,
         'label' => $preselect->label(),
+        'brand' => $preselect->brand,
+        'model' => $preselect->model,
         'power_hp' => $preselect->power_hp,
         'weight_kg' => $preselect->weight_kg,
+        'photo_url' => $preselect->photo_url ? asset(ltrim($preselect->photo_url, '/')) : null,
+        'photo_credit' => $preselect->photo_credit,
+        'photo_source_url' => $preselect->photo_source_url,
     ] : null;
 @endphp
 @push('scripts')

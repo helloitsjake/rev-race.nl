@@ -54,10 +54,23 @@ const options = {
   speed_kmh: 100,
 };
 
+function motorPhoto(motor) {
+  if (motor.photo_url) {
+    const credit = motor.photo_credit
+      ? `<p class="photo-credit">${motor.photo_source_url ? `<a href="${motor.photo_source_url}" rel="nofollow noopener" target="_blank">${motor.photo_credit}</a>` : motor.photo_credit}</p>`
+      : '';
+
+    return `<div class="motor-photo" style="margin-bottom:10px"><img src="${motor.photo_url}" alt="${motor.label}" loading="lazy"></div>${credit}`;
+  }
+
+  return `<div class="photo-placeholder" style="margin-bottom:10px;min-height:100px">Foto ${motor.brand} ${motor.model}</div>`;
+}
+
 function motorSpec(motor) {
   const ratio = (motor.power_hp / motor.weight_kg).toFixed(2);
 
   return `
+    ${motorPhoto(motor)}
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
       <div><div class="metric-value" style="font-size:24px">${motor.power_hp}</div><div class="metric-label">pk</div></div>
       <div><div class="metric-value" style="font-size:24px">${motor.weight_kg}</div><div class="metric-label">kg</div></div>

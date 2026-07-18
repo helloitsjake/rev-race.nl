@@ -92,7 +92,7 @@
         <div class="top-grid">
             @foreach($mostSearched as $motor)
                 <div class="card">
-                    <div class="photo-placeholder" style="margin-bottom:12px">Foto {{ $motor->brand }} {{ $motor->model }}</div>
+                    @include('partials.motor-photo', ['motor' => $motor, 'style' => 'margin-bottom:12px'])
                     <h3 class="card-title">{{ $motor->label() }}</h3>
                     <p class="section-sub" style="margin-bottom:0">{{ $motor->power_hp }} pk · {{ $motor->weight_kg }} kg · {{ $motor->engine_type }}</p>
                 </div>

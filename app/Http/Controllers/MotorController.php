@@ -81,6 +81,9 @@ class MotorController extends Controller
             'displacement_cc' => $motor->displacement_cc,
             'top_speed_kmh' => $motor->top_speed_kmh,
             'zero_to_hundred_s' => $motor->zero_to_hundred_s,
+            'photo_url' => $motor->photo_url ? asset(ltrim($motor->photo_url, '/')) : null,
+            'photo_credit' => $motor->photo_credit,
+            'photo_source_url' => $motor->photo_source_url,
         ];
     }
 }

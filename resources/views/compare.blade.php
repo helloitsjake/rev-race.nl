@@ -40,6 +40,15 @@
         <p class="page-sub">Op droog asfalt wint de {{ $dryWinner->label() }}. Bekijk hieronder hoe dat verandert per wegconditie.</p>
     </header>
 
+    <div class="top-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+        <div>
+            @include('partials.motor-photo', ['motor' => $motorA])
+        </div>
+        <div>
+            @include('partials.motor-photo', ['motor' => $motorB])
+        </div>
+    </div>
+
     <section class="panel">
         <p>
             Wie is er nou sneller, de {{ $motorA->label() }} of de {{ $motorB->label() }}? Op papier heeft de
