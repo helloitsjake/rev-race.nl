@@ -81,11 +81,12 @@
         <button class="btn primary" type="submit">Geef me advies</button>
     </form>
 
-    @if($matches !== null)
+    @if($anyMatches !== null)
         <section class="section">
-            @if($matches->isNotEmpty())
+            @if($anyMatches->isNotEmpty())
                 @php
                     $profielZin = ($lengte || $gewicht) ? ', en rekening houdend met je lengte en gewicht' : '';
+                    $totalCount = $topMatches->count() + $moreMatches->count();
                 @endphp
                 <div class="panel" style="margin-bottom:20px">
                     <h2 class="card-title">Ons advies voor jou</h2>
@@ -96,9 +97,32 @@
                             Op basis van je antwoorden passen deze motoren het best bij je.
                         @endif
                     </p>
+
+                    @if($merkFallbackUsed)
+                        <p class="small" style="margin-top:10px;color:var(--dim)">Van {{ $selectedMerk }} hebben we geen match in deze categorie, hieronder ons advies zonder merkfilter.</p>
+                    @endif
+
+                    @if($availableBrands->count() > 1)
+                        <form method="get" action="{{ route('wizard.index') }}" style="margin-top:14px;max-width:280px">
+                            <input type="hidden" name="ervaring" value="{{ $selectedErvaring }}">
+                            @if($selectedVoorkeur)<input type="hidden" name="voorkeur" value="{{ $selectedVoorkeur }}">@endif
+                            @foreach($selectedTerrein as $t)<input type="hidden" name="terrein[]" value="{{ $t }}">@endforeach
+                            @if($leeftijd)<input type="hidden" name="leeftijd" value="{{ $leeftijd }}">@endif
+                            @if($lengte)<input type="hidden" name="lengte" value="{{ $lengte }}">@endif
+                            @if($gewicht)<input type="hidden" name="gewicht" value="{{ $gewicht }}">@endif
+
+                            <label class="form-label" for="merk">Versmal op merk (optioneel)</label>
+                            <select class="select" id="merk" name="merk" onchange="this.form.submit()">
+                                <option value="">Alle merken</option>
+                                @foreach($availableBrands as $brand)
+                                    <option value="{{ $brand }}" @selected($selectedMerk === $brand)>{{ $brand }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    @endif
                 </div>
                 <div class="card-grid">
-                    @foreach($matches as $motor)
+                    @foreach($topMatches as $motor)
                         <article class="card">
                             <div class="chart-head" style="margin-bottom:10px">
                                 <span class="badge">{{ $motor->categoryLabel() }}</span>
@@ -117,10 +141,42 @@
                             </div>
                             <div class="hero-actions" style="margin-top:14px">
                                 <a class="btn primary" href="{{ route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht])) }}">Simuleer met deze motor</a>
+                                <a class="btn secondary" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
                             </div>
                         </article>
                     @endforeach
                 </div>
+
+                @if($moreMatches->isNotEmpty())
+                    <details style="margin-top:22px">
+                        <summary style="cursor:pointer;font-weight:600">Bekijk alle {{ $totalCount }} modellen in deze categorie</summary>
+                        <div class="card-grid" style="margin-top:16px">
+                            @foreach($moreMatches as $motor)
+                                <article class="card">
+                                    <div class="chart-head" style="margin-bottom:10px">
+                                        <span class="badge">{{ $motor->categoryLabel() }}</span>
+                                        @if($motor->isA2Eligible())
+                                            <span class="badge" style="border-color:var(--teal);color:var(--teal)">A2 geschikt</span>
+                                        @endif
+                                    </div>
+                                    <h3 class="card-title">{{ $motor->label() }}</h3>
+                                    <div class="spec-row">
+                                        <span class="spec-label">Vermogen</span>
+                                        <span class="spec-value">{{ $motor->power_hp }} pk</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">Gewicht</span>
+                                        <span class="spec-value">{{ $motor->weight_kg }} kg</span>
+                                    </div>
+                                    <div class="hero-actions" style="margin-top:14px">
+                                        <a class="btn primary" href="{{ route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht])) }}">Simuleer met deze motor</a>
+                                        <a class="btn secondary" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             @else
                 <div class="panel">
                     <h2 class="card-title">Nog geen match in deze combinatie</h2>
@@ -135,6 +191,7 @@
                                     <h3 class="card-title" style="margin-top:8px">{{ $motor->label() }}</h3>
                                     <div class="hero-actions" style="margin-top:12px">
                                         <a class="btn secondary" href="{{ route('simulation.index', ['motor_a' => $motor->id]) }}">Simuleer met deze motor</a>
+                                        <a class="btn secondary" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
                                     </div>
                                 </article>
                             @endforeach

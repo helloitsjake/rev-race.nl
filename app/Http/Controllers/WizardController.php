@@ -67,6 +67,12 @@ class WizardController extends Controller
         ];
     }
 
+    /**
+     * Hoeveel gescoorde motoren er maximaal als "aanbevolen voor jou" getoond worden.
+     * De rest van de matches blijft opvraagbaar via "bekijk alle modellen".
+     */
+    private const TOP_MATCH_COUNT = 6;
+
     public function index(Request $request): View
     {
         $ervaring = $request->query('ervaring');
@@ -81,9 +87,16 @@ class WizardController extends Controller
         $lengte = $request->query('lengte');
         $gewicht = $request->query('gewicht');
 
+        $merk = $request->query('merk');
+        $merk = is_string($merk) && trim($merk) !== '' ? trim($merk) : null;
+
         $hasAnswers = $ervaring && ($voorkeur || $terrein);
 
-        $matches = null;
+        $anyMatches = null;
+        $topMatches = collect();
+        $moreMatches = collect();
+        $availableBrands = collect();
+        $merkFallbackUsed = false;
         $fallback = null;
         $topCategories = [];
         $reasonParts = [];
@@ -91,10 +104,28 @@ class WizardController extends Controller
         if ($hasAnswers) {
             $scores = $this->scoreCategories($voorkeur, $terrein);
             $topCategories = $this->topCategories($scores);
-            $matches = $this->match($topCategories, $ervaring);
+            $anyMatches = $this->match($topCategories, $ervaring);
 
-            if ($matches->isEmpty() && $ervaring === 'beginner') {
+            if ($anyMatches->isEmpty() && $ervaring === 'beginner') {
                 $fallback = $this->match([], 'beginner');
+            }
+
+            if ($anyMatches->isNotEmpty()) {
+                $availableBrands = $anyMatches->pluck('brand')->unique()->sort()->values();
+
+                $scored = $this->scoreMotors($anyMatches, $scores, $voorkeur, $ervaring);
+
+                $selected = $merk ? $scored->filter(fn (Motor $motor) => $motor->brand === $merk)->values() : $scored;
+
+                if ($merk && $selected->isEmpty()) {
+                    $merkFallbackUsed = true;
+                    $selected = $scored;
+                }
+
+                $topMatches = $selected->take(self::TOP_MATCH_COUNT)->values();
+                $moreMatches = $selected->slice(self::TOP_MATCH_COUNT)
+                    ->sortBy([['brand', 'asc'], ['model', 'asc']])
+                    ->values();
             }
 
             if ($voorkeur) {
@@ -115,7 +146,12 @@ class WizardController extends Controller
             'leeftijd' => $leeftijd,
             'lengte' => $lengte,
             'gewicht' => $gewicht,
-            'matches' => $matches,
+            'selectedMerk' => $merk,
+            'anyMatches' => $anyMatches,
+            'topMatches' => $topMatches,
+            'moreMatches' => $moreMatches,
+            'availableBrands' => $availableBrands,
+            'merkFallbackUsed' => $merkFallbackUsed,
             'fallback' => $fallback,
             'topCategories' => $topCategories,
             'reasonParts' => $reasonParts,
@@ -185,5 +221,40 @@ class WizardController extends Controller
             ->when($ervaring === 'beginner', fn ($motors) => $motors->filter(fn (Motor $motor) => $motor->isA2Eligible()))
             ->sortBy([['brand', 'asc'], ['model', 'asc']])
             ->values();
+    }
+
+    /**
+     * Rangschikt de gematchte motoren op hoe goed ze individueel passen, in plaats van iedere
+     * motor binnen de gematchte categorie(ën) als gelijkwaardig te behandelen. Een categoriematch
+     * alleen zegt niks over hoe sportief, licht of vergevingsgezind een specifieke motor is: dat
+     * bepaalt hier of hij bovenaan of onderaan de lijst belandt.
+     *
+     * @param  array<string, int>  $categoryScores
+     */
+    private function scoreMotors(Collection $motors, array $categoryScores, ?string $voorkeur, string $ervaring): Collection
+    {
+        $powerToWeights = $motors->map(fn (Motor $motor) => $motor->powerToWeight());
+        $minPtw = $powerToWeights->min();
+        $ptwRange = max($powerToWeights->max() - $minPtw, 0.0001);
+
+        return $motors->map(function (Motor $motor) use ($categoryScores, $voorkeur, $ervaring, $minPtw, $ptwRange) {
+            // 0 = meest ontspannen krachtafgifte in deze resultatenset, 1 = meest sportief/direct.
+            $sportiviteit = ($motor->powerToWeight() - $minPtw) / $ptwRange;
+
+            $voorkeurScore = match ($voorkeur) {
+                'snelheid' => $sportiviteit,
+                'bochten' => $sportiviteit,
+                'relax' => 1 - $sportiviteit,
+                default => 0.0,
+            };
+
+            // Ook binnen de A2-toegestane motoren is er spreiding: een beginner is doorgaans
+            // geholpen met de meest vergevingsgezinde optie, niet de sportiefste die nog net mag.
+            $ervaringScore = $ervaring === 'beginner' ? 1 - $sportiviteit : 0.0;
+
+            $motor->matchScore = ($categoryScores[$motor->category] ?? 0) + ($voorkeurScore * 3) + ($ervaringScore * 2);
+
+            return $motor;
+        })->sortByDesc('matchScore')->values();
     }
 }
