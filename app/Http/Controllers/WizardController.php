@@ -113,7 +113,7 @@ class WizardController extends Controller
             if ($anyMatches->isNotEmpty()) {
                 $availableBrands = $anyMatches->pluck('brand')->unique()->sort()->values();
 
-                $scored = $this->scoreMotors($anyMatches, $scores, $voorkeur, $ervaring);
+                $scored = $this->scoreMotors($anyMatches, $voorkeur, $ervaring);
 
                 $selected = $merk ? $scored->filter(fn (Motor $motor) => $motor->brand === $merk)->values() : $scored;
 
@@ -159,6 +159,16 @@ class WizardController extends Controller
     }
 
     /**
+     * Voorkeur (rijstijl) weegt zwaarder dan terrein: het is het directe signaal voor wat voor
+     * rijder iemand is (bijv. chopper- vs naked-karakter), terrein is alleen de omgeving waarin
+     * je rijdt en kan bovendien via meerdere checkboxen tegelijk optellen. Zonder deze weging kon
+     * een gekozen terrein de voorkeur simpelweg overstemmen, waardoor bijv. iemand die "relax"
+     * (cruiser/chopper-achtig) aangaf toch een naked bike geadviseerd kreeg puur omdat die ook
+     * "binnendoor" reed.
+     */
+    private const VOORKEUR_WEIGHT = 2;
+
+    /**
      * @param  array<int, string>  $terrein
      * @return array<string, int>
      */
@@ -169,7 +179,7 @@ class WizardController extends Controller
 
         if ($voorkeur && isset($scoring['voorkeur'][$voorkeur])) {
             foreach ($scoring['voorkeur'][$voorkeur] as $category => $points) {
-                $scores[$category] += $points;
+                $scores[$category] += $points * self::VOORKEUR_WEIGHT;
             }
         }
 
@@ -201,9 +211,14 @@ class WizardController extends Controller
             return [];
         }
 
-        $top = array_keys(array_filter($scores, fn ($score) => $score >= $max - 1 && $score > 0));
+        $qualifying = array_filter($scores, fn ($score) => $score >= $max - 1 && $score > 0);
 
-        return array_slice($top, 0, 2);
+        // Op score sorteren voor het afkappen tot 2: anders bepaalt de toevallige volgorde waarin
+        // categorieën in Motor::CATEGORIES staan wie er afvalt bij meer dan 2 kandidaten, in plaats
+        // van wie er daadwerkelijk het beste scoort.
+        arsort($qualifying);
+
+        return array_slice(array_keys($qualifying), 0, 2);
     }
 
     /**
@@ -229,17 +244,28 @@ class WizardController extends Controller
      * alleen zegt niks over hoe sportief, licht of vergevingsgezind een specifieke motor is: dat
      * bepaalt hier of hij bovenaan of onderaan de lijst belandt.
      *
-     * @param  array<string, int>  $categoryScores
+     * De categoriescore zelf telt hier bewust niet mee: die bepaalt in topCategories() al wélke
+     * categorieën in aanmerking komen (soms 2, bij een gelijkspel). Zou die score hier ook worden
+     * opgeteld, dan verdringt de categorie met net iets meer punten de andere volledig uit de
+     * top-resultaten, ook al waren beide categorieën expliciet als evenwaardig aangemerkt.
      */
-    private function scoreMotors(Collection $motors, array $categoryScores, ?string $voorkeur, string $ervaring): Collection
+    private function scoreMotors(Collection $motors, ?string $voorkeur, string $ervaring): Collection
     {
-        $powerToWeights = $motors->map(fn (Motor $motor) => $motor->powerToWeight());
-        $minPtw = $powerToWeights->min();
-        $ptwRange = max($powerToWeights->max() - $minPtw, 0.0001);
+        // Per categorie normaliseren, niet over de hele resultatenset heen: een kleine 125cc
+        // retro-klassieker heeft van nature een veel lagere power-to-weight dan een cruiser met
+        // een flinke V-twin, ook al voelen beide "relaxed". Sportiviteit is dus alleen zinvol
+        // relatief ten opzichte van andere motoren in dezelfde categorie.
+        $ptwBoundsByCategory = $motors->groupBy('category')->map(function (Collection $group) {
+            $values = $group->map(fn (Motor $motor) => $motor->powerToWeight());
 
-        return $motors->map(function (Motor $motor) use ($categoryScores, $voorkeur, $ervaring, $minPtw, $ptwRange) {
-            // 0 = meest ontspannen krachtafgifte in deze resultatenset, 1 = meest sportief/direct.
-            $sportiviteit = ($motor->powerToWeight() - $minPtw) / $ptwRange;
+            return ['min' => $values->min(), 'range' => max($values->max() - $values->min(), 0.0001)];
+        });
+
+        return $motors->map(function (Motor $motor) use ($voorkeur, $ervaring, $ptwBoundsByCategory) {
+            $bounds = $ptwBoundsByCategory[$motor->category];
+
+            // 0 = meest ontspannen krachtafgifte binnen zijn eigen categorie, 1 = meest sportief/direct.
+            $sportiviteit = ($motor->powerToWeight() - $bounds['min']) / $bounds['range'];
 
             $voorkeurScore = match ($voorkeur) {
                 'snelheid' => $sportiviteit,
@@ -252,7 +278,7 @@ class WizardController extends Controller
             // geholpen met de meest vergevingsgezinde optie, niet de sportiefste die nog net mag.
             $ervaringScore = $ervaring === 'beginner' ? 1 - $sportiviteit : 0.0;
 
-            $motor->matchScore = ($categoryScores[$motor->category] ?? 0) + ($voorkeurScore * 3) + ($ervaringScore * 2);
+            $motor->matchScore = ($voorkeurScore * 3) + ($ervaringScore * 2);
 
             return $motor;
         })->sortByDesc('matchScore')->values();
