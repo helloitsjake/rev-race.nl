@@ -22,6 +22,8 @@ Route::get('/partner-worden', [PageController::class, 'partnerApply'])->name('pa
 Route::post('/partner-worden', [PartnerApplicationController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('partners.apply.store');
+Route::get('/kennis', [PageController::class, 'kennis'])->name('kennis.index');
+Route::get('/kennis/{article}', [PageController::class, 'kennisShow'])->name('kennis.show');
 Route::get('/over-ons', [PageController::class, 'about'])->name('about');
 Route::get('/hoe-het-werkt', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');

@@ -50,6 +50,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <a class="nav-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
             <a class="nav-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}">Partners</a>
             <a class="nav-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}">Hoe het werkt</a>
+            <a class="nav-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}">Kennis</a>
             <a class="nav-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}">Over ons</a>
             @auth
                 <a class="nav-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}">Garage</a>
@@ -86,7 +87,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <a class="mobile-menu-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}"><span>Simulatie</span><span class="num">03</span></a>
             <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">04</span></a>
             <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">05</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">06</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}"><span>Kennis</span><span class="num">06</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">07</span></a>
             @auth
                 <a class="mobile-menu-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}"><span>Garage</span></a>
                 <a class="mobile-menu-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}"><span>Mijn account</span></a>

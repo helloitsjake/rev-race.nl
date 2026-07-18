@@ -13,16 +13,16 @@
         <a class="btn primary" href="{{ route('partners.apply') }}">Word partner</a>
     </div>
 
-    <div class="choice-row" data-partner-filters style="margin-bottom:22px">
+    <div class="choice-row" data-filter-bar="partners" style="margin-bottom:22px">
         <button class="filter-pill active" type="button" data-filter="alle">Alle</button>
         @foreach($categories as $category)
             <button class="filter-pill" type="button" data-filter="{{ Str::slug($category) }}">{{ $category }}</button>
         @endforeach
     </div>
 
-    <div class="card-grid" data-partner-grid>
+    <div class="card-grid" data-filter-grid="partners">
         @foreach($partners as $partner)
-            <article class="card" data-partner-category="{{ Str::slug($partner->category) }}">
+            <article class="card" data-filter-category="{{ Str::slug($partner->category) }}">
                 <div class="chart-head" style="margin-bottom:12px">
                     <div class="photo-placeholder photo-placeholder-sm">Logo</div>
                     <span class="badge">{{ $partner->category }}</span>

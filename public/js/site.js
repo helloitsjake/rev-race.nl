@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn.addEventListener('click', () => menu.classList.remove('show'));
   }
 
-  const filterBar = document.querySelector('[data-partner-filters]');
-  const grid = document.querySelector('[data-partner-grid]');
+  document.querySelectorAll('[data-filter-bar]').forEach((filterBar) => {
+    const grid = document.querySelector(`[data-filter-grid="${filterBar.dataset.filterBar}"]`);
+    if (!grid) return;
 
-  if (filterBar && grid) {
     filterBar.addEventListener('click', (event) => {
       const button = event.target.closest('[data-filter]');
       if (!button) return;
@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
       button.classList.add('active');
 
       const filter = button.dataset.filter;
-      grid.querySelectorAll('[data-partner-category]').forEach((card) => {
-        card.style.display = filter === 'alle' || card.dataset.partnerCategory === filter ? '' : 'none';
+      grid.querySelectorAll('[data-filter-category]').forEach((card) => {
+        card.style.display = filter === 'alle' || card.dataset.filterCategory === filter ? '' : 'none';
       });
     });
-  }
+  });
 });

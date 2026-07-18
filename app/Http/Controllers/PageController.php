@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use App\Models\Motor;
 use App\Models\Partner;
 use App\Models\SimulationResult;
@@ -91,6 +92,30 @@ class PageController extends Controller
         return view('partner-show', ['partner' => $partner]);
     }
 
+    public function kennis(): View
+    {
+        $articles = Article::query()->published()->orderByDesc('published_at')->get();
+
+        return view('kennis', [
+            'articles' => $articles,
+            'categories' => $articles->pluck('category')->unique()->values(),
+        ]);
+    }
+
+    public function kennisShow(Article $article): View
+    {
+        abort_unless($article->is_published && $article->published_at?->isPast(), 404);
+
+        $related = Article::query()->published()
+            ->where('category', $article->category)
+            ->where('id', '!=', $article->id)
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
+
+        return view('kennis-show', ['article' => $article, 'related' => $related]);
+    }
+
     public function privacy(): View
     {
         return view('privacy');
@@ -115,6 +140,7 @@ class PageController extends Controller
         return response()
             ->view('sitemap', [
                 'partners' => Partner::query()->where('is_active', true)->get(),
+                'articles' => Article::query()->published()->get(),
                 'toplijsten' => array_keys(ToplijstController::lists()),
                 'pairs' => ComparisonController::pairs(),
             ])

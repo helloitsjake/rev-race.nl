@@ -490,6 +490,50 @@ h1, h2, h3,
   padding: 20px;
 }
 
+.article-body {
+  margin-top: 20px;
+  line-height: 1.7;
+}
+
+.article-body h2 {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 650;
+  margin: 28px 0 12px;
+}
+
+.article-body h2:first-child {
+  margin-top: 0;
+}
+
+.article-body h3 {
+  font-weight: 650;
+  margin: 22px 0 10px;
+}
+
+.article-body p {
+  margin: 0 0 14px;
+}
+
+.article-body ul,
+.article-body ol {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+.article-body li {
+  margin-bottom: 6px;
+}
+
+.article-body a {
+  color: var(--teal);
+  font-weight: 650;
+}
+
+.article-body strong {
+  font-weight: 650;
+}
+
 /* ── Photo placeholders ────────────────────────────────── */
 
 .photo-placeholder {
