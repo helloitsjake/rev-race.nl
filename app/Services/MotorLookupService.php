@@ -73,9 +73,23 @@ class MotorLookupService
      */
     private function fetchFromAnthropic(string $query): array
     {
-        $prompt = <<<PROMPT
-Geef technische specificaties voor deze motorfiets: {$query}.
-Antwoord uitsluitend als JSON met exact deze velden:
+        $system = <<<SYSTEM
+Je bent een specificatie-opzoekdienst voor UITSLUITEND motorfietsen (voertuigen op twee
+wielen met een motorblok, bijv. naked, sport, tourer, adventure, cruiser, retro).
+
+Deze invoer moet je NIET accepteren, ook niet als er specificaties voor te vinden zijn:
+auto's, vrachtwagens, bestelbusjes, quads/ATV's, scooters, brommers/snorfietsen, fietsen
+(elektrisch of niet), boten, vliegtuigen, of elk ander voertuig dat geen motorfiets is.
+Twijfel je of de invoer een motorfiets beschrijft: wijs af, geef geen specificaties.
+
+Je antwoord bestaat ALTIJD uitsluitend uit één JSON object, niets anders: geen uitleg, geen
+vraag, geen markdown, geen tekst voor of na de JSON.
+
+Is de invoer geen motorfiets, of beschrijft die niet duidelijk een specifiek motorfiets
+merk+model: antwoord dan uitsluitend met exact dit JSON object:
+{"error": "not_a_motorcycle"}
+
+Is de invoer wel een motorfiets, antwoord dan uitsluitend als JSON met exact deze velden:
 brand, model, year, power_hp, torque_nm, weight_kg, engine_type, category, displacement_cc,
 top_speed_kmh, zero_to_hundred_s, drag_coefficient, frontal_area_m2, photo_url.
 Vermogen, koppel, gewicht, motortype en cilinderinhoud zijn altijd bekend en verplicht.
@@ -85,8 +99,7 @@ Cd-waarde en frontaal oppervlak zijn geen officiele fabrieksspecificaties: geef 
 altijd een realistische schatting op basis van het motortype en carrosserie (bijv. naked
 ~0.55-0.65 Cd, sportief/fairing ~0.35-0.45 Cd, adventure/toermotor ~0.5-0.6 Cd), nooit null.
 Gebruik null alleen voor top_speed_kmh, zero_to_hundred_s of photo_url als die echt onbekend zijn.
-Geen markdown.
-PROMPT;
+SYSTEM;
 
         $response = Http::withHeaders([
             'x-api-key' => config('services.anthropic.key'),
@@ -94,8 +107,10 @@ PROMPT;
         ])->timeout(20)->post('https://api.anthropic.com/v1/messages', [
             'model' => config('services.anthropic.model', 'claude-sonnet-4-6'),
             'max_tokens' => 700,
+            'temperature' => 0,
+            'system' => $system,
             'messages' => [
-                ['role' => 'user', 'content' => $prompt],
+                ['role' => 'user', 'content' => $query],
             ],
         ]);
 
@@ -105,13 +120,31 @@ PROMPT;
         $data = json_decode($text, true);
 
         if (! is_array($data)) {
-            throw new RuntimeException('Anthropic gaf geen geldige JSON terug.');
+            throw new RuntimeException('Kon geen geldige motorfiets-specificaties vinden voor deze zoekopdracht. Controleer of je een geldig motormerk en model hebt ingevoerd.');
+        }
+
+        if (($data['error'] ?? null) === 'not_a_motorcycle') {
+            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
         }
 
         foreach (['brand', 'model', 'year', 'power_hp', 'torque_nm', 'weight_kg', 'engine_type', 'displacement_cc'] as $field) {
             if (! array_key_exists($field, $data) || $data[$field] === null || $data[$field] === '') {
                 throw new RuntimeException("Motordata mist verplicht veld: {$field}.");
             }
+        }
+
+        // Vangnet tegen niet-motorfietsen die de instructie hierboven toch omzeilen:
+        // reeele grenzen voor motorfiets-specificaties, zelfde als bij handmatige invoer.
+        if ((int) $data['weight_kg'] < 50 || (int) $data['weight_kg'] > 500) {
+            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
+        }
+
+        if ((int) $data['displacement_cc'] < 49 || (int) $data['displacement_cc'] > 3000) {
+            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
+        }
+
+        if ((int) $data['power_hp'] < 1 || (int) $data['power_hp'] > 600) {
+            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
         }
 
         return [
