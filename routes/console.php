@@ -1,16 +1,10 @@
 <?php
 
-use App\Models\SimulationLog;
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
+use App\Console\Commands\NewsCrawlCommand;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
-
-Schedule::call(function (): void {
-    SimulationLog::query()
-        ->where('created_at', '<', now()->subHours(25))
-        ->delete();
-})->hourly();
+Artisan::command('news:crawl {--dry-run : Only log findings, do not save or publish}', function () {
+    $this->call(NewsCrawlCommand::class, [
+        '--dry-run' => $this->option('dry-run'),
+    ]);
+})->purpose('Crawl motor news');
