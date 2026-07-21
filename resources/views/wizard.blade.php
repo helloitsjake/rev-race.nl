@@ -130,7 +130,6 @@
                                     <span class="badge" style="border-color:var(--teal);color:var(--teal)">A2 geschikt</span>
                                 @endif
                             </div>
-                            @include('partials.motor-photo', ['motor' => $motor, 'style' => 'margin-bottom:10px'])
                             <h3 class="card-title">{{ $motor->label() }}</h3>
                             <div class="spec-row">
                                 <span class="spec-label">Vermogen</span>
@@ -160,8 +159,7 @@
                                             <span class="badge" style="border-color:var(--teal);color:var(--teal)">A2 geschikt</span>
                                         @endif
                                     </div>
-                                    @include('partials.motor-photo', ['motor' => $motor, 'style' => 'margin-bottom:10px'])
-                                    <h3 class="card-title">{{ $motor->label() }}</h3>
+                                            <h3 class="card-title">{{ $motor->label() }}</h3>
                                     <div class="spec-row">
                                         <span class="spec-label">Vermogen</span>
                                         <span class="spec-value">{{ $motor->power_hp }} pk</span>
@@ -190,7 +188,6 @@
                             @foreach($fallback as $motor)
                                 <article class="card">
                                     <span class="badge">{{ $motor->categoryLabel() }}</span>
-                                    @include('partials.motor-photo', ['motor' => $motor, 'style' => 'margin-top:8px'])
                                     <h3 class="card-title" style="margin-top:8px">{{ $motor->label() }}</h3>
                                     <div class="hero-actions" style="margin-top:12px">
                                         <a class="btn secondary" href="{{ route('simulation.index', ['motor_a' => $motor->id]) }}">Simuleer met deze motor</a>

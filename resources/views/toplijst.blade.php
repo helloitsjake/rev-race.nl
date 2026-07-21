@@ -34,7 +34,6 @@
         @foreach($rows as $i => $row)
             <div class="compare-row" style="grid-template-columns:40px 48px 1fr auto;align-items:center">
                 <span class="spec-label">#{{ $i + 1 }}</span>
-                @include('partials.motor-photo', ['motor' => $row['motor'], 'style' => 'width:48px;height:48px;min-height:0;font-size:7px'])
                 <span class="spec-value" style="font-weight:700">{{ $row['motor']->label() }}</span>
                 <span class="spec-value" style="color:var(--orange)">{{ ($config['format'])($row['value']) }}</span>
             </div>

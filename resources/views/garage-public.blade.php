@@ -14,7 +14,6 @@
         <div class="garage-list">
             @forelse($garage as $entry)
                 <article class="card">
-                    @include('partials.motor-photo', ['motor' => $entry->motor, 'style' => 'margin-bottom:10px'])
                     <div class="eyebrow">{{ $entry->motor->brand }} &middot; {{ $entry->motor->year }}</div>
                     <h2 class="card-title">{{ $entry->nickname ?: $entry->motor->model }}</h2>
                     <div class="spec-row"><span class="spec-label">Vermogen</span><span class="spec-value">{{ $entry->motor->power_hp }} pk</span></div>
