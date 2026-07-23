@@ -19,7 +19,7 @@ class NewsCrawlService
             'category_pattern' => '/motorcycle previews/i',
         ],
         'MCNews.com.au' => [
-            'url' => 'https://mcnews.com.au/feed/',
+            'url' => 'https://www.mcnews.com.au/feed/',
             'category_pattern' => '/^\d{4} motorcycles$/i',
         ],
     ];
