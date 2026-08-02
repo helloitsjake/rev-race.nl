@@ -13,28 +13,32 @@ use App\Http\Controllers\ToplijstController;
 use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PageController::class, 'home'])->name('home');
+// Publieke, niet-persoonlijke pagina's: expliciete Cache-Control zodat browser/CDN mag cachen.
+// Bewust uitgesloten: pagina's met een GET-formulier dat na een mislukte POST validatiefouten
+// of een sessie-flash terug kan tonen op dezelfde route (contact, partner-worden, wizard).
+Route::get('/', [PageController::class, 'home'])->middleware('cache.public:300,3600,86400')->name('home');
 Route::get('/welke-motor-past-bij-mij', [WizardController::class, 'index'])->name('wizard.index');
 Route::get('/simulatie', [SimulationController::class, 'index'])->name('simulation.index');
-Route::get('/partners', [PageController::class, 'partners'])->name('partners.index');
-Route::get('/partners/{partner}', [PageController::class, 'partnerShow'])->name('partners.show');
+Route::get('/meest-gezocht', [PageController::class, 'mostSearched'])->middleware('cache.public:1800,3600,86400')->name('most-searched.index');
+Route::get('/partners', [PageController::class, 'partners'])->middleware('cache.public:3600,86400,604800')->name('partners.index');
+Route::get('/partners/{partner}', [PageController::class, 'partnerShow'])->middleware('cache.public:3600,86400,604800')->name('partners.show');
 Route::get('/partner-worden', [PageController::class, 'partnerApply'])->name('partners.apply');
 Route::post('/partner-worden', [PartnerApplicationController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('partners.apply.store');
-Route::get('/kennis', [PageController::class, 'kennis'])->name('kennis.index');
-Route::get('/kennis/{article}', [PageController::class, 'kennisShow'])->name('kennis.show');
-Route::get('/over-ons', [PageController::class, 'about'])->name('about');
-Route::get('/hoe-het-werkt', [PageController::class, 'howItWorks'])->name('how-it-works');
-Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/kennis', [PageController::class, 'kennis'])->middleware('cache.public:1800,3600,86400')->name('kennis.index');
+Route::get('/kennis/{article}', [PageController::class, 'kennisShow'])->middleware('cache.public:1800,3600,86400')->name('kennis.show');
+Route::get('/over-ons', [PageController::class, 'about'])->middleware('cache.public:3600,86400,604800')->name('about');
+Route::get('/hoe-het-werkt', [PageController::class, 'howItWorks'])->middleware('cache.public:3600,86400,604800')->name('how-it-works');
+Route::get('/privacy', [PageController::class, 'privacy'])->middleware('cache.public:3600,86400,604800')->name('privacy');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('contact.store');
 Route::get('/embed', [PageController::class, 'embed'])->name('embed');
 Route::get('/s/{code}', [SimulationController::class, 'showShared'])->name('share.show');
-Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->name('compare.show');
-Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->name('toplijst.show');
+Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('compare.show');
+Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('toplijst.show');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');

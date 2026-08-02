@@ -14,6 +14,8 @@
     <title>@yield('title', 'RevRace - Motorsimulatie')</title>
     <meta name="description" content="@yield('description', 'Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.')">
     <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <meta property="og:site_name" content="RevRace">
     <meta property="og:type" content="website">
@@ -46,11 +48,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a class="brand" href="{{ route('home') }}">REV<span>RACE</span></a>
         <div class="nav-links">
             <a class="nav-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}">Home</a>
-            <a class="nav-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
-            <a class="nav-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
+
+            <div class="nav-dropdown" data-nav-dropdown>
+                <button class="nav-link nav-dropdown-toggle @if(request()->routeIs('wizard.*', 'simulation.*', 'most-searched.*', 'kennis.*')) active @endif" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+                    Ontdekken
+                    <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="nav-dropdown-menu" data-dropdown-menu>
+                    <a class="nav-dropdown-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
+                    <a class="nav-dropdown-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
+                    <a class="nav-dropdown-link @if(request()->routeIs('most-searched.*')) active @endif" href="{{ route('most-searched.index') }}">Meest gezocht</a>
+                    <a class="nav-dropdown-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}">Kennis</a>
+                </div>
+            </div>
+
             <a class="nav-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}">Partners</a>
             <a class="nav-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}">Hoe het werkt</a>
-            <a class="nav-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}">Kennis</a>
             <a class="nav-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}">Over ons</a>
             @auth
                 <a class="nav-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}">Garage</a>
@@ -85,10 +98,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <a class="mobile-menu-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}"><span>Home</span><span class="num">01</span></a>
             <a class="mobile-menu-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}"><span>Welke motor past bij mij</span><span class="num">02</span></a>
             <a class="mobile-menu-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}"><span>Simulatie</span><span class="num">03</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">04</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">05</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}"><span>Kennis</span><span class="num">06</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">07</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('most-searched.*')) active @endif" href="{{ route('most-searched.index') }}"><span>Meest gezocht</span><span class="num">04</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">05</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">06</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}"><span>Kennis</span><span class="num">07</span></a>
+            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">08</span></a>
             @auth
                 <a class="mobile-menu-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}"><span>Garage</span></a>
                 <a class="mobile-menu-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}"><span>Mijn account</span></a>

@@ -158,6 +158,64 @@ h1, h2, h3,
   border-bottom-color: var(--orange);
 }
 
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nav-dropdown-caret {
+  width: 11px;
+  height: 11px;
+  transition: transform .15s ease;
+}
+
+.nav-dropdown.open .nav-dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 230px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  z-index: 30;
+}
+
+.nav-dropdown.open .nav-dropdown-menu {
+  display: flex;
+}
+
+.nav-dropdown-link {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.nav-dropdown-link:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.nav-dropdown-link.active {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
 .nav-cta,
 .btn.primary {
   border-color: var(--orange);
@@ -587,6 +645,54 @@ h1, h2, h3,
   min-height: 0;
   font-size: 8px;
   flex-shrink: 0;
+}
+
+/* ── Meest gezocht: ranking + partner banners ──────────── */
+
+.most-searched-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.most-searched-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.most-searched-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.most-searched-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.partner-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  border-style: dashed;
+  background: var(--bg-2);
+}
+
+.partner-banner-label {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.partner-banner-body {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Partner landing page ──────────────────────────────── */
@@ -1192,6 +1298,16 @@ label.choice input {
 
   .stat-band .metric:first-child {
     border-top: 0;
+  }
+
+  .most-searched-row,
+  .partner-banner {
+    flex-wrap: wrap;
+  }
+
+  .most-searched-row-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .account-sidebar {

@@ -8,6 +8,33 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn.addEventListener('click', () => menu.classList.remove('show'));
   }
 
+  const closeAllDropdowns = () => {
+    document.querySelectorAll('[data-nav-dropdown].open').forEach((dropdown) => {
+      dropdown.classList.remove('open');
+      dropdown.querySelector('[data-dropdown-toggle]')?.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  document.querySelectorAll('[data-nav-dropdown]').forEach((dropdown) => {
+    const toggle = dropdown.querySelector('[data-dropdown-toggle]');
+    if (!toggle) return;
+
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = dropdown.classList.contains('open');
+      closeAllDropdowns();
+      if (!isOpen) {
+        dropdown.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  document.addEventListener('click', closeAllDropdowns);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAllDropdowns();
+  });
+
   document.querySelectorAll('[data-filter-bar]').forEach((filterBar) => {
     const grid = document.querySelector(`[data-filter-grid="${filterBar.dataset.filterBar}"]`);
     if (!grid) return;

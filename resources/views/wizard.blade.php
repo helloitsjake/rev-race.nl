@@ -3,6 +3,31 @@
 @section('title', 'Welke motor past bij mij - RevRace')
 @section('description', 'Beantwoord een paar vragen over je rijstijl en gebruik en krijg advies welke motoren uit de RevRace database bij je passen.')
 
+@php
+    $faqs = [
+        [
+            'question' => 'Hoe bepaalt RevRace welke motor bij mij past?',
+            'answer' => 'Je rijstijl (bochten, snelheid of relax) en het terrein waar je vooral rijdt worden vertaald naar een score per motorcategorie, zoals naked, sport, tourer, adventure, cruiser of retro. Rijstijl weegt daarbij zwaarder dan terrein: terrein is alleen de omgeving, rijstijl zegt direct iets over het karakter van de motor dat bij je past. Binnen de best passende categorie rangschikken we vervolgens elke motor op basis van de verhouding tussen vermogen en gewicht, altijd vergeleken met andere motoren in dezelfde categorie, zodat een lichte 125cc-retro niet oneerlijk wordt afgezet tegen een zware cruiser.',
+        ],
+        [
+            'question' => 'Wat betekent het label "A2 geschikt"?',
+            'answer' => 'Een motor krijgt dit label als het vermogen niet boven de 35 kW (circa 47 pk) uitkomt en de verhouding tussen vermogen en gewicht niet hoger is dan 0,20 kW per kilo, de twee eisen van het Europese A2-rijbewijs. Kies je bij rij-ervaring voor "Net rijbewijs / A2", dan filteren we automatisch op deze motoren. Let op: dit is gebaseerd op de fabrieksspecificaties in onze database, sommige modellen hebben daarnaast een losse gedrosseerde A2-uitvoering die hier niet apart in is opgenomen.',
+        ],
+        [
+            'question' => 'Moet ik alle vragen invullen?',
+            'answer' => 'Nee. Leeftijd, lengte en gewicht zijn optioneel en worden alleen gebruikt om de simulatie preciezer te maken als je doorklikt naar "Simuleer met deze motor". Voor een advies heb je alleen je rij-ervaring nodig, gecombineerd met minimaal je rijstijl of het terrein waar je rijdt.',
+        ],
+        [
+            'question' => 'Ik krijg meerdere motoren te zien, kan ik dat verder versmallen?',
+            'answer' => 'Ja. Zodra er een match is, verschijnt er een merkfilter boven de resultaten waarmee je binnen de geadviseerde categorie op merk kunt filteren. Staat je voorkeursmerk er niet tussen voor deze combinatie, dan laten we het volledige advies zonder merkfilter zien in plaats van een lege pagina.',
+        ],
+        [
+            'question' => 'Is dit advies net zo goed als een proefrit?',
+            'answer' => 'Nee, en dat is ook niet het doel. Dit advies is een datagedreven eerste selectie op basis van specificaties, geen vervanging voor zelf op de motor zitten of een proefrit bij een dealer. Gebruik het om een shortlist te maken, en race je twijfelgevallen daarna tegen elkaar in de simulator om te zien hoe ze zich verhouden op droog, vochtig en nat asfalt.',
+        ],
+    ];
+@endphp
+
 @push('scripts')
 <script type="application/ld+json">
 {!! json_encode([
@@ -14,6 +39,17 @@
     ],
 ]) !!}
 </script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => array_map(fn (array $faq) => [
+        '@type' => 'Question',
+        'name' => $faq['question'],
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq['answer']],
+    ], $faqs),
+]) !!}
+</script>
 @endpush
 
 @section('content')
@@ -22,6 +58,24 @@
         <h1 class="page-title">Vertel hoe je rijdt, wij zoeken uit wat past</h1>
         <p class="page-sub">Geen vakjargon om zelf te kiezen. Vertel iets over jezelf en hoe je het liefst rijdt, en we vertalen dat naar motoren die daar echt bij passen.</p>
     </header>
+
+    <section class="section">
+        <div class="panel">
+            <p>
+                Dit is geen quiz met een vaste uitkomst uit een lijstje, maar een advies dat direct uit onze motordatabase
+                wordt berekend. We vertalen je rijstijl en het terrein waar je vooral rijdt naar een motorcategorie, en
+                rangschikken daarbinnen elke motor op de verhouding tussen vermogen en gewicht, zodat het advies past bij
+                zowel je manier van rijden als je ervaring.
+            </p>
+            <p style="margin-top:10px">
+                Geef je aan net je rijbewijs te hebben of op een A2-rijbewijs te rijden, dan tonen we alleen motoren die
+                aan de Europese A2-eisen voldoen: maximaal 35 kW vermogen en een verhouding van vermogen tot gewicht van
+                niet meer dan 0,20 kW per kilo. Twijfel je tussen twee modellen uit het advies? Race ze daarna tegen
+                elkaar in de <a class="accent" href="{{ route('simulation.index') }}">simulator</a> om te zien hoe ze
+                zich verhouden op droog, vochtig en nat asfalt.
+            </p>
+        </div>
+    </section>
 
     <form class="panel" method="get" action="{{ route('wizard.index') }}">
         <div class="form-row">
@@ -206,4 +260,17 @@
             @endif
         </section>
     @endif
+
+    <section class="section">
+        <span class="eyebrow">Veelgestelde vragen</span>
+        <h2 class="section-title">Hoe het advies werkt</h2>
+        <div class="panel">
+            @foreach($faqs as $faq)
+                <details style="{{ $loop->first ? '' : 'margin-top:14px;' }}border-top:{{ $loop->first ? 'none' : '1px solid var(--line)' }};padding-top:{{ $loop->first ? '0' : '14px' }}">
+                    <summary style="cursor:pointer;font-weight:600">{{ $faq['question'] }}</summary>
+                    <p style="margin-top:10px">{{ $faq['answer'] }}</p>
+                </details>
+            @endforeach
+        </div>
+    </section>
 @endsection

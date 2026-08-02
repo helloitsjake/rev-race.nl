@@ -104,4 +104,22 @@
             @endforeach
         </div>
     </section>
+
+    @if($related->isNotEmpty())
+        <section class="section">
+            <span class="eyebrow">Verder kijken</span>
+            <h2 class="section-title">Vergelijk {{ $motorA->label() }} ook met</h2>
+            <div class="card-grid">
+                @foreach($related as $item)
+                    <article class="card">
+                        <h3 class="card-title">{{ $item['motor']->label() }}</h3>
+                        <p class="section-sub">{{ $item['motor']->categoryLabel() }} &middot; {{ $item['motor']->power_hp }} pk &middot; {{ $item['motor']->weight_kg }} kg</p>
+                        <div class="hero-actions" style="margin-top:12px">
+                            <a class="accent" style="font-size:13px;font-weight:650;color:var(--teal)" href="{{ route('compare.show', $item['slug']) }}">Bekijk vergelijking &rarr;</a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
 @endsection

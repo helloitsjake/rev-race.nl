@@ -33,11 +33,39 @@ class ComparisonController extends Controller
             ];
         }
 
+        $related = $this->relatedComparisons($motors, $motorA, $motorB);
+
         return view('compare', [
             'motorA' => $motorA,
             'motorB' => $motorB,
             'results' => $results,
+            'related' => $related,
         ]);
+    }
+
+    /**
+     * Interne links naar vergelijkingen met motoren uit dezelfde categorie, zodat een
+     * vergelijkingspagina niet langer een doodlopend eiland is. Motoren van hetzelfde merk als
+     * $motorA komen eerst, daarna de rest van de categorie, gesorteerd op merk en model.
+     *
+     * @param  Collection<int, Motor>  $motors
+     * @return Collection<int, array{motor: Motor, slug: string}>
+     */
+    private function relatedComparisons(Collection $motors, Motor $motorA, Motor $motorB): Collection
+    {
+        return $motors
+            ->filter(fn (Motor $motor) => $motor->category !== null
+                && $motor->category === $motorA->category
+                && $motor->isNot($motorA)
+                && $motor->isNot($motorB))
+            ->sort(fn (Motor $a, Motor $b) => [$a->brand === $motorA->brand ? 0 : 1, $a->brand, $a->model]
+                <=> [$b->brand === $motorA->brand ? 0 : 1, $b->brand, $b->model])
+            ->take(6)
+            ->map(fn (Motor $motor) => [
+                'motor' => $motor,
+                'slug' => "{$motorA->slug()}-vs-{$motor->slug()}",
+            ])
+            ->values();
     }
 
     /**

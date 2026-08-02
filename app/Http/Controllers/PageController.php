@@ -75,6 +75,48 @@ class PageController extends Controller
             ->values();
     }
 
+    public function mostSearched(): View
+    {
+        return view('most-searched', [
+            'ranking' => $this->topSearchedMotors(days: 30, limit: 20),
+            'partners' => Partner::query()->where('is_active', true)->orderBy('sort_order')->get(),
+        ]);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, array{motor: Motor, uses: int}>
+     */
+    private function topSearchedMotors(int $days, int $limit)
+    {
+        $since = now()->subDays($days);
+
+        $counts = DB::table('simulation_results')
+            ->select('motor_id', DB::raw('COUNT(*) as uses'))
+            ->fromSub(function ($query) use ($since) {
+                $query->from('simulation_results')->where('created_at', '>=', $since)
+                    ->select('motor_a_id as motor_id')
+                    ->unionAll(
+                        DB::table('simulation_results')->where('created_at', '>=', $since)
+                            ->select('motor_b_id as motor_id')
+                    );
+            }, 'combined')
+            ->groupBy('motor_id')
+            ->orderByDesc('uses')
+            ->limit($limit)
+            ->pluck('uses', 'motor_id');
+
+        if ($counts->isEmpty()) {
+            return collect();
+        }
+
+        $motors = Motor::query()->whereIn('id', $counts->keys())->get()->keyBy('id');
+
+        return $counts
+            ->map(fn ($uses, $motorId) => ['motor' => $motors->get($motorId), 'uses' => $uses])
+            ->filter(fn (array $row) => $row['motor'] !== null)
+            ->values();
+    }
+
     public function partners(): View
     {
         $partners = Partner::query()->where('is_active', true)->orderBy('sort_order')->get();
