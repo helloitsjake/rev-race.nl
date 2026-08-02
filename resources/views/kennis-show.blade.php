@@ -24,7 +24,7 @@
     'image' => $article->cover_image_url,
     'datePublished' => $article->published_at?->toIso8601String(),
     'dateModified' => $article->updated_at?->toIso8601String(),
-    'author' => ['@type' => 'Organization', 'name' => 'RevRace'],
+    'author' => $article->author_name ? ['@type' => 'Person', 'name' => $article->author_name] : ['@type' => 'Organization', 'name' => 'RevRace'],
     'publisher' => ['@type' => 'Organization', 'name' => 'RevRace'],
 ])) !!}
 </script>
@@ -39,7 +39,12 @@
         @if($article->excerpt)
             <p class="page-sub">{{ $article->excerpt }}</p>
         @endif
-        <p class="small" style="color:var(--dim);margin-top:8px">{{ $article->published_at?->translatedFormat('j F Y') }}</p>
+        <p class="small" style="color:var(--dim);margin-top:8px">
+            {{ $article->published_at?->translatedFormat('j F Y') }}
+            @if($article->author_name)
+                &middot; door {{ $article->author_name }}
+            @endif
+        </p>
     </header>
 
     <section class="panel article-body">
@@ -50,6 +55,26 @@
         <p class="small" style="margin-top:14px;color:var(--dim)">
             Bron: <a class="accent" href="{{ $article->source_url }}" rel="nofollow noopener" target="_blank">{{ $article->source_name ?: $article->source_url }}</a>
         </p>
+    @endif
+
+    @if($article->author_name)
+        <section class="panel" style="margin-top:20px;display:flex;gap:14px;align-items:flex-start">
+            <div class="photo-placeholder photo-placeholder-sm">Foto</div>
+            <div>
+                <p style="font-weight:700">{{ $article->author_name }}</p>
+                @if($article->author_bio)
+                    <p class="small" style="color:var(--dim);margin-top:4px">{{ $article->author_bio }}</p>
+                @endif
+            </div>
+        </section>
+    @endif
+
+    @if(!empty($crossLinks))
+        <div class="hero-actions" style="margin-top:20px">
+            @foreach($crossLinks as $link)
+                <a class="btn secondary" href="{{ $link['route'] }}">{{ $link['label'] }}</a>
+            @endforeach
+        </div>
     @endif
 
     @if($related->isNotEmpty())

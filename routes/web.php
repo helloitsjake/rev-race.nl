@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GarageController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\MotorController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PartnerApplicationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\SimulationController;
 use App\Http\Controllers\ToplijstController;
 use App\Http\Controllers\WizardController;
@@ -39,6 +41,11 @@ Route::get('/embed', [PageController::class, 'embed'])->name('embed');
 Route::get('/s/{code}', [SimulationController::class, 'showShared'])->name('share.show');
 Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('compare.show');
 Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('toplijst.show');
+Route::get('/merken', [BrandController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('brands.index');
+Route::get('/merken/{merk}', [BrandController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('brands.show');
+Route::get('/segmenten', [SegmentController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('segments.index');
+Route::get('/segment/{categorie}', [SegmentController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('segments.show');
+Route::get('/a2-motoren', [PageController::class, 'a2Motoren'])->middleware('cache.public:3600,86400,604800')->name('a2-motoren');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');

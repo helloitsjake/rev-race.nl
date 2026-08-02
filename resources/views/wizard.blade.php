@@ -74,6 +74,30 @@
                 elkaar in de <a class="accent" href="{{ route('simulation.index') }}">simulator</a> om te zien hoe ze
                 zich verhouden op droog, vochtig en nat asfalt.
             </p>
+            <p style="margin-top:10px">
+                Achter de schermen telt je antwoord op "wat past het best bij jouw rijstijl" twee keer zo zwaar mee als
+                waar je vooral rijdt: rijstijl zegt direct iets over het karakter van een motor, terrein is vooral de
+                omgeving eromheen. Elke categorie krijgt op die manier een score, en categorieën die minder dan één punt
+                van elkaar verschillen tonen we allebei, tot een maximum van twee, zodat het advies niet onnodig smal
+                wordt bij een logisch gelijkspel tussen bijvoorbeeld sport en adventure. Binnen de gekozen categorie(ën)
+                laten we de zes best passende motoren zien op basis van vermogen ten opzichte van gewicht, altijd
+                vergeleken met andere motoren uit dezelfde categorie: een lichte retro-klassieker wordt zo niet oneerlijk
+                afgezet tegen een zware cruiser. De rest van de matches verdwijnt niet, die blijft opvraagbaar via
+                "Bekijk alle modellen in deze categorie".
+            </p>
+            <p style="margin-top:10px">
+                Dit werkt zowel voor iemand die voor het eerst een motor kiest als voor een ervaren rijder die zich
+                oriënteert op een ander segment: je hoeft zelf geen vakjargon als "naked" of "adventure" te kennen, dat
+                volgt vanzelf uit je antwoorden. Het is nadrukkelijk een datagedreven eerste selectie op basis van
+                specificaties, geen vervanging voor zelf op de motor zitten of een proefrit bij een dealer. Gebruik het
+                om een shortlist te maken, en laat de simulator daarna de doorslag geven tussen je favorieten.
+            </p>
+            <p style="margin-top:10px">
+                Leeftijd, lengte en gewicht hieronder zijn optioneel en hebben geen van drieën invloed op welke motoren
+                worden geadviseerd. Leeftijd en lengte worden alleen gebruikt om de uitleg bij je resultaat persoonlijker
+                te maken. Gewicht werkt wel door: vul je dat in, dan wordt het automatisch meegenomen zodra je vanuit het
+                advies doorklikt naar de simulator, ook als je niet bent ingelogd.
+            </p>
         </div>
     </section>
 
@@ -173,6 +197,17 @@
                                 @endforeach
                             </select>
                         </form>
+                    @endif
+
+                    @if(count($topCategories) || $selectedErvaring === 'beginner')
+                        <div class="hero-actions" style="margin-top:14px">
+                            @foreach($topCategories as $categorie)
+                                <a class="btn secondary" href="{{ route('segments.show', $categorie) }}">Alle {{ Str::lower(\App\Models\Motor::CATEGORIES[$categorie] ?? $categorie) }}-modellen</a>
+                            @endforeach
+                            @if($selectedErvaring === 'beginner')
+                                <a class="btn secondary" href="{{ route('a2-motoren') }}">Alle A2 motoren</a>
+                            @endif
+                        </div>
                     @endif
                 </div>
                 <div class="card-grid">

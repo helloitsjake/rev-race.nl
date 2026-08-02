@@ -11,6 +11,15 @@
     <url><loc>{{ route('about') }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
     <url><loc>{{ route('privacy') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
     <url><loc>{{ route('contact') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
+    <url><loc>{{ route('brands.index') }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    <url><loc>{{ route('segments.index') }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+    <url><loc>{{ route('a2-motoren') }}</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+    @foreach($brandSlugs as $slug)
+        <url><loc>{{ route('brands.show', $slug) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    @endforeach
+    @foreach($segmentKeys as $key)
+        <url><loc>{{ route('segments.show', $key) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    @endforeach
     @foreach($partners as $partner)
         <url><loc>{{ route('partners.show', $partner) }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
     @endforeach

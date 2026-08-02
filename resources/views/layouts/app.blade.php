@@ -22,9 +22,13 @@
     <meta property="og:title" content="@yield('title', 'RevRace - Motorsimulatie')">
     <meta property="og:description" content="@yield('description', 'Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.')">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="@yield('ogImage', asset('og-image.png'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'RevRace - Motorsimulatie')">
     <meta name="twitter:description" content="@yield('description', 'Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.')">
+    <meta name="twitter:image" content="@yield('ogImage', asset('og-image.png'))">
 
     <script type="application/ld+json">
     {!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'RevRace', 'url' => 'https://www.rev-race.nl']) !!}

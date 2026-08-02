@@ -12,6 +12,7 @@
 
 @section('title', "{$motorA->label()} vs {$motorB->label()} - wie is sneller? - RevRace")
 @section('description', "Vergelijk de {$motorA->label()} met de {$motorB->label()}: vermogen, gewicht en simulatieresultaten op droog, vochtig en nat asfalt.")
+@section('ogImage', asset('og-image-vergelijk.png'))
 
 @push('scripts')
 <script type="application/ld+json">
@@ -122,4 +123,17 @@
             </div>
         </section>
     @endif
+
+    <section class="section">
+        <span class="eyebrow">Meer bladeren</span>
+        <div class="hero-actions">
+            <a class="btn secondary" href="{{ route('brands.show', \Illuminate\Support\Str::slug($motorA->brand)) }}">Alle {{ $motorA->brand }}</a>
+            @if($motorB->brand !== $motorA->brand)
+                <a class="btn secondary" href="{{ route('brands.show', \Illuminate\Support\Str::slug($motorB->brand)) }}">Alle {{ $motorB->brand }}</a>
+            @endif
+            @if($motorA->category)
+                <a class="btn secondary" href="{{ route('segments.show', $motorA->category) }}">Alle {{ Str::lower($motorA->categoryLabel()) }}</a>
+            @endif
+        </div>
+    </section>
 @endsection

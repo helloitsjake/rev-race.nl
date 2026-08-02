@@ -99,6 +99,30 @@
         </div>
     </section>
 
+    <section class="section">
+        <div class="chart-head" style="margin-bottom:6px">
+            <div>
+                <span class="eyebrow">Overzicht</span>
+                <h2 class="section-title">Ontdek de database op jouw manier</h2>
+            </div>
+        </div>
+        <p class="section-sub">Liever bladeren dan simuleren? Blader per merk, per rijstijl-segment, of bekijk direct alle A2 geschikte motoren.</p>
+        <div class="card-grid">
+            <a class="card" href="{{ route('brands.index') }}" style="display:block">
+                <h3 class="card-title">Alle merken</h3>
+                <p class="section-sub" style="margin-bottom:0">Elk merk in de database met alle modellen en vergelijkingen.</p>
+            </a>
+            <a class="card" href="{{ route('segments.index') }}" style="display:block">
+                <h3 class="card-title">Segmenten</h3>
+                <p class="section-sub" style="margin-bottom:0">Naked, sport, tourer, adventure, cruiser en retro naast elkaar.</p>
+            </a>
+            <a class="card" href="{{ route('a2-motoren') }}" style="display:block">
+                <h3 class="card-title">A2 motoren</h3>
+                <p class="section-sub" style="margin-bottom:0">Alle modellen die voldoen aan de Europese A2-eisen.</p>
+            </a>
+        </div>
+    </section>
+
     <div class="band-dark full-bleed">
         <div class="full-bleed-inner" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px">
             <div>

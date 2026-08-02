@@ -11,6 +11,7 @@ use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ToplijstController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -117,6 +118,22 @@ class PageController extends Controller
             ->values();
     }
 
+    public function a2Motoren(): View
+    {
+        $motors = Motor::query()
+            ->get()
+            ->filter(fn (Motor $motor) => $motor->isA2Eligible())
+            ->sortBy([['category', 'asc'], ['brand', 'asc'], ['model', 'asc']])
+            ->values();
+
+        $byCategory = $motors->groupBy('category');
+
+        return view('a2-motoren', [
+            'motors' => $motors,
+            'byCategory' => $byCategory,
+        ]);
+    }
+
     public function partners(): View
     {
         $partners = Partner::query()->where('is_active', true)->orderBy('sort_order')->get();
@@ -155,7 +172,50 @@ class PageController extends Controller
             ->limit(3)
             ->get();
 
-        return view('kennis-show', ['article' => $article, 'related' => $related]);
+        return view('kennis-show', [
+            'article' => $article,
+            'related' => $related,
+            'crossLinks' => $this->articleCrossLinks($article),
+        ]);
+    }
+
+    /**
+     * Statische kruislinks per kennis-categorie naar de vergelijk-/segment-/A2-kant van de site,
+     * i.p.v. verzonnen onderwerp-matching. "Nieuwe releases" krijgt een merkpagina als de titel
+     * een merk uit de motordatabase noemt, anders het merkenoverzicht.
+     *
+     * @return array<int, array{label: string, route: string}>
+     */
+    private function articleCrossLinks(Article $article): array
+    {
+        return match ($article->category) {
+            'Beginnend motorrijder' => [
+                ['label' => 'Alle A2 motoren', 'route' => route('a2-motoren')],
+                ['label' => 'Welke motor past bij mij', 'route' => route('wizard.index')],
+            ],
+            'Ervaren motorrijder' => [
+                ['label' => 'Alle segmenten', 'route' => route('segments.index')],
+                ['label' => 'Start simulatie', 'route' => route('simulation.index')],
+            ],
+            'Nieuwe releases' => [$this->brandLinkForArticle($article)],
+            default => [['label' => 'Welke motor past bij mij', 'route' => route('wizard.index')]],
+        };
+    }
+
+    /**
+     * @return array{label: string, route: string}
+     */
+    private function brandLinkForArticle(Article $article): array
+    {
+        $brands = Motor::query()->pluck('brand')->unique();
+
+        foreach ($brands as $brand) {
+            if (Str::contains($article->title, $brand, true)) {
+                return ['label' => "Alle {$brand}-modellen", 'route' => route('brands.show', Str::slug($brand))];
+            }
+        }
+
+        return ['label' => 'Alle merken', 'route' => route('brands.index')];
     }
 
     public function privacy(): View
@@ -179,12 +239,16 @@ class PageController extends Controller
 
     public function sitemap()
     {
+        $brandSlugs = Motor::query()->pluck('brand')->unique()->map(fn ($brand) => Str::slug($brand))->values();
+
         return response()
             ->view('sitemap', [
                 'partners' => Partner::query()->where('is_active', true)->get(),
                 'articles' => Article::query()->published()->get(),
                 'toplijsten' => array_keys(ToplijstController::lists()),
                 'pairs' => ComparisonController::pairs(),
+                'brandSlugs' => $brandSlugs,
+                'segmentKeys' => array_keys(Motor::CATEGORIES),
             ])
             ->header('Content-Type', 'application/xml');
     }

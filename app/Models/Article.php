@@ -8,6 +8,11 @@ use League\CommonMark\CommonMarkConverter;
 
 class Article extends Model
 {
+    protected $attributes = [
+        'author_name' => 'Jake Andreas',
+        'author_bio' => 'Oprichter en bouwer van RevRace. Kennisartikelen worden onderbouwd met officiële bronnen en Ahrefs-zoekwoordonderzoek, "nieuwe releases" worden automatisch herschreven uit geverifieerde motornieuwsbronnen.',
+    ];
+
     protected $fillable = [
         'title',
         'slug',
@@ -17,6 +22,8 @@ class Article extends Model
         'cover_image_url',
         'source_name',
         'source_url',
+        'author_name',
+        'author_bio',
         'meta_description',
         'is_published',
         'published_at',
