@@ -34,7 +34,7 @@
         </div>
         <div class="spec-row"><span class="spec-label">Wegtype</span><span class="spec-value">{{ $result->road_type === 'straight' ? 'Rechte lijn' : 'Kronkelweg' }}</span></div>
         <div class="spec-row"><span class="spec-label">Conditie</span><span class="spec-value">{{ $result->road_condition }}</span></div>
-        <div class="spec-row"><span class="spec-label">Afstand</span><span class="spec-value">{{ $result->distance_m }}m</span></div>
+        <div class="spec-row"><span class="spec-label">Afstand</span><span class="spec-value">{{ match ((int) $result->distance_m) { 402 => '1/4 mile', 805 => '1/2 mile', default => $result->distance_m . 'm' } }}</span></div>
         <div class="hero-actions">
             <a class="btn primary" href="{{ route('simulation.index') }}">Nieuwe simulatie</a>
         </div>

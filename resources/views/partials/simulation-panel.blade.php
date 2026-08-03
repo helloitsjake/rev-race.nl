@@ -65,7 +65,9 @@
                 <div class="choice-row">
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="100">100m</button>
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="250">250m</button>
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="402">1/4 mile</button>
                     <button class="choice active" type="button" data-choice data-group="distance_m" data-value="500">500m</button>
+                    <button class="choice" type="button" data-choice data-group="distance_m" data-value="805">1/2 mile</button>
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="1000">1000m</button>
                     <button class="choice" type="button" data-choice data-group="distance_m" data-value="2000">2km</button>
                 </div>

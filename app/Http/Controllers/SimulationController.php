@@ -40,7 +40,7 @@ class SimulationController extends Controller
             'motor_b_id' => ['required', 'integer', 'exists:motors,id'],
             'road_type' => ['required', Rule::in(['straight', 'twisty', 'topspeed', 'braking'])],
             'road_condition' => ['required', Rule::in(['dry', 'wet', 'rain'])],
-            'distance_m' => ['required_if:road_type,straight,twisty', 'nullable', 'integer', Rule::in([100, 250, 500, 1000, 2000])],
+            'distance_m' => ['required_if:road_type,straight,twisty', 'nullable', 'integer', Rule::in([100, 250, 402, 500, 805, 1000, 2000])],
             'speed_kmh' => ['required_if:road_type,braking', 'nullable', 'integer', Rule::in([50, 100, 130, 160])],
             'rider_a_kg' => ['nullable', 'integer', 'between:0,180'],
             'rider_b_kg' => ['nullable', 'integer', 'between:0,180'],

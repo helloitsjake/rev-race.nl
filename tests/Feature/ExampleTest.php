@@ -43,6 +43,27 @@ class ExampleTest extends TestCase
         $this->assertDatabaseCount('simulation_logs', 1);
     }
 
+    public function test_guest_can_run_a_quarter_mile_and_half_mile_simulation(): void
+    {
+        [$motorA, $motorB] = Motor::query()->take(2)->get();
+
+        foreach ([402, 805] as $distance) {
+            $response = $this->postJson('/api/simulatie', [
+                'motor_a_id' => $motorA->id,
+                'motor_b_id' => $motorB->id,
+                'road_type' => 'straight',
+                'road_condition' => 'dry',
+                'distance_m' => $distance,
+            ]);
+
+            $response
+                ->assertOk()
+                ->assertJsonPath('result.winner', fn ($winner) => in_array($winner, ['A', 'B'], true))
+                ->assertJsonPath('result.time_a_s', fn ($time) => $time > 0)
+                ->assertJsonPath('result.time_b_s', fn ($time) => $time > 0);
+        }
+    }
+
     public function test_guest_simulation_limit_is_enforced(): void
     {
         [$motorA, $motorB] = Motor::query()->take(2)->get();
