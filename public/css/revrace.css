@@ -110,6 +110,9 @@ h1, h2, h3,
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-family: "Barlow Condensed", sans-serif;
   font-size: 23px;
   font-weight: 800;
@@ -119,6 +122,12 @@ h1, h2, h3,
 
 .brand span {
   color: var(--orange);
+}
+
+.brand-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .nav-links,

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 90">
+<rect width="400" height="90" fill="#15130F"></rect>
+<line x1="16" y1="66" x2="46" y2="20" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></line>
+<line x1="34" y1="66" x2="64" y2="20" stroke="#FF5A1F" stroke-width="6" stroke-linecap="round"></line>
+<text x="86" y="60" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="44" letter-spacing="-1" fill="#FFFFFF">REV<tspan fill="#FF5A1F">RACE</tspan></text>
+</svg>

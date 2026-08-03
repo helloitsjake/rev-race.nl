@@ -1,0 +1,15 @@
+{
+  "name": "RevRace",
+  "short_name": "RevRace",
+  "description": "Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF9F4",
+  "theme_color": "#FF5A1F",
+  "icons": [
+    { "src": "/images/brand/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/images/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/brand/icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/images/brand/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

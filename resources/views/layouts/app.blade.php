@@ -15,7 +15,11 @@
     <meta name="description" content="@yield('description', 'Vergelijk motoren met een server-side fysica-simulatie op droog, vochtig en nat asfalt.')">
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ asset('images/brand/icon-128.png') }}">
+    <link rel="icon" type="image/png" sizes="256x256" href="{{ asset('images/brand/icon-256.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#FF5A1F">
 
     <meta property="og:site_name" content="RevRace">
     <meta property="og:type" content="website">
@@ -49,7 +53,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span>{{ \App\Models\SimulationLog::LIMIT }} gratis simulaties per 24 uur</span>
     </div>
     <nav class="site-nav">
-        <a class="brand" href="{{ route('home') }}">REV<span>RACE</span></a>
+        <a class="brand" href="{{ route('home') }}">@include('partials.brand-icon')REV<span>RACE</span></a>
         <div class="nav-links">
             <a class="nav-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}">Home</a>
 
@@ -93,7 +97,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div class="mobile-menu" data-mobile-menu>
         <div class="mobile-menu-head">
-            <span class="brand">REV<span>RACE</span></span>
+            <span class="brand">@include('partials.brand-icon', ['dark' => true])REV<span>RACE</span></span>
             <button class="mobile-menu-close" type="button" data-menu-close aria-label="Menu sluiten">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
@@ -145,7 +149,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 @unless($embedded ?? false)
     <footer class="footer">
         <div class="footer-inner">
-            <span class="brand">REV<span>RACE</span></span>
+            <span class="brand">@include('partials.brand-icon', ['dark' => true])REV<span>RACE</span></span>
             <span>
                 <a href="{{ route('partners.apply') }}">Partner worden</a> ·
                 <a href="{{ route('privacy') }}">Privacy</a> ·
