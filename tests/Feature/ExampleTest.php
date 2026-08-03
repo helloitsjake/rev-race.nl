@@ -19,7 +19,7 @@ class ExampleTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('RevRace')
-            ->assertSee('Start simulatie');
+            ->assertSee('Start gratis simulatie');
     }
 
     public function test_guest_can_run_a_simulation_and_get_a_share_link(): void

@@ -392,6 +392,10 @@ h1, h2, h3,
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.top-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .metric-value {
   font-family: "Barlow Condensed", sans-serif;
   font-size: 32px;
@@ -1144,6 +1148,32 @@ label.choice input {
   border-radius: var(--radius);
 }
 
+/* ── Teal band (partner CTA) ────────────────────────────── */
+
+.band-teal {
+  background: var(--teal);
+  color: #fff;
+}
+
+.band-teal .eyebrow {
+  color: rgba(255, 255, 255, .75);
+}
+
+.band-teal p,
+.band-teal .section-sub {
+  color: rgba(255, 255, 255, .85);
+}
+
+.band-teal .btn.primary {
+  border-color: var(--dark);
+  background: var(--dark);
+  color: #fff;
+}
+
+.band-teal .btn.primary:hover {
+  background: #000;
+}
+
 /* ── Footer ─────────────────────────────────────────────── */
 
 .footer {
@@ -1283,6 +1313,7 @@ label.choice input {
   .hero,
   .sim-grid,
   .top-grid,
+  .top-grid-3,
   .card-grid,
   .garage-list,
   .stat-band,

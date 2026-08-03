@@ -7,6 +7,7 @@ use App\Models\Motor;
 use App\Models\Partner;
 use App\Models\SimulationResult;
 use App\Services\SimulationLimitService;
+use App\Services\SimulationService;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ToplijstController;
 use Illuminate\Http\Request;
@@ -16,18 +17,55 @@ use Illuminate\View\View;
 
 class PageController extends Controller
 {
-    public function home(): View
+    public function home(SimulationService $simulations): View
     {
         $motors = Motor::query()->orderBy('brand')->orderBy('model')->get();
-        $topPowerWeight = $motors
-            ->sortByDesc(fn (Motor $motor) => $motor->power_hp / max($motor->weight_kg, 1))
-            ->take(5);
+
+        $weeklyPopular = $this->topSearchedMotors(days: 7, limit: 3);
+        if ($weeklyPopular->isEmpty()) {
+            $weeklyPopular = $this->mostSearchedMotors(3)->map(fn (Motor $motor) => ['motor' => $motor, 'uses' => 0]);
+        }
 
         return view('home', [
             'motors' => $motors,
-            'topPowerWeight' => $topPowerWeight,
-            'mostSearched' => $this->mostSearchedMotors(),
+            'weeklyPopular' => $weeklyPopular,
+            'heroRace' => $this->heroRace($motors, $simulations),
         ]);
+    }
+
+    /**
+     * Vaste, herkenbare hero-matchup op de homepage. Echt door de fysica-engine
+     * uitgerekend (geen verzonnen tijden) zodat de "eerlijke rekensom"-belofte ook
+     * hier klopt. Als een van de twee motoren ooit uit de database verdwijnt,
+     * verdwijnt het hero-voorbeeld gewoon mee i.p.v. te crashen.
+     *
+     * @return array{motor_a: Motor, motor_b: Motor, time_a_s: float, time_b_s: float, width_a: float, width_b: float}|null
+     */
+    private function heroRace($motors, SimulationService $simulations): ?array
+    {
+        $motorA = $motors->first(fn (Motor $motor) => $motor->brand === 'BMW' && $motor->model === 'F900R');
+        $motorB = $motors->first(fn (Motor $motor) => $motor->brand === 'KTM' && $motor->model === '1190 Adventure');
+
+        if (! $motorA || ! $motorB) {
+            return null;
+        }
+
+        $result = $simulations->race($motorA, $motorB, [
+            'road_type' => 'straight',
+            'road_condition' => 'dry',
+            'distance_m' => 500,
+        ]);
+
+        $slowest = max($result['time_a_s'], $result['time_b_s']);
+
+        return [
+            'motor_a' => $motorA,
+            'motor_b' => $motorB,
+            'time_a_s' => $result['time_a_s'],
+            'time_b_s' => $result['time_b_s'],
+            'width_a' => ($result['time_a_s'] / $slowest) * 100,
+            'width_b' => ($result['time_b_s'] / $slowest) * 100,
+        ];
     }
 
     public function about(): View
