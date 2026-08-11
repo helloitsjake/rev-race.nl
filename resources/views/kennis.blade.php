@@ -40,13 +40,7 @@
                 <div class="kb-grid" data-filter-grid="kennis">
                     @foreach($articles as $article)
                         <article class="kb-card @if($loop->first) kb-card--wide @endif" data-filter-category="{{ Str::slug($article->category) }}">
-                            <div class="kb-card__media">
-                                @if($article->cover_image_url)
-                                    <img src="{{ $article->cover_image_url }}" alt="" loading="lazy">
-                                @else
-                                    {{ $article->category }}
-                                @endif
-                            </div>
+                            <div class="kb-card__media">{{ $article->category }}</div>
                             <p class="kb-card__stage">{{ $article->category }}</p>
                             <h3>{{ $article->title }}</h3>
                             @if($article->excerpt)

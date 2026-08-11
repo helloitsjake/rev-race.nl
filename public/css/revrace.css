@@ -248,8 +248,7 @@ a.accent { color: var(--redline); font-weight: 600; }
 .kb-card:nth-child(3) { border-top-color: var(--telemetry); }
 .kb-card--wide { grid-column: span 2; }
 .kb-card__stage { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-60); margin-bottom: 0.9em; }
-.kb-card__media { aspect-ratio: 16/10; background: linear-gradient(155deg, var(--stone-dim), var(--stone)); border: 1px solid var(--stone-line); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-60); margin-bottom: 1em; border-radius: var(--radius); overflow: hidden; }
-.kb-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.kb-card__media { aspect-ratio: 16/10; background: linear-gradient(155deg, var(--stone-dim), var(--stone)); border: 1px solid var(--stone-line); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-60); margin-bottom: 1em; border-radius: var(--radius); }
 .kb-card h3 { margin-bottom: 0.5em; }
 .kb-card p { color: var(--ink-60); font-size: 0.9375rem; max-width: 42ch; }
 .kb-card__byline { font-size: 0.8125rem; color: var(--ink-60); margin-top: 0.5em; }
@@ -428,12 +427,6 @@ a.accent { color: var(--redline); font-weight: 600; }
 .suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--stone); border: 1px solid var(--stone-line); border-radius: var(--radius); padding: 6px; box-shadow: 0 16px 32px rgba(20,18,15,0.12); z-index: 20; max-height: 240px; overflow-y: auto; }
 .suggestions .suggestion { display: block; width: 100%; text-align: left; padding: 0.6em 0.75em; border-radius: 2px; background: transparent; border: none; font: inherit; font-size: 0.9375rem; color: var(--ink); }
 .suggestions .suggestion:hover { background: var(--stone-dim); }
-
-.motor-photo { border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
-.motor-photo img { width: 100%; aspect-ratio: 16/10; object-fit: cover; }
-.photo-credit { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-60); margin-top: 4px; }
-.photo-credit a { color: var(--ink-60); }
-.photo-placeholder { aspect-ratio: 16/10; background: linear-gradient(155deg, var(--stone-dim), var(--stone)); border: 1px solid var(--stone-line); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-60); margin-bottom: 10px; text-align: center; padding: 8px; }
 
 .spec-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-family: var(--font-mono); }
 .spec-trio__value { font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; }

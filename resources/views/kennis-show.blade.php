@@ -95,13 +95,7 @@
                 <div class="kb-grid">
                     @foreach($related as $item)
                         <article class="kb-card">
-                            <div class="kb-card__media">
-                                @if($item->cover_image_url)
-                                    <img src="{{ $item->cover_image_url }}" alt="" loading="lazy">
-                                @else
-                                    {{ $item->category }}
-                                @endif
-                            </div>
+                            <div class="kb-card__media">{{ $item->category }}</div>
                             <p class="kb-card__stage">{{ $item->category }}</p>
                             <h3>{{ $item->title }}</h3>
                             <a class="kb-card__link" href="{{ route('kennis.show', $item) }}">Lees het artikel &rarr;</a>
