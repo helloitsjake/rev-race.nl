@@ -4,47 +4,54 @@
 @section('description', 'Samenwerkingen voor dealers, verzekeraars, onderhoud en events rond motorfietsen.')
 
 @section('content')
-    <div class="chart-head" style="align-items:flex-start">
-        <div>
-            <span class="eyebrow">Partners</span>
-            <h1 class="page-title">Onze partners</h1>
-            <p class="page-sub">Samenwerkingen voor dealers, verzekeraars, evenementen en motorcontent.</p>
+    <header class="chapter chapter--tight">
+        <div class="wrap page-head">
+            <div>
+                <span class="eyebrow">Partners</span>
+                <h1>Onze partners</h1>
+                <p class="lede">Samenwerkingen voor dealers, verzekeraars, evenementen en motorcontent.</p>
+            </div>
+            <a class="btn btn--primary" href="{{ route('partners.apply') }}">Word partner</a>
         </div>
-        <a class="btn primary" href="{{ route('partners.apply') }}">Word partner</a>
-    </div>
+    </header>
 
-    <div class="choice-row" data-filter-bar="partners" style="margin-bottom:22px">
-        <button class="filter-pill active" type="button" data-filter="alle">Alle</button>
-        @foreach($categories as $category)
-            <button class="filter-pill" type="button" data-filter="{{ Str::slug($category) }}">{{ $category }}</button>
-        @endforeach
-    </div>
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            <nav class="cat-nav" data-filter-bar="partners" aria-label="Categorieën">
+                <button type="button" class="choice is-active" data-filter="alle">Alle</button>
+                @foreach($categories as $category)
+                    <button type="button" class="choice" data-filter="{{ Str::slug($category) }}">{{ $category }}</button>
+                @endforeach
+            </nav>
 
-    <div class="card-grid" data-filter-grid="partners">
-        @foreach($partners as $partner)
-            <article class="card" data-filter-category="{{ Str::slug($partner->category) }}">
-                <div class="chart-head" style="margin-bottom:12px">
-                    <div class="photo-placeholder photo-placeholder-sm">Logo</div>
-                    <span class="badge">{{ $partner->category }}</span>
-                </div>
-                <h2 class="card-title">{{ $partner->name }}</h2>
-                @if($partner->address_city)
-                    <p class="small" style="color:var(--dim);margin-top:2px">{{ $partner->address_city }}</p>
-                @endif
-                <p class="section-sub">{{ $partner->description }}</p>
-                <div class="hero-actions" style="margin-top:6px;align-items:center">
-                    @if($partner->website_url)
-                        <a class="btn secondary" href="{{ $partner->website_url }}" rel="nofollow noopener" target="_blank">Website</a>
-                    @endif
-                    <a class="accent" style="font-size:13px;font-weight:650;color:var(--teal)" href="{{ route('partners.show', $partner) }}">Bekijk partner &rarr;</a>
-                </div>
-            </article>
-        @endforeach
-        <article class="card" style="border-style:dashed;background:var(--bg-2)">
-            <span class="badge" style="border-color:var(--orange);color:var(--orange)">Word partner</span>
-            <h2 class="card-title" style="margin-top:10px">Jouw merk hier?</h2>
-            <p class="section-sub">Neem contact op voor zichtbaarheid rond motorvergelijkingen en simulaties.</p>
-            <a class="btn primary" href="{{ route('contact') }}">Contact</a>
-        </article>
-    </div>
+            <div class="partners-row" data-filter-grid="partners">
+                @foreach($partners as $partner)
+                    <article class="partner-card" data-filter-category="{{ Str::slug($partner->category) }}">
+                        <p class="partner-card__tag">{{ $partner->category }}</p>
+                        <h3>{{ $partner->name }}</h3>
+                        @if($partner->address_city)
+                            <p class="note-inline" style="margin-top:0">{{ $partner->address_city }}</p>
+                        @endif
+                        <p>{{ $partner->description }}</p>
+                        <a href="{{ route('partners.show', $partner) }}">Bekijk partner &rarr;</a>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="chapter chapter--tight">
+        <div class="wrap cta-split">
+            <div>
+                <span class="eyebrow">Word partner</span>
+                <h2>Jouw merk hier?</h2>
+                <p class="lede">Neem contact op voor zichtbaarheid rond motorvergelijkingen en simulaties, op het moment dat een bezoeker middenin de keuze voor een nieuwe motor zit.</p>
+            </div>
+            <div class="panel">
+                <span class="eyebrow" style="margin-bottom:0">Aanmelden</span>
+                <h3>Vaste plek op de partnerspagina</h3>
+                <a class="btn btn--primary" href="{{ route('partners.apply') }}">Word partner</a>
+            </div>
+        </div>
+    </section>
 @endsection

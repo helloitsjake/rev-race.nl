@@ -31,65 +31,83 @@
 @endpush
 
 @section('content')
-    <a class="small" href="{{ route('kennis.index') }}">&larr; Alle artikelen</a>
-
-    <header style="margin-top:16px">
-        <span class="badge">{{ $article->category }}</span>
-        <h1 class="page-title" style="margin-top:10px">{{ $article->title }}</h1>
-        @if($article->excerpt)
-            <p class="page-sub">{{ $article->excerpt }}</p>
-        @endif
-        <p class="small" style="color:var(--dim);margin-top:8px">
-            {{ $article->published_at?->translatedFormat('j F Y') }}
-            @if($article->author_name)
-                &middot; door {{ $article->author_name }}
+    <header class="chapter chapter--tight">
+        <div class="wrap">
+            <nav class="crumb" aria-label="Broodkruimel"><a href="{{ route('kennis.index') }}">&larr; Alle artikelen</a></nav>
+            <span class="eyebrow">{{ $article->category }}</span>
+            <h1>{{ $article->title }}</h1>
+            @if($article->excerpt)
+                <p class="lede">{{ $article->excerpt }}</p>
             @endif
-        </p>
+            <p class="article-meta">
+                @if($article->published_at){{ $article->published_at->translatedFormat('j F Y') }}@endif
+                @if($article->author_name)
+                    &middot; door {{ $article->author_name }}
+                @endif
+            </p>
+        </div>
     </header>
 
-    <section class="panel article-body">
-        {!! $article->renderedBody() !!}
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            <div class="article-body">
+                {!! $article->renderedBody() !!}
+            </div>
+
+            @if($article->source_url)
+                <div class="article-source">
+                    <p>Bron: <a href="{{ $article->source_url }}" rel="nofollow noopener" target="_blank">{{ $article->source_name ?: $article->source_url }}</a></p>
+                </div>
+            @endif
+
+            @if(!empty($crossLinks))
+                <div class="browse-more" style="margin-top: clamp(28px, 4vw, 44px)">
+                    @foreach($crossLinks as $link)
+                        <a class="btn btn--ghost" href="{{ $link['route'] }}">{{ $link['label'] }}</a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </section>
 
-    @if($article->source_url)
-        <p class="small" style="margin-top:14px;color:var(--dim)">
-            Bron: <a class="accent" href="{{ $article->source_url }}" rel="nofollow noopener" target="_blank">{{ $article->source_name ?: $article->source_url }}</a>
-        </p>
-    @endif
-
     @if($article->author_name)
-        <section class="panel" style="margin-top:20px;display:flex;gap:14px;align-items:flex-start">
-            <div class="photo-placeholder photo-placeholder-sm">Foto</div>
-            <div>
-                <p style="font-weight:700">{{ $article->author_name }}</p>
+        <section class="chapter chapter--dark chapter--tight">
+            <div class="wrap" style="max-width: 640px">
+                <span class="eyebrow">Over de auteur</span>
+                <h2>{{ $article->author_name }}</h2>
                 @if($article->author_bio)
-                    <p class="small" style="color:var(--dim);margin-top:4px">{{ $article->author_bio }}</p>
+                    <p class="lede" style="max-width: none">{{ $article->author_bio }}</p>
                 @endif
             </div>
         </section>
     @endif
 
-    @if(!empty($crossLinks))
-        <div class="hero-actions" style="margin-top:20px">
-            @foreach($crossLinks as $link)
-                <a class="btn secondary" href="{{ $link['route'] }}">{{ $link['label'] }}</a>
-            @endforeach
-        </div>
-    @endif
-
     @if($related->isNotEmpty())
-        <section class="section">
-            <h2 class="section-title">Meer uit {{ $article->category }}</h2>
-            <div class="card-grid">
-                @foreach($related as $item)
-                    <article class="card">
-                        <span class="badge">{{ $item->category }}</span>
-                        <h3 class="card-title" style="margin-top:10px">{{ $item->title }}</h3>
-                        <div class="hero-actions" style="margin-top:12px">
-                            <a class="accent" style="font-size:13px;font-weight:650;color:var(--teal)" href="{{ route('kennis.show', $item) }}">Lees verder &rarr;</a>
-                        </div>
-                    </article>
-                @endforeach
+        <section class="chapter chapter--tight">
+            <div class="wrap">
+                <div class="kb-head">
+                    <div>
+                        <span class="eyebrow">Verder lezen</span>
+                        <h2>Meer uit {{ $article->category }}</h2>
+                    </div>
+                    <a class="btn btn--ghost" href="{{ route('kennis.index') }}">Alle kennisartikelen</a>
+                </div>
+                <div class="kb-grid">
+                    @foreach($related as $item)
+                        <article class="kb-card">
+                            <div class="kb-card__media">
+                                @if($item->cover_image_url)
+                                    <img src="{{ $item->cover_image_url }}" alt="" loading="lazy">
+                                @else
+                                    {{ $item->category }}
+                                @endif
+                            </div>
+                            <p class="kb-card__stage">{{ $item->category }}</p>
+                            <h3>{{ $item->title }}</h3>
+                            <a class="kb-card__link" href="{{ route('kennis.show', $item) }}">Lees het artikel &rarr;</a>
+                        </article>
+                    @endforeach
+                </div>
             </div>
         </section>
     @endif

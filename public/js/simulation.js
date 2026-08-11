@@ -60,10 +60,10 @@ function motorPhoto(motor) {
       ? `<p class="photo-credit">${motor.photo_source_url ? `<a href="${motor.photo_source_url}" rel="nofollow noopener" target="_blank">${motor.photo_credit}</a>` : motor.photo_credit}</p>`
       : '';
 
-    return `<div class="motor-photo" style="margin-bottom:10px"><img src="${motor.photo_url}" alt="${motor.label}" loading="lazy"></div>${credit}`;
+    return `<div class="motor-photo"><img src="${motor.photo_url}" alt="${motor.label}" loading="lazy"></div>${credit}`;
   }
 
-  return `<div class="photo-placeholder" style="margin-bottom:10px;min-height:100px">Foto ${motor.brand} ${motor.model}</div>`;
+  return `<div class="photo-placeholder">Foto ${motor.brand} ${motor.model}</div>`;
 }
 
 function motorSpec(motor) {
@@ -71,10 +71,10 @@ function motorSpec(motor) {
 
   return `
     ${motorPhoto(motor)}
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      <div><div class="metric-value" style="font-size:24px">${motor.power_hp}</div><div class="metric-label">pk</div></div>
-      <div><div class="metric-value" style="font-size:24px">${motor.weight_kg}</div><div class="metric-label">kg</div></div>
-      <div><div class="metric-value" style="font-size:24px">${ratio}</div><div class="metric-label">pk/kg</div></div>
+    <div class="spec-trio">
+      <div><div class="spec-trio__value">${motor.power_hp}</div><div class="spec-trio__label">pk</div></div>
+      <div><div class="spec-trio__value">${motor.weight_kg}</div><div class="spec-trio__label">kg</div></div>
+      <div><div class="spec-trio__value">${ratio}</div><div class="spec-trio__label">pk/kg</div></div>
     </div>
   `;
 }
@@ -83,7 +83,7 @@ function pickMotor(side, motor) {
   selected[side] = motor;
   qs(`[data-motor-id="${side}"]`).value = motor.id;
   qs(`[data-motor-input="${side}"]`).value = motor.label;
-  qs(`[data-suggestions="${side}"]`).classList.remove('show');
+  qs(`[data-suggestions="${side}"]`).hidden = true;
   qs(`[data-specs="${side}"]`).innerHTML = motorSpec(motor);
   setText(`[data-lane-name="${side}"]`, motor.label);
 
@@ -96,7 +96,7 @@ async function searchMotors(side, query) {
   if (!list) return;
 
   if (query.trim().length < 2) {
-    list.classList.remove('show');
+    list.hidden = true;
     return;
   }
 
@@ -113,7 +113,7 @@ async function searchMotors(side, query) {
     btn.addEventListener('click', () => pickMotor(side, motor));
     list.appendChild(btn);
   });
-  list.classList.toggle('show', data.motors.length > 0);
+  list.hidden = data.motors.length === 0;
 }
 
 function guessMotorParts(query) {
@@ -254,7 +254,7 @@ function bindPickers() {
 
   document.addEventListener('click', (event) => {
     if (!event.target.closest('.suggest-wrap')) {
-      qsa('.suggestions').forEach((el) => el.classList.remove('show'));
+      qsa('.suggestions').forEach((el) => { el.hidden = true; });
     }
   });
 }
@@ -280,8 +280,8 @@ function bindChoices() {
     button.addEventListener('click', () => {
       const group = button.dataset.group;
       const value = button.dataset.value;
-      qsa(`[data-choice][data-group="${group}"]`).forEach((el) => el.classList.remove('active'));
-      button.classList.add('active');
+      qsa(`[data-choice][data-group="${group}"]`).forEach((el) => el.classList.remove('is-active'));
+      button.classList.add('is-active');
       options[group] = NUMERIC_GROUPS.includes(group) ? Number(value) : value;
 
       if (group === 'road_type') toggleModeControls();
@@ -414,7 +414,7 @@ function renderResult(result) {
     renderRaceResult(result);
   }
 
-  panel.classList.add('show');
+  panel.hidden = false;
 }
 
 const CHART = { W: 640, H: 220, PAD: { left: 40, right: 12, top: 12, bottom: 26 } };
@@ -553,7 +553,8 @@ async function runSimulation(event) {
 
   const run = qs('[data-run]');
   if (run) run.disabled = true;
-  qs('[data-result]')?.classList.remove('show');
+  const resultPanel = qs('[data-result]');
+  if (resultPanel) resultPanel.hidden = true;
 
   const response = await fetch(cfg.routes.simulate, {
     method: 'POST',

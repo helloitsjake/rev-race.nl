@@ -19,7 +19,7 @@
     <link rel="icon" type="image/png" sizes="256x256" href="{{ asset('images/brand/icon-256.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    <meta name="theme-color" content="#FF5A1F">
+    <meta name="theme-color" content="#D7401F">
 
     <meta property="og:site_name" content="RevRace">
     <meta property="og:type" content="website">
@@ -37,9 +37,6 @@
     <script type="application/ld+json">
     {!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'RevRace', 'url' => 'https://www.rev-race.nl']) !!}
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="{{ asset('css/revrace.css') }}?v={{ filemtime(public_path('css/revrace.css')) }}">
 </head>
 <body>
@@ -52,82 +49,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span>Server-side motorsimulatie</span>
         <span>{{ \App\Models\SimulationLog::LIMIT }} gratis simulaties per 24 uur</span>
     </div>
-    <nav class="site-nav">
-        <a class="brand" href="{{ route('home') }}">@include('partials.brand-icon')REV<span>RACE</span></a>
-        <div class="nav-links">
-            <a class="nav-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}">Home</a>
-
-            <div class="nav-dropdown" data-nav-dropdown>
-                <button class="nav-link nav-dropdown-toggle @if(request()->routeIs('wizard.*', 'simulation.*', 'most-searched.*', 'kennis.*')) active @endif" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">
-                    Ontdekken
-                    <svg class="nav-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                </button>
-                <div class="nav-dropdown-menu" data-dropdown-menu>
-                    <a class="nav-dropdown-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
-                    <a class="nav-dropdown-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}">Simulatie</a>
-                    <a class="nav-dropdown-link @if(request()->routeIs('most-searched.*')) active @endif" href="{{ route('most-searched.index') }}">Meest gezocht</a>
-                    <a class="nav-dropdown-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}">Kennis</a>
-                </div>
+    <nav class="nav wrap">
+        <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon')Rev<span>Race</span></a>
+        <input type="checkbox" id="nav-toggle" class="nav__toggle-input">
+        <label for="nav-toggle" class="nav__burger" aria-label="Menu"><span></span><span></span><span></span></label>
+        <div class="nav__panel">
+            <div class="nav__links">
+                <a href="{{ route('home') }}" class="@if(request()->routeIs('home')) is-active @endif">Home</a>
+                <details class="nav__dropdown @if(request()->routeIs('wizard.*', 'simulation.*', 'most-searched.*', 'kennis.*')) is-active @endif">
+                    <summary>Ontdekken</summary>
+                    <div class="nav__dropdown-menu">
+                        <a href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
+                        <a href="{{ route('simulation.index') }}">Simulatie</a>
+                        <a href="{{ route('most-searched.index') }}">Meest gezocht</a>
+                        <a href="{{ route('kennis.index') }}">Kennis</a>
+                    </div>
+                </details>
+                <a href="{{ route('partners.index') }}" class="@if(request()->routeIs('partners.index')) is-active @endif">Partners</a>
+                <a href="{{ route('how-it-works') }}" class="@if(request()->routeIs('how-it-works')) is-active @endif">Hoe het werkt</a>
+                <a href="{{ route('about') }}" class="@if(request()->routeIs('about')) is-active @endif">Over ons</a>
+                @auth
+                    <a href="{{ route('garage.index') }}" class="@if(request()->routeIs('garage.*')) is-active @endif">Garage</a>
+                    <a href="{{ route('profile.edit') }}" class="@if(request()->routeIs('profile.*')) is-active @endif">Mijn account</a>
+                @endauth
             </div>
-
-            <a class="nav-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}">Partners</a>
-            <a class="nav-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}">Hoe het werkt</a>
-            <a class="nav-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}">Over ons</a>
-            @auth
-                <a class="nav-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}">Garage</a>
-                <a class="nav-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}">Mijn account</a>
-            @endauth
+            <div class="nav__actions">
+                @auth
+                    <span class="nav__user">{{ Str::upper(Str::limit(auth()->user()->name, 12, '')) }}</span>
+                    <form method="post" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="btn btn--ghost" type="submit">Uitloggen</button>
+                    </form>
+                @else
+                    <a class="nav__login" href="{{ route('login') }}">Inloggen</a>
+                    <a class="btn btn--primary" href="{{ route('register') }}">Account aanmaken</a>
+                @endauth
+            </div>
         </div>
-        <div class="nav-actions">
-            @auth
-                <span class="small">{{ Str::upper(Str::limit(auth()->user()->name, 12, '')) }}</span>
-                <form method="post" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="nav-button" type="submit">Uitloggen</button>
-                </form>
-            @else
-                <a class="nav-link" href="{{ route('login') }}">Inloggen</a>
-                <a class="nav-link nav-cta" href="{{ route('register') }}">Account aanmaken</a>
-            @endauth
-        </div>
-        <button class="nav-burger" type="button" data-menu-open aria-label="Menu openen">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
     </nav>
-
-    <div class="mobile-menu" data-mobile-menu>
-        <div class="mobile-menu-head">
-            <span class="brand">@include('partials.brand-icon', ['dark' => true])REV<span>RACE</span></span>
-            <button class="mobile-menu-close" type="button" data-menu-close aria-label="Menu sluiten">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-        </div>
-        <div class="mobile-menu-links">
-            <a class="mobile-menu-link @if(request()->routeIs('home')) active @endif" href="{{ route('home') }}"><span>Home</span><span class="num">01</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('wizard.*')) active @endif" href="{{ route('wizard.index') }}"><span>Welke motor past bij mij</span><span class="num">02</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('simulation.*')) active @endif" href="{{ route('simulation.index') }}"><span>Simulatie</span><span class="num">03</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('most-searched.*')) active @endif" href="{{ route('most-searched.index') }}"><span>Meest gezocht</span><span class="num">04</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('partners.index')) active @endif" href="{{ route('partners.index') }}"><span>Partners</span><span class="num">05</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('how-it-works')) active @endif" href="{{ route('how-it-works') }}"><span>Hoe het werkt</span><span class="num">06</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('kennis.*')) active @endif" href="{{ route('kennis.index') }}"><span>Kennis</span><span class="num">07</span></a>
-            <a class="mobile-menu-link @if(request()->routeIs('about')) active @endif" href="{{ route('about') }}"><span>Over ons</span><span class="num">08</span></a>
-            @auth
-                <a class="mobile-menu-link @if(request()->routeIs('garage.*')) active @endif" href="{{ route('garage.index') }}"><span>Garage</span></a>
-                <a class="mobile-menu-link @if(request()->routeIs('profile.*')) active @endif" href="{{ route('profile.edit') }}"><span>Mijn account</span></a>
-            @endauth
-        </div>
-        <div class="mobile-menu-actions">
-            @auth
-                <form method="post" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="btn secondary" style="width:100%" type="submit">Uitloggen</button>
-                </form>
-            @else
-                <a class="btn primary" style="width:100%" href="{{ route('register') }}">Account aanmaken</a>
-                <a class="btn secondary" style="width:100%" href="{{ route('login') }}">Inloggen</a>
-            @endauth
-        </div>
-    </div>
 @endunless
 
 <main class="page">
@@ -147,15 +106,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </main>
 
 @unless($embedded ?? false)
-    <footer class="footer">
-        <div class="footer-inner">
-            <span class="brand">@include('partials.brand-icon', ['dark' => true])REV<span>RACE</span></span>
-            <span>
-                <a href="{{ route('partners.apply') }}">Partner worden</a> ·
-                <a href="{{ route('privacy') }}">Privacy</a> ·
+    <footer class="chapter--dark">
+        <div class="wrap footer">
+            <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon', ['dark' => true])Rev<span style="color:var(--redline)">Race</span></a>
+            <div class="footer__links">
+                <a href="{{ route('partners.apply') }}">Partner worden</a>
+                <a href="{{ route('privacy') }}">Privacy</a>
                 <a href="{{ route('contact') }}">Contact</a>
-            </span>
-            <span>© {{ date('Y') }} RevRace - www.rev-race.nl</span>
+            </div>
+            <small>© {{ date('Y') }} RevRace - www.rev-race.nl</small>
         </div>
     </footer>
 @endunless

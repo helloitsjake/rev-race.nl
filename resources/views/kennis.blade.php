@@ -17,39 +17,62 @@
 @endpush
 
 @section('content')
-    <header>
-        <span class="eyebrow">Kennis</span>
-        <h1 class="page-title">Alles over motorrijden, uitgelegd</h1>
-        <p class="page-sub">Van je eerste motor tot verdieping voor ervaren rijders, en het laatste nieuws over nieuwe modellen.</p>
+    <header class="chapter chapter--tight">
+        <div class="wrap">
+            <span class="eyebrow">Kennis</span>
+            <h1>Alles over motorrijden, uitgelegd</h1>
+            <p class="lede">Van je eerste motor tot verdieping voor ervaren rijders, en het laatste nieuws over nieuwe modellen.</p>
+        </div>
     </header>
 
-    @if($categories->count() > 1)
-        <div class="choice-row" data-filter-bar="kennis" style="margin-bottom:22px">
-            <button class="filter-pill active" type="button" data-filter="alle">Alle</button>
-            @foreach($categories as $category)
-                <button class="filter-pill" type="button" data-filter="{{ Str::slug($category) }}">{{ $category }}</button>
-            @endforeach
-        </div>
-    @endif
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            @if($categories->count() > 1)
+                <div class="choice-row" data-filter-bar="kennis" style="margin-bottom: clamp(28px, 4vw, 44px)">
+                    <button class="choice is-active" type="button" data-filter="alle">Alle</button>
+                    @foreach($categories as $category)
+                        <button class="choice" type="button" data-filter="{{ Str::slug($category) }}">{{ $category }}</button>
+                    @endforeach
+                </div>
+            @endif
 
-    @if($articles->isNotEmpty())
-        <div class="card-grid" data-filter-grid="kennis">
-            @foreach($articles as $article)
-                <article class="card" data-filter-category="{{ Str::slug($article->category) }}">
-                    <span class="badge">{{ $article->category }}</span>
-                    <h2 class="card-title" style="margin-top:10px">{{ $article->title }}</h2>
-                    @if($article->excerpt)
-                        <p class="section-sub">{{ $article->excerpt }}</p>
-                    @endif
-                    <div class="hero-actions" style="margin-top:12px">
-                        <a class="accent" style="font-size:13px;font-weight:650;color:var(--teal)" href="{{ route('kennis.show', $article) }}">Lees verder &rarr;</a>
-                    </div>
-                </article>
-            @endforeach
+            @if($articles->isNotEmpty())
+                <div class="kb-grid" data-filter-grid="kennis">
+                    @foreach($articles as $article)
+                        <article class="kb-card @if($loop->first) kb-card--wide @endif" data-filter-category="{{ Str::slug($article->category) }}">
+                            <div class="kb-card__media">
+                                @if($article->cover_image_url)
+                                    <img src="{{ $article->cover_image_url }}" alt="" loading="lazy">
+                                @else
+                                    {{ $article->category }}
+                                @endif
+                            </div>
+                            <p class="kb-card__stage">{{ $article->category }}</p>
+                            <h3>{{ $article->title }}</h3>
+                            @if($article->excerpt)
+                                <p>{{ $article->excerpt }}</p>
+                            @endif
+                            @if($article->author_name)
+                                <p class="kb-card__byline">Door <b>{{ $article->author_name }}</b></p>
+                            @endif
+                            <a class="kb-card__link" href="{{ route('kennis.show', $article) }}">Lees het artikel &rarr;</a>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="panel">
+                    <p>Binnenkort verschijnen hier de eerste artikelen.</p>
+                </div>
+            @endif
         </div>
-    @else
-        <div class="panel">
-            <p>Binnenkort verschijnen hier de eerste artikelen.</p>
+    </section>
+
+    <section class="chapter chapter--dark chapter--tight">
+        <div class="wrap">
+            <span class="eyebrow">Zelf doorrekenen</span>
+            <h2>Lezen is één stap. Doorrekenen is de volgende.</h2>
+            <p class="lede" style="margin-top: 0.6em; margin-bottom: 1.8em">Kies twee motoren en laat de simulator de rest doen, op jouw wegconditie.</p>
+            <a class="btn btn--primary" href="{{ route('simulation.index') }}">Start een simulatie</a>
         </div>
-    @endif
+    </section>
 @endsection

@@ -42,88 +42,79 @@
 @endpush
 
 @section('content')
-    <a class="small" href="{{ route('partners.index') }}">&larr; Alle partners</a>
-
-    <div class="chart-head" style="align-items:flex-start;margin-top:16px">
-        <div>
-            <span class="badge">{{ $partner->category }}</span>
-            <h1 class="page-title" style="margin-top:10px">{{ $partner->name }}</h1>
-            <p class="page-sub">{{ $partner->description }}</p>
-        </div>
-        <div class="photo-placeholder photo-placeholder-sm">Logo</div>
-    </div>
-
-    <div class="partner-layout">
-        <div>
-            <section class="panel">
-                <h2 class="card-title">Over {{ $partner->name }}</h2>
-                <p style="margin-top:10px">{{ $partner->about_text ?: $partner->description }}</p>
-                @if($partner->founded_year)
-                    <p class="small" style="margin-top:10px;color:var(--dim)">Actief sinds {{ $partner->founded_year }}</p>
-                @endif
-            </section>
-
-            @if($partner->why_choose_text)
-                <section class="panel" style="margin-top:20px">
-                    <h2 class="card-title">Waarom kiezen voor {{ $partner->name }}</h2>
-                    <p style="margin-top:10px">{{ $partner->why_choose_text }}</p>
-                </section>
-            @endif
-
-            @if(!empty($partner->usps))
-                <section class="panel" style="margin-top:20px">
-                    <h2 class="card-title">In het kort</h2>
-                    <ul class="partner-usp-list" style="margin-top:12px">
-                        @foreach($partner->usps as $usp)
-                            <li>
-                                <svg class="card-icon" style="width:20px;height:20px;margin-bottom:0;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10 -10"/></svg>
-                                <span>{{ $usp }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
-        </div>
-
-        <aside>
-            <section class="panel">
-                <h2 class="card-title" style="margin-bottom:4px">Contact</h2>
-
-                @if($address)
-                    <div class="spec-row" style="align-items:flex-start">
-                        <span class="spec-label">Adres</span>
-                        <span class="spec-value" style="text-align:right">{{ $partner->address_street }}<br>{{ $partner->address_postcode }} {{ $partner->address_city }}</span>
-                    </div>
-                @endif
-                @if($partner->opening_hours)
-                    <div class="spec-row">
-                        <span class="spec-label">Openingstijden</span>
-                        <span class="spec-value" style="text-align:right">{{ $partner->opening_hours }}</span>
-                    </div>
-                @endif
-                @if($partner->contact_phone)
-                    <div class="spec-row">
-                        <span class="spec-label">Telefoon</span>
-                        <span class="spec-value"><a class="accent" href="tel:{{ preg_replace('/\s+/', '', $partner->contact_phone) }}">{{ $partner->contact_phone }}</a></span>
-                    </div>
-                @endif
-                @if($partner->contact_email)
-                    <div class="spec-row">
-                        <span class="spec-label">E-mail</span>
-                        <span class="spec-value"><a class="accent" href="mailto:{{ $partner->contact_email }}">{{ $partner->contact_email }}</a></span>
-                    </div>
-                @endif
-
-                <div class="hero-actions" style="margin-top:18px">
-                    @if($mapsUrl)
-                        <a class="btn primary" href="{{ $mapsUrl }}" rel="nofollow noopener" target="_blank">Routebeschrijving</a>
-                    @endif
-                    @if($partner->website_url)
-                        <a class="btn secondary" href="{{ $partner->website_url }}" rel="nofollow noopener" target="_blank">Naar website</a>
-                    @endif
-                    <a class="btn ghost" href="{{ route('partners.index') }}">Alle partners</a>
+    <header class="chapter chapter--tight">
+        <div class="wrap">
+            <a class="back-link" href="{{ route('partners.index') }}">&larr; Alle partners</a>
+            <div class="partner-head">
+                <div>
+                    <span class="badge">{{ $partner->category }}</span>
+                    <h1 style="margin-top:10px;font-size:clamp(2.25rem,4.4vw,4rem)">{{ $partner->name }}</h1>
+                    <p class="lede" style="margin-top:0.6em">{{ $partner->description }}</p>
                 </div>
-            </section>
-        </aside>
-    </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="chapter chapter--tight">
+        <div class="wrap partner-layout">
+            <div>
+                <div class="block">
+                    <span class="eyebrow">Bedrijfsprofiel</span>
+                    <h2 style="font-size:clamp(1.5rem,2.2vw,2rem)">Over {{ $partner->name }}</h2>
+                    <p>{{ $partner->about_text ?: $partner->description }}</p>
+                    @if($partner->founded_year)
+                        <p class="note-inline">Actief sinds {{ $partner->founded_year }}</p>
+                    @endif
+                </div>
+
+                @if($partner->why_choose_text)
+                    <div class="block">
+                        <span class="eyebrow">Waarom kiezen voor {{ $partner->name }}</span>
+                        <h2 style="font-size:clamp(1.5rem,2.2vw,2rem)">Wat {{ $partner->name }} onderscheidt</h2>
+                        <p>{{ $partner->why_choose_text }}</p>
+                    </div>
+                @endif
+
+                @if(!empty($partner->usps))
+                    <div class="block">
+                        <span class="eyebrow">In het kort</span>
+                        <ul class="usp-list">
+                            @foreach($partner->usps as $usp)
+                                <li>{{ $usp }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+
+            <aside class="partner-aside">
+                <div class="panel">
+                    <span class="eyebrow" style="margin-bottom:0.6em">Contact</span>
+
+                    @if($address)
+                        <div class="pass__row" style="align-items:flex-start"><span>Adres</span><b style="text-align:right">{{ $partner->address_street }}<br>{{ $partner->address_postcode }} {{ $partner->address_city }}</b></div>
+                    @endif
+                    @if($partner->opening_hours)
+                        <div class="pass__row"><span>Openingstijden</span><b style="text-align:right">{{ $partner->opening_hours }}</b></div>
+                    @endif
+                    @if($partner->contact_phone)
+                        <div class="pass__row"><span>Telefoon</span><b><a href="tel:{{ preg_replace('/\s+/', '', $partner->contact_phone) }}">{{ $partner->contact_phone }}</a></b></div>
+                    @endif
+                    @if($partner->contact_email)
+                        <div class="pass__row"><span>E-mail</span><b><a href="mailto:{{ $partner->contact_email }}">{{ $partner->contact_email }}</a></b></div>
+                    @endif
+
+                    <div style="margin-top:20px">
+                        @if($mapsUrl)
+                            <a class="btn btn--primary" href="{{ $mapsUrl }}" rel="nofollow noopener" target="_blank">Routebeschrijving</a>
+                        @endif
+                        @if($partner->website_url)
+                            <a class="btn btn--ghost" href="{{ $partner->website_url }}" rel="nofollow noopener" target="_blank">Naar website</a>
+                        @endif
+                        <a class="btn btn--ghost" href="{{ route('partners.index') }}">Alle partners</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
 @endsection

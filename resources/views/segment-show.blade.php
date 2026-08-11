@@ -18,54 +18,65 @@
 @endpush
 
 @section('content')
-    <nav class="small" aria-label="Broodkruimel">
-        <a href="{{ route('home') }}">Home</a> &rarr;
-        <a href="{{ route('segments.index') }}">Segmenten</a> &rarr;
-        {{ $label }}
-    </nav>
-
-    <header style="margin-top:12px">
-        <span class="eyebrow">Segment</span>
-        <h1 class="page-title">{{ $label }}</h1>
-        <p class="page-sub">{{ $description }}</p>
+    <header class="chapter">
+        <div class="wrap">
+            <nav class="crumb" aria-label="Broodkruimel">
+                <a href="{{ route('home') }}">Home</a><span class="sep">&rarr;</span>
+                <a href="{{ route('segments.index') }}">Segmenten</a><span class="sep">&rarr;</span>
+                <span>{{ $label }}</span>
+            </nav>
+            <span class="eyebrow">Segment</span>
+            <h1>{{ $label }}</h1>
+            <p class="lede">{{ $description }} {{ $motors->count() }} {{ $motors->count() === 1 ? 'model' : 'modellen' }} in de database, hieronder gesorteerd op vermogen/gewicht.</p>
+        </div>
     </header>
 
-    <section class="panel">
-        <h2 class="card-title" style="margin-bottom:12px">Alle {{ Str::lower($label) }}-modellen, gesorteerd op vermogen/gewicht</h2>
-        @foreach($motors as $motor)
-            <div class="compare-row" style="grid-template-columns:1fr auto auto;align-items:center">
-                <span class="spec-value" style="font-weight:700">{{ $motor->label() }}</span>
-                <span class="spec-value" style="color:var(--dim)">{{ $motor->power_hp }} pk / {{ $motor->weight_kg }} kg</span>
-                @if($motor->isA2Eligible())
-                    <span class="badge">A2</span>
-                @else
-                    <span></span>
-                @endif
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            <div class="model-list model-list--compact">
+                <div class="model-list__title">Alle {{ Str::lower($label) }}-modellen, gesorteerd op pk/kg</div>
+                <div class="model-row model-row--head">
+                    <span>Model</span><span>PK</span><span>KG</span><span>A2</span>
+                </div>
+                @foreach($motors as $motor)
+                    <div class="model-row">
+                        <div class="model-row__name">{{ $motor->model }} <span>&mdash; {{ $motor->year }}</span></div>
+                        <div class="model-row__num model-row__num--strong">{{ $motor->power_hp }}</div>
+                        <div class="model-row__num">{{ $motor->weight_kg }}</div>
+                        <div class="model-row__tag">{{ $motor->isA2Eligible() ? 'A2' : '' }}</div>
+                    </div>
+                @endforeach
             </div>
-        @endforeach
+        </div>
     </section>
 
     @if($comparisons->isNotEmpty())
-        <section class="section">
-            <div class="chart-head" style="margin-bottom:6px">
-                <div>
-                    <span class="eyebrow">Vergelijkingen</span>
-                    <h2 class="section-title">Populaire {{ Str::lower($label) }}-vergelijkingen</h2>
+        <section class="chapter">
+            <div class="wrap">
+                <div class="kb-head">
+                    <div>
+                        <span class="eyebrow">Vergelijkingen</span>
+                        <h2>Populaire {{ Str::lower($label) }}-vergelijkingen</h2>
+                    </div>
                 </div>
-            </div>
-            <div class="card-grid">
-                @foreach($comparisons as $row)
-                    <a class="card" href="{{ route('compare.show', $row['slug']) }}" style="display:block">
-                        <h3 class="card-title" style="font-size:16px">{{ $row['motorA']->label() }}</h3>
-                        <p class="section-sub" style="margin-bottom:0">vs {{ $row['motorB']->label() }}</p>
-                    </a>
-                @endforeach
+                <div class="kb-grid">
+                    @foreach($comparisons as $row)
+                        <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
+                            <h3>{{ $row['motorA']->label() }}</h3>
+                            <p>vs {{ $row['motorB']->label() }}</p>
+                            <span class="kb-card__link">Bekijk vergelijking &rarr;</span>
+                        </a>
+                    @endforeach
+                </div>
             </div>
         </section>
     @endif
 
-    <section class="section" style="text-align:center">
-        <p class="section-sub">Nog niet zeker of {{ Str::lower($label) }} bij je past?</p>
-        <a class="btn primary" href="{{ route('wizard.index') }}">Doe de wizard</a>
+    <section class="chapter chapter--dark chapter--tight">
+        <div class="wrap cta-line">
+            <p class="eyebrow">Nog niet zeker?</p>
+            <h2>Nog niet zeker of {{ Str::lower($label) }} bij je past?</h2>
+            <a class="btn btn--primary" href="{{ route('wizard.index') }}">Doe de wizard</a>
+        </div>
     </section>
 @endsection
