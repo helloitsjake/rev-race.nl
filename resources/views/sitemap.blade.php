@@ -14,8 +14,12 @@
     <url><loc>{{ route('brands.index') }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
     <url><loc>{{ route('segments.index') }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
     <url><loc>{{ route('a2-motoren') }}</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+    <url><loc>{{ route('yearly-report.show') }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
     @foreach($brandSlugs as $slug)
         <url><loc>{{ route('brands.show', $slug) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    @endforeach
+    @foreach($modelSlugs as $model)
+        <url><loc>{{ route('brands.model', [$model['brand'], $model['model']]) }}</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
     @endforeach
     @foreach($segmentKeys as $key)
         <url><loc>{{ route('segments.show', $key) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>

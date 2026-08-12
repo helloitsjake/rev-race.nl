@@ -199,6 +199,12 @@ a.accent { color: var(--redline); font-weight: 600; }
 .bar > span { display: block; height: 100%; background: var(--redline); }
 .bike-row:nth-of-type(2) .bar > span { background: var(--midrange); }
 
+.bar-list { display: flex; flex-direction: column; gap: 16px; margin-top: 1.4rem; }
+.bar-row { display: grid; grid-template-columns: 140px 1fr 48px; gap: 1rem; align-items: center; }
+.bar-row__label { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.02em; color: inherit; }
+.bar-row__value { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-60); text-align: right; font-variant-numeric: tabular-nums; }
+.chapter--dark .bar-row__value { color: var(--paper-60); }
+
 .panel__foot { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--asphalt-line); }
 .panel__foot .btn { width: 100%; justify-content: center; }
 
@@ -230,6 +236,7 @@ a.accent { color: var(--redline); font-weight: 600; }
 .spec-head { max-width: 60ch; margin-bottom: 0; }
 .spec { border-top: 1px solid var(--stone-line); margin-top: clamp(32px, 4vw, 56px); }
 .spec__row { display: grid; grid-template-columns: 220px 1fr 1fr; gap: 2rem; padding-block: 26px; border-bottom: 1px solid var(--stone-line); align-items: baseline; }
+.spec--single .spec__row { grid-template-columns: 220px 1fr; }
 .spec__row--head .spec__value { font-weight: 700; font-size: 1.0625rem; }
 .spec__label { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-60); padding-top: 3px; }
 .spec__value { font-family: var(--font-mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
@@ -464,6 +471,8 @@ a.accent { color: var(--redline); font-weight: 600; }
 .model-row--head { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--paper-60); padding-block: 0 12px; }
 .model-row__name { font-weight: 600; font-size: 0.9375rem; }
 .model-row__name span { color: var(--paper-60); font-weight: 400; }
+.model-row__name a { color: inherit; transition: color .15s ease; }
+.model-row__name a:hover { color: var(--redline); }
 .model-row__cat { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.04em; color: var(--midrange); }
 .model-row__num { font-family: var(--font-mono); font-size: 0.875rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--paper-60); }
 .model-row__num--strong { color: var(--paper); }

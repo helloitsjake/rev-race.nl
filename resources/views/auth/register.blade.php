@@ -47,6 +47,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="auth-row">
+                    <label for="referral_source">Hoe kende je RevRace?</label>
+                    <select class="field" id="referral_source" name="referral_source">
+                        <option value="">Maakt niet uit / weet niet</option>
+                        @foreach (\App\Models\User::REFERRAL_SOURCES as $value => $label)
+                            <option value="{{ $value }}" @selected(old('referral_source') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button class="btn btn--primary" type="submit" style="width:100%">Account aanmaken</button>
                 <p class="auth-foot">Heb je al een account? <a href="{{ route('login') }}">Inloggen</a></p>
             </form>

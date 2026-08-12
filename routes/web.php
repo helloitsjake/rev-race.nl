@@ -13,6 +13,7 @@ use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\SimulationController;
 use App\Http\Controllers\ToplijstController;
 use App\Http\Controllers\WizardController;
+use App\Http\Controllers\YearlyReportController;
 use Illuminate\Support\Facades\Route;
 
 // Publieke, niet-persoonlijke pagina's: expliciete Cache-Control zodat browser/CDN mag cachen.
@@ -43,9 +44,11 @@ Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->middlewa
 Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('toplijst.show');
 Route::get('/merken', [BrandController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('brands.index');
 Route::get('/merken/{merk}', [BrandController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('brands.show');
+Route::get('/merken/{merk}/{model}', [BrandController::class, 'showModel'])->middleware('cache.public:3600,86400,604800')->name('brands.model');
 Route::get('/segmenten', [SegmentController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('segments.index');
 Route::get('/segment/{categorie}', [SegmentController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('segments.show');
 Route::get('/a2-motoren', [PageController::class, 'a2Motoren'])->middleware('cache.public:3600,86400,604800')->name('a2-motoren');
+Route::get('/staat-van-de-nederlandse-motorrijder', [YearlyReportController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('yearly-report.show');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');

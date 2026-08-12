@@ -40,7 +40,7 @@
                 </div>
                 @foreach($motors as $motor)
                     <div class="model-row">
-                        <div class="model-row__name">{{ $motor->model }} <span>&mdash; {{ $motor->year }}</span></div>
+                        <div class="model-row__name"><a href="{{ route('brands.model', [$slug, $motor->slug()]) }}">{{ $motor->model }}</a> <span>&mdash; {{ $motor->year }}</span></div>
                         <div class="model-row__cat">{{ $motor->categoryLabel() }}</div>
                         <div class="model-row__num model-row__num--strong">{{ $motor->power_hp }}</div>
                         <div class="model-row__num">{{ $motor->weight_kg }}</div>

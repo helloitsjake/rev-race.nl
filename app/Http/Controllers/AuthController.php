@@ -49,6 +49,7 @@ class AuthController extends Controller
             'weight_kg' => ['nullable', 'integer', 'between:35,180'],
             'height_cm' => ['nullable', 'integer', 'between:120,230'],
             'riding_style' => ['nullable', 'in:recreatief,sportief,track'],
+            'referral_source' => ['nullable', 'in:' . implode(',', array_keys(User::REFERRAL_SOURCES))],
         ]);
 
         $user = User::query()->create([
@@ -58,6 +59,7 @@ class AuthController extends Controller
             'weight_kg' => $data['weight_kg'] ?? null,
             'height_cm' => $data['height_cm'] ?? null,
             'riding_style' => $data['riding_style'] ?? 'recreatief',
+            'referral_source' => $data['referral_source'] ?? null,
         ]);
 
         Auth::login($user);

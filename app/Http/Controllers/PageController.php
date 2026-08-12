@@ -278,6 +278,10 @@ class PageController extends Controller
     public function sitemap()
     {
         $brandSlugs = Motor::query()->pluck('brand')->unique()->map(fn ($brand) => Str::slug($brand))->values();
+        $modelSlugs = Motor::query()->get()->map(fn (Motor $motor) => [
+            'brand' => Str::slug($motor->brand),
+            'model' => $motor->slug(),
+        ]);
 
         return response()
             ->view('sitemap', [
@@ -286,6 +290,7 @@ class PageController extends Controller
                 'toplijsten' => array_keys(ToplijstController::lists()),
                 'pairs' => ComparisonController::pairs(),
                 'brandSlugs' => $brandSlugs,
+                'modelSlugs' => $modelSlugs,
                 'segmentKeys' => array_keys(Motor::CATEGORIES),
             ])
             ->header('Content-Type', 'application/xml');

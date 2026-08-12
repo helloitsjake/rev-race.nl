@@ -111,6 +111,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon', ['dark' => true])Rev<span style="color:var(--redline)">Race</span></a>
             <div class="footer__links">
                 <a href="{{ route('partners.apply') }}">Partner worden</a>
+                <a href="{{ route('yearly-report.show') }}">Staat van de Nederlandse motorrijder</a>
                 <a href="{{ route('privacy') }}">Privacy</a>
                 <a href="{{ route('contact') }}">Contact</a>
             </div>

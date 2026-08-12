@@ -15,6 +15,16 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const REFERRAL_SOURCES = [
+        'zoekmachine' => 'Zoekmachine (Google, Bing)',
+        'ai_assistent' => 'AI-assistent (ChatGPT, Perplexity, Copilot)',
+        'social_media' => 'Social media',
+        'motorforum' => 'Motorforum of community',
+        'vriend_bekende' => 'Via een vriend of bekende',
+        'dealer_partner' => 'Via een dealer of partner',
+        'anders' => 'Anders',
+    ];
+
     protected $fillable = [
         'name',
         'email',
@@ -23,6 +33,7 @@ class User extends Authenticatable
         'height_cm',
         'birthdate',
         'riding_style',
+        'referral_source',
         'riding_experience_years',
         'license_category',
         'is_premium',
