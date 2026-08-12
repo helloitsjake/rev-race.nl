@@ -39,6 +39,7 @@
     {!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'RevRace', 'url' => 'https://www.rev-race.nl']) !!}
     </script>
     <link rel="stylesheet" href="{{ asset('css/revrace.css') }}?v={{ filemtime(public_path('css/revrace.css')) }}">
+    @stack('head')
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->

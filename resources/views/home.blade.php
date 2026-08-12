@@ -3,6 +3,10 @@
 @section('title', 'RevRace - Welke motor past bij jou? Vergelijk en simuleer')
 @section('description', 'Ontdek welke motor bij jouw rijstijl past. Vergelijk motoren op vermogen, gewicht en wegconditie met een gratis rijsimulatie.')
 
+@push('head')
+    <meta name="ahrefs-site-verification" content="8f2470a126e81d20eb49805c8cf579484fd2b61a109fa70e1395870349d60250">
+@endpush
+
 @section('content')
     <header class="chapter">
         <div class="wrap hero">
