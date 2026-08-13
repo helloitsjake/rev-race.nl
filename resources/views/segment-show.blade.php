@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $label . ': alle modellen en vergelijkingen - RevRace')
+@section('title', 'Beste ' . ($buyingLabel ?? Str::lower($label)) . ': alle modellen op een rij - RevRace')
 @section('description', $description ?? ($label . ' motoren vergelijken op vermogen, gewicht en simulatieresultaten.'))
 
 @push('scripts')
@@ -28,6 +28,13 @@
             <span class="eyebrow">Segment</span>
             <h1>{{ $label }}</h1>
             <p class="lede">{{ $description }} {{ $motors->count() }} {{ $motors->count() === 1 ? 'model' : 'modellen' }} in de database, hieronder gesorteerd op vermogen/gewicht.</p>
+            @if($buyingIntro)
+                <p class="lede">{!! str_replace(
+                    ':wizard',
+                    '<a class="accent" href="' . route('wizard.index') . '">wizard</a>',
+                    $buyingIntro
+                ) !!}</p>
+            @endif
         </div>
     </header>
 

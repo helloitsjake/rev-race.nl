@@ -55,6 +55,7 @@
                         <span class="eyebrow">Segment</span>
                         <h2>{{ \App\Models\Motor::CATEGORIES[$categorie] ?? $categorie }}</h2>
                         <p class="lede">
+                            Op zoek naar een A2 {{ \App\Http\Controllers\SegmentController::BUYING_LABEL[$categorie] ?? Str::lower(\App\Models\Motor::CATEGORIES[$categorie] ?? $categorie) }}?
                             {{ \App\Http\Controllers\SegmentController::DESCRIPTIONS[$categorie] ?? '' }}
                             {{ $categorieMotors->count() }} {{ $categorieMotors->count() === 1 ? 'A2-model' : 'A2-modellen' }} in de database.
                         </p>

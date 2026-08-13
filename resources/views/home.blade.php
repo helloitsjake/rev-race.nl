@@ -112,8 +112,12 @@
         <div class="wrap">
             <p class="eyebrow">Overzicht</p>
             <h2>Ontdek de database op jouw manier</h2>
-            <p class="lede" style="margin-bottom:2em">Liever bladeren dan simuleren? Blader per merk, per rijstijl-segment, of bekijk direct alle A2-geschikte motoren.</p>
+            <p class="lede" style="margin-bottom:2em">Liever bladeren dan simuleren, of nog geen idee welke motor je zoekt? Blader per merk, per rijstijl-segment, bekijk alle A2-geschikte motoren, of laat de wizard je op weg helpen.</p>
             <div class="kb-grid">
+                <a class="kb-card" href="{{ route('wizard.index') }}">
+                    <h3>Welke motor past bij mij?</h3>
+                    <p>Beantwoord twee vragen over je rijstijl en krijg een advies uit de database.</p>
+                </a>
                 <a class="kb-card" href="{{ route('brands.index') }}">
                     <h3>Alle merken</h3>
                     <p>Elk merk in de database met alle modellen en vergelijkingen.</p>

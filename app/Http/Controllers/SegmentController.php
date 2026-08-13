@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Motor;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SegmentController extends Controller
@@ -18,6 +19,33 @@ class SegmentController extends Controller
         'adventure' => 'De crossover tussen asfalt en onverhard terrein, herkenbaar aan het hoge zicht en de robuuste bouw.',
         'cruiser' => 'Lage zit, relaxte houding en veel nadruk op karakter en gevoel in plaats van pure topsnelheid.',
         'retro' => 'Klassieke vormgeving met moderne techniek eronder, vaak gekozen om de uitstraling, niet om de specificaties.',
+    ];
+
+    /**
+     * De term zoals mensen 'm daadwerkelijk zoeken (Ahrefs Rank Tracker, augustus 2026), niet
+     * altijd hetzelfde als het segmentlabel zelf ("Toermotor" i.p.v. "Tourer").
+     */
+    public const BUYING_LABEL = [
+        'naked' => 'naked bike',
+        'sport' => 'sportmotor',
+        'tourer' => 'toermotor',
+        'adventure' => 'adventure motor',
+        'cruiser' => 'cruiser',
+        'retro' => 'retro motor',
+    ];
+
+    /**
+     * Korte alinea gericht op de koopvraag ("beste X", "X kopen"), als aanvulling op de
+     * feitelijke DESCRIPTIONS hierboven. Geen prijzen: RevRace heeft geen prijsdata (zie ook de
+     * wizard, die budget bewust buiten de match houdt).
+     */
+    public const BUYING_INTRO = [
+        'naked' => 'Twijfel je tussen meerdere naked bikes? Vergelijk vermogen, gewicht en de pk/kg-verhouding van elk model hieronder, of doe de :wizard voor een advies op basis van je rijstijl.',
+        'sport' => 'Een sportmotor kopen begint met de vraag hoeveel vermogen je écht gebruikt. Vergelijk de modellen hieronder op vermogen, gewicht en pk/kg, of doe de :wizard voor advies op maat.',
+        'tourer' => 'Bij een toermotor kopen telt comfort over lange afstanden net zo zwaar als vermogen. Vergelijk de modellen hieronder, of laat de :wizard meewegen wat voor jou telt.',
+        'adventure' => 'Een adventure motor kopen betekent kiezen tussen puur asfaltcomfort en echte offroad-capaciteit. Vergelijk de modellen hieronder op vermogen en gewicht, of doe de :wizard voor een gericht advies.',
+        'cruiser' => 'Cruisers worden in Nederland ook vaak choppers genoemd: lage zit, relaxte houding, veel karakter. Vergelijk de modellen hieronder, of doe de :wizard voor advies op basis van je rijstijl.',
+        'retro' => 'Een retro motor kopen is vaak een keuze voor uitstraling, niet alleen voor specificaties. Vergelijk de modellen hieronder, of doe de :wizard als de techniek net zo zwaar moet wegen als het uiterlijk.',
     ];
 
     public function index(): View
@@ -67,6 +95,8 @@ class SegmentController extends Controller
             'categorie' => $categorie,
             'label' => Motor::CATEGORIES[$categorie],
             'description' => self::DESCRIPTIONS[$categorie] ?? null,
+            'buyingLabel' => self::BUYING_LABEL[$categorie] ?? Str::lower(Motor::CATEGORIES[$categorie]),
+            'buyingIntro' => self::BUYING_INTRO[$categorie] ?? null,
             'motors' => $motors,
             'comparisons' => $comparisons,
         ]);
