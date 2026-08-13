@@ -559,7 +559,25 @@ select.field { appearance: none; }
 .footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem; padding-block: 32px; }
 .footer__links { display: flex; gap: 1.6rem; font-size: 0.875rem; color: var(--paper-60); flex-wrap: wrap; }
 .footer__links a:hover { color: var(--paper); }
+.footer__link-btn { background: none; border: none; padding: 0; font: inherit; font-size: 0.875rem; color: var(--paper-60); }
+.footer__link-btn:hover { color: var(--paper); }
+.footer__link-btn:focus-visible { outline: 2px solid var(--redline); outline-offset: 2px; }
 .footer small { font-family: var(--font-mono); font-size: 0.75rem; color: var(--paper-60); }
+
+/* ---------- consent banner ---------- */
+.consent-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: var(--asphalt); border-top: 3px solid var(--redline); }
+.consent-banner__inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 20px var(--edge); }
+.consent-banner__text { flex: 1 1 420px; }
+.consent-banner__title { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.8125rem; color: var(--redline); margin-bottom: 6px; }
+.consent-banner__text p:not(.consent-banner__title) { margin: 0; font-size: 0.9375rem; line-height: 1.5; color: var(--paper-60); max-width: 64ch; }
+.consent-banner__text a { color: var(--paper); text-decoration: underline; }
+.consent-banner__actions { display: flex; gap: 10px; flex-wrap: wrap; flex: none; }
+.consent-banner .btn--ghost { border-color: var(--asphalt-line); color: var(--paper); }
+.consent-banner .btn--ghost:hover { border-color: var(--paper); }
+@media (max-width: 640px) {
+  .consent-banner__actions { width: 100%; }
+  .consent-banner__actions .btn { flex: 1; justify-content: center; }
+}
 
 @media (max-width: 900px) {
   .hero, .credibility { grid-template-columns: 1fr; }

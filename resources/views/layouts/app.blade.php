@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <script src="https://analytics.ahrefs.com/analytics.js" data-key="x3pTCkZRmLD0nmLUPg2tpg" async></script>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-NFH7Z6V5');</script>
-    <!-- End Google Tag Manager -->
+    {{--
+        Ahrefs Web Analytics + Google Tag Manager laden pas na toestemming, via
+        consent.js (public/js/site.js). Zie CONSENT_STORAGE_KEY daar en de
+        privacypagina voor wat er precies geladen wordt en waarom.
+    --}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -42,10 +39,18 @@
     @stack('head')
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NFH7Z6V5"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+<div id="consent-banner" class="consent-banner" hidden role="region" aria-label="Cookievoorkeuren">
+    <div class="consent-banner__inner wrap">
+        <div class="consent-banner__text">
+            <p class="consent-banner__title">Cookies op RevRace</p>
+            <p>Functionele cookies zijn altijd nodig (inloggen, beveiliging) en staan aan. Voor het meten van bezoekersaantallen gebruiken we optioneel Google Tag Manager en Ahrefs Web Analytics &mdash; pas na jouw toestemming. Lees meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
+        </div>
+        <div class="consent-banner__actions">
+            <button type="button" class="btn btn--ghost" data-consent-action="reject">Alleen noodzakelijk</button>
+            <button type="button" class="btn btn--primary" data-consent-action="accept">Alles toestaan</button>
+        </div>
+    </div>
+</div>
 @unless($embedded ?? false)
     <div class="topbar">
         <span>Server-side motorsimulatie</span>
@@ -115,6 +120,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <a href="{{ route('partners.apply') }}">Partner worden</a>
                 <a href="{{ route('yearly-report.show') }}">Staat van de Nederlandse motorrijder</a>
                 <a href="{{ route('privacy') }}">Privacy</a>
+                <button type="button" class="footer__link-btn" data-consent-open>Cookie-instellingen</button>
                 <a href="{{ route('contact') }}">Contact</a>
             </div>
             <small>© {{ date('Y') }} RevRace - www.rev-race.nl</small>
