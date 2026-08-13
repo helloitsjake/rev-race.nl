@@ -82,31 +82,33 @@
         </div>
     </section>
 
-    <section class="chapter chapter--dark">
-        <div class="wrap">
-            <div class="kb-head">
-                <div>
-                    <p class="eyebrow">Populair</p>
-                    <h2>Deze week populair</h2>
-                </div>
-                <a class="btn btn--ghost" href="{{ route('most-searched.index') }}">Bekijk alle →</a>
-            </div>
-            <p class="lede" style="margin-bottom:2em">De modellen die andere bezoekers het vaakst tegen elkaar laten racen.</p>
-            <div class="rank-list">
-                @foreach($weeklyPopular as $row)
-                    <div class="rank-row">
-                        <div class="rank-row__num">#{{ $loop->iteration }}</div>
-                        <div>
-                            <div class="rank-row__name">{{ $row['motor']->label() }}</div>
-                            <div class="rank-row__meta">{{ $row['motor']->power_hp }} pk · {{ $row['motor']->weight_kg }} kg · {{ $row['motor']->engine_type }}</div>
-                        </div>
-                        <div><span class="rank-row__count">{{ $row['uses'] }}× gesimuleerd</span><span class="rank-row__ratio">{{ number_format($row['motor']->powerToWeight(), 2) }} pk/kg</span></div>
-                        <a class="btn btn--ghost" href="{{ route('simulation.index', ['motor_a' => $row['motor']->id]) }}">Simuleer →</a>
+    @if($weeklyPopular->isNotEmpty())
+        <section class="chapter chapter--dark">
+            <div class="wrap">
+                <div class="kb-head">
+                    <div>
+                        <p class="eyebrow">Populair</p>
+                        <h2>Deze week populair</h2>
                     </div>
-                @endforeach
+                    <a class="btn btn--ghost" href="{{ route('most-searched.index') }}">Bekijk alle →</a>
+                </div>
+                <p class="lede" style="margin-bottom:2em">De modellen die andere bezoekers het vaakst tegen elkaar laten racen.</p>
+                <div class="rank-list">
+                    @foreach($weeklyPopular as $row)
+                        <div class="rank-row">
+                            <div class="rank-row__num">#{{ $loop->iteration }}</div>
+                            <div>
+                                <div class="rank-row__name">{{ $row['motor']->label() }}</div>
+                                <div class="rank-row__meta">{{ $row['motor']->power_hp }} pk · {{ $row['motor']->weight_kg }} kg · {{ $row['motor']->engine_type }}</div>
+                            </div>
+                            <div><span class="rank-row__count">{{ $row['uses'] }}× gesimuleerd</span><span class="rank-row__ratio">{{ number_format($row['motor']->powerToWeight(), 2) }} pk/kg</span></div>
+                            <a class="btn btn--ghost" href="{{ route('simulation.index', ['motor_a' => $row['motor']->id]) }}">Simuleer →</a>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
 
     <section class="chapter">
         <div class="wrap">

@@ -17,14 +17,20 @@ use Illuminate\View\View;
 
 class PageController extends Controller
 {
+    /**
+     * Onder deze drempel is "populair" een misleidend label: 1 of 2 races zegt niets.
+     * Motoren die er niet aan voldoen worden niet aangevuld met verzonnen 0-tellingen,
+     * de sectie verdwijnt dan gewoon van de homepage (zie home.blade.php).
+     */
+    private const MIN_WEEKLY_POPULAR_USES = 3;
+
     public function home(SimulationService $simulations): View
     {
         $motors = Motor::query()->orderBy('brand')->orderBy('model')->get();
 
-        $weeklyPopular = $this->topSearchedMotors(days: 7, limit: 3);
-        if ($weeklyPopular->isEmpty()) {
-            $weeklyPopular = $this->mostSearchedMotors(3)->map(fn (Motor $motor) => ['motor' => $motor, 'uses' => 0]);
-        }
+        $weeklyPopular = $this->topSearchedMotors(days: 7, limit: 3)
+            ->filter(fn (array $row) => $row['uses'] >= self::MIN_WEEKLY_POPULAR_USES)
+            ->values();
 
         return view('home', [
             'motors' => $motors,
@@ -83,35 +89,6 @@ class PageController extends Controller
     public function partnerApply(): View
     {
         return view('partner-apply');
-    }
-
-    /**
-     * @return \Illuminate\Support\Collection<int, Motor>
-     */
-    private function mostSearchedMotors(int $limit = 5)
-    {
-        $counts = DB::table('simulation_results')
-            ->select('motor_id', DB::raw('COUNT(*) as uses'))
-            ->fromSub(function ($query) {
-                $query->from('simulation_results')->select('motor_a_id as motor_id')
-                    ->unionAll(
-                        DB::table('simulation_results')->select('motor_b_id as motor_id')
-                    );
-            }, 'combined')
-            ->groupBy('motor_id')
-            ->orderByDesc('uses')
-            ->limit($limit)
-            ->pluck('uses', 'motor_id');
-
-        if ($counts->isEmpty()) {
-            return Motor::query()->orderBy('brand')->orderBy('model')->limit($limit)->get();
-        }
-
-        return Motor::query()
-            ->whereIn('id', $counts->keys())
-            ->get()
-            ->sortByDesc(fn (Motor $motor) => $counts[$motor->id] ?? 0)
-            ->values();
     }
 
     public function mostSearched(): View
