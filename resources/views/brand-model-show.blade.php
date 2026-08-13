@@ -95,13 +95,41 @@
                 @endif
                 <div class="spec__row">
                     <div class="spec__label">Categorie</div>
-                    <div class="spec__value"><a class="accent" href="{{ route('segments.show', $motor->category) }}">{{ $motor->categoryLabel() }}</a></div>
+                    <div class="spec__value">
+                        @if($motor->category)
+                            <a class="accent" href="{{ route('segments.show', $motor->category) }}">{{ $motor->categoryLabel() }}</a>
+                        @else
+                            {{ $motor->categoryLabel() }}
+                        @endif
+                    </div>
                 </div>
                 <div class="spec__row">
                     <div class="spec__label">A2-geschikt</div>
                     <div class="spec__value">{{ $motor->isA2Eligible() ? 'Ja' : 'Nee' }}</div>
                 </div>
             </div>
+
+            <details class="report-disclosure">
+                <summary>Klopt deze informatie niet?</summary>
+                <form method="post" action="{{ route('motors.report', $motor) }}" class="form-card" style="margin-top:1rem">
+                    @csrf
+                    <div class="form-honeypot" aria-hidden="true">
+                        <label for="report-website">Laat dit veld leeg</label>
+                        <input type="text" id="report-website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+                    <div class="form-row" style="margin-bottom:0.4rem">
+                        <label for="report-message">Wat klopt er niet?</label>
+                        <textarea id="report-message" name="message" rows="3" required placeholder="Bijv. het vermogen of gewicht klopt niet met de fabrieksopgave"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label for="report-email">E-mailadres (optioneel, voor een reactie)</label>
+                        <input id="report-email" name="reporter_email" type="email">
+                    </div>
+                    <div class="form-foot">
+                        <button class="btn btn--ghost" type="submit">Melding versturen</button>
+                    </div>
+                </form>
+            </details>
         </div>
     </section>
 

@@ -17,6 +17,14 @@ class Motor extends Model
         'retro' => 'Retro',
     ];
 
+    /**
+     * unverified: toegevoegd zonder gestructureerde bronvermelding (oude seed/manual data).
+     * ai_researched: door een AI-agent opgezocht met bronvermelding, nooit door een mens nagekeken.
+     * verified: een mens heeft de specificaties tegen een echte bron gecontroleerd.
+     * flagged: gemeld via "klopt dit niet?" of door de dataquality-check, wacht op review.
+     */
+    public const VERIFICATION_STATUSES = ['unverified', 'ai_researched', 'verified', 'flagged'];
+
     protected $fillable = [
         'brand',
         'model',
@@ -37,6 +45,11 @@ class Motor extends Model
         'seat_height_mm',
         'seat_height_source_url',
         'source',
+        'verification_status',
+        'data_checked_at',
+        'reviewer',
+        'confidence',
+        'data_flags',
         'api_fetched_at',
     ];
 
@@ -53,6 +66,7 @@ class Motor extends Model
             'drag_coefficient' => 'float',
             'frontal_area_m2' => 'float',
             'seat_height_mm' => 'integer',
+            'data_checked_at' => 'datetime',
             'api_fetched_at' => 'datetime',
         ];
     }
@@ -60,6 +74,11 @@ class Motor extends Model
     public function garageEntries(): HasMany
     {
         return $this->hasMany(GarageMotor::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(MotorReport::class);
     }
 
     public function label(): string

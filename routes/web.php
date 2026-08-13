@@ -6,6 +6,7 @@ use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\GarageController;
 use App\Http\Controllers\MotorController;
+use App\Http\Controllers\MotorReportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PartnerApplicationController;
 use App\Http\Controllers\ProfileController;
@@ -45,6 +46,9 @@ Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware(
 Route::get('/merken', [BrandController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('brands.index');
 Route::get('/merken/{merk}', [BrandController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('brands.show');
 Route::get('/merken/{merk}/{model}', [BrandController::class, 'showModel'])->middleware('cache.public:3600,86400,604800')->name('brands.model');
+Route::post('/motoren/{motor}/melding', [MotorReportController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('motors.report');
 Route::get('/segmenten', [SegmentController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('segments.index');
 Route::get('/segment/{categorie}', [SegmentController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('segments.show');
 Route::get('/a2-motoren', [PageController::class, 'a2Motoren'])->middleware('cache.public:3600,86400,604800')->name('a2-motoren');

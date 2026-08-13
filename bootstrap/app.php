@@ -18,6 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [StripGuestCookiesOnPublicPages::class]);
         $middleware->web(append: [EnforceCanonicalHost::class]);
         $middleware->alias(['cache.public' => SetPublicCacheHeaders::class]);
+
+        // /motoren/{motor}/melding staat op een publiek gecachte modelpagina (cache.public),
+        // waar StripGuestCookiesOnPublicPages de sessiecookie van gasten weghaalt — een normaal
+        // sessie-CSRF-token kan daar dus nooit kloppen. De melding is zelf niet aan een sessie of
+        // identiteit gebonden (iedereen mag melden, geen bevoegde actie), dus CSRF beschermt hier
+        // niets; honeypot + rate limit (zie routes/web.php) blijven wel gewoon van kracht.
+        $middleware->validateCsrfTokens(except: ['motoren/*/melding']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -497,6 +497,14 @@ a.accent { color: var(--redline); font-weight: 600; }
 .legal p:last-child { margin-bottom: 0; }
 .legal .updated { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-60); margin-top: clamp(40px, 4vw, 64px); padding-top: 1.6rem; border-top: 1px solid var(--stone-line); }
 
+/* ---------- "klopt dit niet?"-melding op modelpagina's ---------- */
+.report-disclosure { margin-top: clamp(24px, 3vw, 36px); border-top: 1px solid var(--stone-line); padding-top: 20px; }
+.report-disclosure summary { cursor: pointer; display: flex; align-items: baseline; gap: 0.6rem; font-weight: 600; font-size: 0.9375rem; color: var(--ink-60); list-style: none; }
+.report-disclosure summary::-webkit-details-marker { display: none; }
+.report-disclosure summary::after { content: "+"; font-family: var(--font-mono); font-size: 1.1rem; }
+.report-disclosure[open] summary::after { content: "–"; }
+.report-disclosure summary:hover, .report-disclosure summary:focus-visible { color: var(--ink); }
+
 /* ---------- formulieren, publiek/licht (contact, partner-worden) ---------- */
 .form-card { background: var(--stone-dim); border-radius: var(--radius); padding: clamp(24px, 3vw, 40px); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 clamp(24px, 3vw, 40px); }
