@@ -95,7 +95,7 @@ class PageController extends Controller
     {
         return view('most-searched', [
             'ranking' => $this->topSearchedMotors(days: 30, limit: 20),
-            'partners' => Partner::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'partners' => Partner::query()->verified()->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -151,7 +151,7 @@ class PageController extends Controller
 
     public function partners(): View
     {
-        $partners = Partner::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $partners = Partner::query()->verified()->orderBy('sort_order')->get();
 
         return view('partners', [
             'partners' => $partners,
@@ -161,7 +161,7 @@ class PageController extends Controller
 
     public function partnerShow(Partner $partner): View
     {
-        abort_unless($partner->is_active, 404);
+        abort_unless($partner->status === 'verified', 404);
 
         return view('partner-show', ['partner' => $partner]);
     }
@@ -262,7 +262,7 @@ class PageController extends Controller
 
         return response()
             ->view('sitemap', [
-                'partners' => Partner::query()->where('is_active', true)->get(),
+                'partners' => Partner::query()->verified()->get(),
                 'articles' => Article::query()->published()->get(),
                 'toplijsten' => array_keys(ToplijstController::lists()),
                 'pairs' => ComparisonController::pairs(),
