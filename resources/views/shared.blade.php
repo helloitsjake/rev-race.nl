@@ -4,7 +4,7 @@
     $winnerMotor = $result->winner === 'A' ? $result->motorA : $result->motorB;
     $shareText = "{$winnerMotor->label()} wint met " . number_format(abs($result->time_a_s - $result->time_b_s), 2) . "s verschil op RevRace!";
     $shareUrl = url()->current();
-    $delta = number_format(abs($result->time_a_s - $result->time_b_s), 3);
+    $delta = number_format(abs($result->time_a_s - $result->time_b_s), 2);
     $slowest = max($result->time_a_s, $result->time_b_s);
     $distanceLabel = match ((int) $result->distance_m) { 402 => '1/4 mile', 805 => '1/2 mile', default => $result->distance_m . 'm' };
 @endphp
@@ -27,12 +27,12 @@
                 <div class="panel__head"><span>{{ $distanceLabel }} &middot; {{ $result->road_condition }}</span><span class="live">race voltooid</span></div>
                 <div class="bike-row">
                     <div class="bike-row__name"><span>{{ $result->motorA->label() }}</span><span class="ratio">{{ number_format($result->motorA->powerToWeight(), 2) }} pk/kg</span></div>
-                    <div class="bike-row__meta"><span>{{ $result->motorA->power_hp }} pk</span><span>{{ $result->motorA->weight_kg }} kg</span><span>{{ number_format($result->time_a_s, 3) }}s</span></div>
+                    <div class="bike-row__meta"><span>{{ $result->motorA->power_hp }} pk</span><span>{{ $result->motorA->weight_kg }} kg</span><span>{{ number_format($result->time_a_s, 2) }}s</span></div>
                     <div class="bar"><span style="width:{{ ($result->time_a_s / $slowest) * 100 }}%"></span></div>
                 </div>
                 <div class="bike-row">
                     <div class="bike-row__name"><span>{{ $result->motorB->label() }}</span><span class="ratio">{{ number_format($result->motorB->powerToWeight(), 2) }} pk/kg</span></div>
-                    <div class="bike-row__meta"><span>{{ $result->motorB->power_hp }} pk</span><span>{{ $result->motorB->weight_kg }} kg</span><span>{{ number_format($result->time_b_s, 3) }}s</span></div>
+                    <div class="bike-row__meta"><span>{{ $result->motorB->power_hp }} pk</span><span>{{ $result->motorB->weight_kg }} kg</span><span>{{ number_format($result->time_b_s, 2) }}s</span></div>
                     <div class="bar"><span style="width:{{ ($result->time_b_s / $slowest) * 100 }}%"></span></div>
                 </div>
                 <div class="panel__foot">
@@ -44,6 +44,8 @@
                     </div>
                 </div>
             </div>
+
+            @include('partials.simulation-confidence', ['motorA' => $result->motorA, 'motorB' => $result->motorB])
 
             <div class="spec" style="margin-top:clamp(28px,4vw,44px)">
                 <div class="spec__row">

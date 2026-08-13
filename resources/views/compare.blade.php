@@ -158,21 +158,23 @@
                     </div>
                     <div class="bike-row">
                         <div class="bike-row__name"><span>{{ $motorA->label() }}</span><span class="ratio">{{ number_format($motorA->powerToWeight(), 2) }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorA->power_hp }} pk</span><span>{{ $motorA->weight_kg }} kg</span><span>{{ number_format($result['time_a_s'], 3) }}s</span></div>
+                        <div class="bike-row__meta"><span>{{ $motorA->power_hp }} pk</span><span>{{ $motorA->weight_kg }} kg</span><span>{{ number_format($result['time_a_s'], 2) }}s</span></div>
                         <div class="bar"><span style="width:{{ $widthA }}%"></span></div>
                     </div>
                     <div class="bike-row">
                         <div class="bike-row__name"><span>{{ $motorB->label() }}</span><span class="ratio">{{ number_format($motorB->powerToWeight(), 2) }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorB->power_hp }} pk</span><span>{{ $motorB->weight_kg }} kg</span><span>{{ number_format($result['time_b_s'], 3) }}s</span></div>
+                        <div class="bike-row__meta"><span>{{ $motorB->power_hp }} pk</span><span>{{ $motorB->weight_kg }} kg</span><span>{{ number_format($result['time_b_s'], 2) }}s</span></div>
                         <div class="bar"><span style="width:{{ $widthB }}%"></span></div>
                     </div>
                     @if($key !== 'dry' && $winner->isNot($dryWinner))
                         <div class="panel__foot">
-                            <p style="color: var(--paper-60); font-size: 0.9375rem">Bij deze wegconditie wint de {{ $winner->label() }} in plaats van de {{ $dryWinner->label() }}, die op droog asfalt voorlag. Verschil: {{ number_format($result['delta_s'], 3) }}s.</p>
+                            <p style="color: var(--paper-60); font-size: 0.9375rem">Bij deze wegconditie wint de {{ $winner->label() }} in plaats van de {{ $dryWinner->label() }}, die op droog asfalt voorlag. Verschil: {{ number_format($result['delta_s'], 2) }}s.</p>
                         </div>
                     @endif
                 </div>
             @endforeach
+
+            @include('partials.simulation-confidence', ['motorA' => $motorA, 'motorB' => $motorB])
         </div>
     </section>
 

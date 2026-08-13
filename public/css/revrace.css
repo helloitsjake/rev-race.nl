@@ -504,6 +504,14 @@ a.accent { color: var(--redline); font-weight: 600; }
 .report-disclosure summary::after { content: "+"; font-family: var(--font-mono); font-size: 1.1rem; }
 .report-disclosure[open] summary::after { content: "–"; }
 .report-disclosure summary:hover, .report-disclosure summary:focus-visible { color: var(--ink); }
+.report-disclosure__body { margin-top: 1rem; max-width: 62ch; }
+.report-disclosure__body p { color: var(--ink-60); font-size: 0.9375rem; margin-bottom: 0.8em; }
+.report-disclosure__body p:last-child { margin-bottom: 0; }
+.chapter--dark .report-disclosure { border-top-color: var(--asphalt-line); }
+.chapter--dark .report-disclosure summary { color: var(--paper-60); }
+.chapter--dark .report-disclosure summary:hover, .chapter--dark .report-disclosure summary:focus-visible { color: var(--paper); }
+.chapter--dark .report-disclosure__body p { color: var(--paper-60); }
+.chapter--dark .report-disclosure__body a.accent { color: var(--paper); text-decoration: underline; }
 
 /* ---------- formulieren, publiek/licht (contact, partner-worden) ---------- */
 .form-card { background: var(--stone-dim); border-radius: var(--radius); padding: clamp(24px, 3vw, 40px); }
