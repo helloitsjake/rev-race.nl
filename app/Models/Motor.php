@@ -34,6 +34,8 @@ class Motor extends Model
         'photo_url',
         'photo_credit',
         'photo_source_url',
+        'seat_height_mm',
+        'seat_height_source_url',
         'source',
         'api_fetched_at',
     ];
@@ -50,6 +52,7 @@ class Motor extends Model
             'zero_to_hundred_s' => 'float',
             'drag_coefficient' => 'float',
             'frontal_area_m2' => 'float',
+            'seat_height_mm' => 'integer',
             'api_fetched_at' => 'datetime',
         ];
     }
