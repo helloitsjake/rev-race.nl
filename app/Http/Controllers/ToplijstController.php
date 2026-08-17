@@ -15,7 +15,7 @@ class ToplijstController extends Controller
         return [
             'beste-pk-kg-verhouding' => [
                 'title' => 'Beste pk per kg verhouding',
-                'description' => 'De motoren met de beste vermogen ten opzichte van hun gewicht.',
+                'description' => 'De motoren met de beste verhouding tussen vermogen en gewicht uit de database, gerangschikt op pk per kilogram van hoog naar laag.',
                 'field' => null,
                 'unit' => 'pk/kg',
                 'direction' => 'desc',
@@ -24,7 +24,7 @@ class ToplijstController extends Controller
             ],
             'snelste-0-100-sprint' => [
                 'title' => 'Snelste 0 naar 100 sprint',
-                'description' => 'De motoren die het snelst van stilstand naar 100 km/h accelereren.',
+                'description' => 'De motoren die het snelst van stilstand naar 100 km/h accelereren, gerangschikt op de opgegeven sprinttijd.',
                 'unit' => 's',
                 'direction' => 'asc',
                 'value' => fn (Motor $motor) => $motor->zero_to_hundred_s,
@@ -32,7 +32,7 @@ class ToplijstController extends Controller
             ],
             'hoogste-topsnelheid' => [
                 'title' => 'Hoogste topsnelheid',
-                'description' => 'De motoren met de hoogste opgegeven topsnelheid.',
+                'description' => 'De motoren met de hoogste opgegeven fabrieks-topsnelheid uit de database, gerangschikt van snelst naar langzaamst.',
                 'unit' => 'km/h',
                 'direction' => 'desc',
                 'value' => fn (Motor $motor) => $motor->top_speed_kmh,

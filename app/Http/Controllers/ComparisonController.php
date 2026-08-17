@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Motor;
 use App\Services\SimulationService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ComparisonController extends Controller
@@ -19,19 +20,36 @@ class ComparisonController extends Controller
 
         abort_if(! $motorA || ! $motorB || $motorA->is($motorB), 404);
 
-        $conditions = ['dry' => 'Droog', 'wet' => 'Vochtig', 'rain' => 'Nat'];
-        $results = [];
+        // De uitkomst hangt alleen af van motorA/motorB (vaste afstand, geen rijdersgewicht op
+        // deze statische vergelijkpagina), dus cachen op basis van hun id's + updated_at is
+        // veilig en ontlast de simulatieloop onder crawllast (Ahrefs zag hier TTFB tot 25s en
+        // enkele volledige timeouts, vermoedelijk PHP-FPM-verzadiging op shared hosting).
+        // updated_at in de key voorkomt verstopte cache na een correctie op "klopt dit niet?".
+        $cacheKey = sprintf(
+            'compare:%d:%d:%s:%s',
+            $motorA->id,
+            $motorB->id,
+            $motorA->updated_at?->timestamp,
+            $motorB->updated_at?->timestamp,
+        );
 
-        foreach ($conditions as $key => $label) {
-            $results[$key] = [
-                'label' => $label,
-                'result' => $simulations->race($motorA, $motorB, [
-                    'road_type' => 'straight',
-                    'road_condition' => $key,
-                    'distance_m' => 500,
-                ]),
-            ];
-        }
+        $results = Cache::remember($cacheKey, now()->addDays(30), function () use ($motorA, $motorB, $simulations) {
+            $conditions = ['dry' => 'Droog', 'wet' => 'Vochtig', 'rain' => 'Nat'];
+            $results = [];
+
+            foreach ($conditions as $key => $label) {
+                $results[$key] = [
+                    'label' => $label,
+                    'result' => $simulations->race($motorA, $motorB, [
+                        'road_type' => 'straight',
+                        'road_condition' => $key,
+                        'distance_m' => 500,
+                    ]),
+                ];
+            }
+
+            return $results;
+        });
 
         $related = $this->relatedComparisons($motors, $motorA, $motorB);
 

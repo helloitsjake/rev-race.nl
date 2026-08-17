@@ -1,7 +1,12 @@
 @extends('layouts.app')
 
 @section('title', 'Alle ' . $brand . ' modellen en vergelijkingen - RevRace')
-@section('description', 'Alle ' . $brand . ' motoren in de RevRace-database, met specificaties en vergelijkingen tegen andere modellen.')
+{{--
+    Model-aantal in de tekst i.p.v. een vaste zin: bij korte merknamen (BMW, KTM, SWM) kwam de
+    vaste tekst onder Ahrefs' "meta description too short"-grens, bij langere merknamen net
+    erover. Met het aantal erin is de lengte niet meer afhankelijk van de merknaamlengte.
+--}}
+@section('description', 'Alle ' . $motors->count() . ' ' . $brand . '-modellen in de RevRace-database, met specificaties en directe vergelijkingen tegen andere motoren.')
 
 @push('scripts')
 <script type="application/ld+json">

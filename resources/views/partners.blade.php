@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Partners - RevRace')
-@section('description', 'Samenwerkingen voor dealers, verzekeraars, onderhoud en events rond motorfietsen.')
+@section('description', 'Bekijk de RevRace-partners: dealers, verzekeraars, onderhoudsbedrijven en events die zich richten op motorrijders in Nederland.')
 
 @section('content')
     <header class="chapter chapter--tight">

@@ -60,8 +60,12 @@ class BrandController extends Controller
     }
 
     /**
-     * Vergelijkingen voor één specifiek model: zelfde categorie, merk van $motor eerst,
-     * zelfde volgorde-logica als ComparisonController::relatedComparisons().
+     * Vergelijkingen voor één specifiek model: alle andere motoren in dezelfde categorie, merk
+     * van $motor eerst. Bewust ONGELIMITEERD (geen take()): dit is de enige plek die alle
+     * ~9.900 vergelijkingspagina's van interne links voorziet. Elk vergelijkingspaar zit in
+     * ComparisonController::pairs() (dezelfde categorie-restrictie), dus met dit model-paar
+     * ongelimiteerd krijgt iedere vergelijking minstens 2 inkomende links (vanaf de paginas van
+     * beide betrokken modellen) in plaats van orphan te blijven zoals bij de vorige take(6).
      *
      * @param  Collection<int, Motor>  $motors
      * @return Collection<int, array{motor: Motor, slug: string}>
@@ -74,7 +78,6 @@ class BrandController extends Controller
                 && $other->isNot($motor))
             ->sort(fn (Motor $a, Motor $b) => [$a->brand === $motor->brand ? 0 : 1, $a->brand, $a->model]
                 <=> [$b->brand === $motor->brand ? 0 : 1, $b->brand, $b->model])
-            ->take(6)
             ->map(fn (Motor $other) => [
                 'motor' => $other,
                 'slug' => "{$motor->slug()}-vs-{$other->slug()}",

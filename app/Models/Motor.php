@@ -86,6 +86,16 @@ class Motor extends Model
         return "{$this->brand} {$this->model} {$this->year}";
     }
 
+    /**
+     * Zonder bouwjaar, voor titels/meta descriptions op vergelijkingspagina's: het jaartal
+     * duwde titels structureel over de lengtelimiet (Ahrefs "title too long" op vrijwel alle
+     * vergelijkingen). Het jaar blijft wel op de pagina zelf staan, alleen niet in title/meta.
+     */
+    public function shortLabel(): string
+    {
+        return "{$this->brand} {$this->model}";
+    }
+
     public function slug(): string
     {
         return Str::slug("{$this->brand} {$this->model} {$this->year}");

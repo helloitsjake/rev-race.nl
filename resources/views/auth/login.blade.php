@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Inloggen - RevRace')
+@section('description', 'Log in op je RevRace-account voor je garage, opgeslagen simulaties en persoonlijke motorvergelijkingen.')
 
 @section('content')
     <header class="chapter">

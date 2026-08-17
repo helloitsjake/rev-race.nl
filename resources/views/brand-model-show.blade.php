@@ -18,8 +18,11 @@
 </script>
 <script type="application/ld+json">
 {!! json_encode([
+    // 'Vehicle'-subtype i.p.v. 'Product': dit is een specificatiepagina zonder prijs/aanbieding,
+    // en Product zonder offers/review/aggregateRating triggert Google's rich-results-validatie-
+    // fout (347 stuks in Ahrefs). Motorcycle vraagt niet om die commerciële velden.
     '@'.'context' => 'https://schema.org',
-    '@type' => 'Product',
+    '@type' => 'Motorcycle',
     'name' => $motor->label(),
     'brand' => ['@type' => 'Brand', 'name' => $motor->brand],
     'category' => $motor->categoryLabel(),
@@ -134,6 +137,14 @@
     </section>
 
     @if($comparisons->isNotEmpty())
+        @php
+            // Bewust ongelimiteerd doorgegeven vanuit BrandController::modelComparisons() zodat
+            // elke vergelijkingspagina in deze categorie minstens één inkomende link krijgt. De
+            // eerste 8 direct tonen, de rest achter een <details> om de pagina niet te laten
+            // ontsporen bij grote categorieën (tot ~74 motoren, dus tot ~73 kaarten).
+            $visibleComparisons = $comparisons->take(8);
+            $restComparisons = $comparisons->slice(8);
+        @endphp
         <section class="chapter">
             <div class="wrap">
                 <div class="kb-head">
@@ -143,7 +154,7 @@
                     </div>
                 </div>
                 <div class="kb-grid">
-                    @foreach($comparisons as $row)
+                    @foreach($visibleComparisons as $row)
                         <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
                             <h3>{{ $motor->label() }}</h3>
                             <p>vs {{ $row['motor']->label() }}</p>
@@ -151,6 +162,20 @@
                         </a>
                     @endforeach
                 </div>
+                @if($restComparisons->isNotEmpty())
+                    <details class="report-disclosure">
+                        <summary>Toon alle {{ $comparisons->count() }} vergelijkingen</summary>
+                        <div class="kb-grid" style="margin-top: 1.2rem">
+                            @foreach($restComparisons as $row)
+                                <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
+                                    <h3>{{ $motor->label() }}</h3>
+                                    <p>vs {{ $row['motor']->label() }}</p>
+                                    <span class="kb-card__link">Bekijk vergelijking &rarr;</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             </div>
         </section>
     @endif

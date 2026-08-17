@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Privacy - RevRace')
+@section('description', 'Hoe RevRace omgaat met je gegevens: welke data er wordt opgeslagen bij een account, een simulatie of het garageprofiel, en waarom.')
 
 @section('content')
     <header class="chapter chapter--tight">

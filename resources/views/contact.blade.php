@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Contact - RevRace')
+@section('description', 'Vraag, opmerking of een motor die niet klopt in de database? Stuur een bericht naar RevRace, je krijgt persoonlijk antwoord van de bouwer.')
 
 @section('content')
     <header class="chapter chapter--tight">

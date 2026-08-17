@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Simulatie - RevRace')
-@section('description', 'Vergelijk twee motoren met server-side racefysica en deel het resultaat.')
+@section('description', 'Vergelijk twee motoren met een server-side racesimulatie op droog, vochtig en nat asfalt, en deel het resultaat met anderen.')
 
 @section('content')
     <header class="chapter chapter--tight">

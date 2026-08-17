@@ -14,10 +14,10 @@ class SegmentController extends Controller
      */
     public const DESCRIPTIONS = [
         'naked' => 'Een kale motor zonder kuip: rechtop zitten, direct sturen, veelzijdig voor zowel dagelijks gebruik als een stevige bocht.',
-        'sport' => 'Gebouwd voor snelheid en leunhoek, met een sportieve, voorovergebogen zithouding.',
+        'sport' => 'Gebouwd voor snelheid en leunhoek, met een sportieve, voorovergebogen zithouding en veel vermogen ten opzichte van het gewicht.',
         'tourer' => 'Comfort en actieradius staan voorop: rustige zithouding, gemaakt voor lange afstanden op de snelweg.',
-        'adventure' => 'De crossover tussen asfalt en onverhard terrein, herkenbaar aan het hoge zicht en de robuuste bouw.',
-        'cruiser' => 'Lage zit, relaxte houding en veel nadruk op karakter en gevoel in plaats van pure topsnelheid.',
+        'adventure' => 'De crossover tussen asfalt en onverhard terrein, herkenbaar aan het hoge zicht, de robuuste bouw en het langere veerpakket.',
+        'cruiser' => 'Lage zit, relaxte houding en veel nadruk op karakter en gevoel in plaats van pure topsnelheid of vermogen.',
         'retro' => 'Klassieke vormgeving met moderne techniek eronder, vaak gekozen om de uitstraling, niet om de specificaties.',
     ];
 

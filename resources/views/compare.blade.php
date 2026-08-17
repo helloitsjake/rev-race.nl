@@ -18,9 +18,19 @@
     ];
 @endphp
 
-@section('title', "{$motorA->label()} vs {$motorB->label()} - wie is sneller? - RevRace")
-@section('description', "Vergelijk de {$motorA->label()} met de {$motorB->label()}: vermogen, gewicht en simulatieresultaten op droog, vochtig en nat asfalt.")
+@section('title', "{$motorA->shortLabel()} vs {$motorB->shortLabel()} - RevRace")
+@section('description', "Vergelijk de {$motorA->shortLabel()} met de {$motorB->shortLabel()} op vermogen, gewicht en grip in droog, vochtig en nat weer.")
 @section('ogImage', asset('og-image-vergelijk.png'))
+@if($motorA->category === null || $motorB->category === null || $motorA->category !== $motorB->category)
+    {{--
+        Cross-category vergelijkingen (bv. cruiser tegen supersport) blijven bereikbaar via de
+        route, maar zijn bewust geen onderdeel van de sitemap (zie ComparisonController::pairs())
+        omdat niemand die combinatie zoekt. Zonder noindex bleven ze toch "indexable" voor Google
+        zodra ze via een directe link/share ontdekt werden, wat als "indexable page not in
+        sitemap" in Ahrefs terugkwam. Same-category vergelijkingen blijven gewoon indexeerbaar.
+    --}}
+    @section('robots', 'noindex, follow')
+@endif
 
 @push('scripts')
 <script type="application/ld+json">
