@@ -57,9 +57,18 @@ Route::get('/staat-van-de-nederlandse-motorrijder', [YearlyReportController::cla
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+
+    // Benoemde limiters, niet de kale throttle:6,1: die deelt zijn teller met elke andere
+    // throttle op de site. Zie AppServiceProvider::registerRateLimiters().
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:inloggen')
+        ->name('login.store');
+
     Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:registreren')
+        ->name('register.store');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -84,7 +93,7 @@ Route::get('/api/motors', [MotorController::class, 'search'])->name('api.motors.
 // AiSpendGuard en MotorLookupService, niet hier: middleware alleen is per IP en dus te
 // omzeilen met meerdere IP's.
 Route::post('/api/motors/lookup', [MotorController::class, 'lookup'])
-    ->middleware(['auth', 'throttle:5,1'])
+    ->middleware(['auth', 'throttle:ai-lookup'])
     ->name('api.motors.lookup');
 
 // Handmatige invoer kost niets, dus die blijft open voor gasten: iemand zonder account kan
