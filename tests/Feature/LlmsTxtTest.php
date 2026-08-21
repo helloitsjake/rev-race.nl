@@ -49,7 +49,7 @@ class LlmsTxtTest extends TestCase
         Article::create([
             'title' => '2027 Yamaha YZ450FX first look',
             'slug' => '2027-yamaha-yz450fx-first-look',
-            'category' => 'Nieuwe releases',
+            'category' => Article::NEWS_CATEGORY,
             'excerpt' => 'Herschreven uit een externe bron.',
             'body' => 'Tekst.',
             'source_name' => 'Externe bron',
@@ -58,9 +58,23 @@ class LlmsTxtTest extends TestCase
             'published_at' => now()->subDay(),
         ]);
 
+        // Eigen redactie die wél een bron citeert: hoort er gewoon in te staan.
+        Article::create([
+            'title' => 'Van A2 naar onbeperkt',
+            'slug' => 'a2-naar-onbeperkt-rijbewijs-doorstromen',
+            'category' => 'Beginnend motorrijder',
+            'excerpt' => 'Hoe doorstromen werkt.',
+            'body' => 'Tekst.',
+            'source_name' => 'Rijksoverheid.nl',
+            'source_url' => 'https://www.rijksoverheid.nl/motorrijbewijs',
+            'is_published' => true,
+            'published_at' => now()->subDay(),
+        ]);
+
         $body = $this->get('/llms.txt')->assertOk()->getContent();
 
         $this->assertStringContainsString('/kennis/motorrijbewijs-halen)', $body);
+        $this->assertStringContainsString('/kennis/a2-naar-onbeperkt-rijbewijs-doorstromen)', $body);
         $this->assertStringNotContainsString('2027-yamaha-yz450fx-first-look', $body);
     }
 

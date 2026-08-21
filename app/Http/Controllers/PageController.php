@@ -258,8 +258,9 @@ class PageController extends Controller
      * Dynamisch in plaats van een statisch bestand in public/, zodat de aantallen en de
      * artikellijst niet gaan afwijken van de site zelf (zelfde reden als bij sitemap.xml).
      *
-     * Alleen eigen kennisartikelen (source_url is null); de uit nieuwsbronnen herschreven
-     * releaseberichten wisselen te snel en horen niet in een gecureerde index.
+     * Alleen eigen kennisartikelen; de uit nieuwsbronnen herschreven releaseberichten wisselen
+     * te snel en horen niet in een gecureerde index. Het onderscheid loopt via de categorie en
+     * niet via source_url: eigen artikelen citeren ook bronnen (Rijksoverheid, CBR).
      */
     public function llms()
     {
@@ -270,9 +271,11 @@ class PageController extends Controller
                 'segments' => Motor::CATEGORIES,
                 'segmentDescriptions' => SegmentController::DESCRIPTIONS,
                 'toplijsten' => ToplijstController::lists(),
-                'guides' => Article::query()->published()->whereNull('source_url')
+                'guides' => Article::query()->published()
+                    ->where('category', '!=', Article::NEWS_CATEGORY)
                     ->orderBy('title')->get(),
-                'newsCount' => Article::query()->published()->whereNotNull('source_url')->count(),
+                'newsCount' => Article::query()->published()
+                    ->where('category', Article::NEWS_CATEGORY)->count(),
             ])
             ->header('Content-Type', 'text/plain; charset=utf-8')
             ->header('X-Content-Type-Options', 'nosniff');

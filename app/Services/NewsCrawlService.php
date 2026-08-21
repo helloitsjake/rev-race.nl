@@ -82,7 +82,7 @@ class NewsCrawlService
                 Article::create([
                     'title' => $articleData['title'],
                     'slug' => $slug,
-                    'category' => 'Nieuwe releases',
+                    'category' => Article::NEWS_CATEGORY,
                     'excerpt' => $articleData['excerpt'],
                     'body' => $articleData['body'],
                     'source_name' => $sourceName,

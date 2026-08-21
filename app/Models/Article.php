@@ -8,6 +8,14 @@ use League\CommonMark\CommonMarkConverter;
 
 class Article extends Model
 {
+    /**
+     * De enige categorie die niet uit eigen redactie komt: deze artikelen worden door
+     * NewsCrawlService automatisch herschreven uit externe motornieuwsbronnen. Eigen
+     * kennisartikelen citeren vaak wél een bron (Rijksoverheid, CBR), dus source_url is
+     * geen bruikbaar onderscheid.
+     */
+    public const NEWS_CATEGORY = 'Nieuwe releases';
+
     protected $attributes = [
         'author_name' => 'Jake Andreas',
         'author_bio' => 'Oprichter en bouwer van RevRace. Kennisartikelen worden onderbouwd met officiële bronnen en Ahrefs-zoekwoordonderzoek, "nieuwe releases" worden automatisch herschreven uit geverifieerde motornieuwsbronnen.',
