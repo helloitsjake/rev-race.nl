@@ -5,4 +5,24 @@ Disallow: /garage
 Disallow: /profiel
 Disallow: /mollie/
 
+# Shared hosting met beperkte PHP-FPM-pool: de Ahrefs-crawlers op max 1 request
+# per seconde houden, anders lopen de workers vol en timeouten alle requests
+# (inclusief deze robots.txt). Google negeert Crawl-delay, dus dit raakt de
+# reguliere indexering niet.
+User-agent: AhrefsBot
+Allow: /
+Disallow: /api/
+Disallow: /garage
+Disallow: /profiel
+Disallow: /mollie/
+Crawl-delay: 1
+
+User-agent: AhrefsSiteAudit
+Allow: /
+Disallow: /api/
+Disallow: /garage
+Disallow: /profiel
+Disallow: /mollie/
+Crawl-delay: 1
+
 Sitemap: https://www.rev-race.nl/sitemap.xml
