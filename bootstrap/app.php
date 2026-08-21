@@ -5,8 +5,10 @@ use App\Http\Middleware\SetPublicCacheHeaders;
 use App\Http\Middleware\StripGuestCookiesOnPublicPages;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,4 +32,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // De AI-lookup zit achter 'auth'. Zonder deze render krijgt een gast daar
+        // "Unauthenticated." te zien; de simulatie toont die tekst rechtstreeks aan de
+        // bezoeker en valt daarna terug op het handmatige formulier.
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return new JsonResponse([
+                'message' => 'Log in om een nieuwe motor met AI te laten opzoeken. Je kunt de specificaties hieronder ook zelf invullen.',
+                'login_required' => true,
+            ], 401);
+        });
     })->create();

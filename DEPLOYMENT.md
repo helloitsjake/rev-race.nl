@@ -55,8 +55,39 @@ QUEUE_CONNECTION=database
 CACHE_STORE=database
 
 ANTHROPIC_API_KEY=...
-ANTHROPIC_MODEL=claude-sonnet-4-6
+ANTHROPIC_MODEL=claude-sonnet-4-6   # Fable 5 / Mythos 5 worden in code geblokkeerd
+
+# AI-kosten en misbruikbescherming, zie config/ai.php
+AI_DAILY_BUDGET_USD=2.20
+AI_BUDGET_WARNING_AT=0.5
+AI_LOOKUPS_PER_USER_PER_DAY=5
+AI_ALERT_EMAIL=jake@helloitsme.online
+AI_DASHBOARD_TOKEN=...        # eigen token voor productie, niet die van lokaal
+AI_ALLOW_REMOTE_MIGRATE=false
 ```
+
+## Migraties naar de server (let op)
+
+Stap 5 hierboven zegt dat je bij migraties de lokale `database.sqlite` meestuurt. **Doe dat
+niet meer.** Dat bestand overschrijft de productiedatabase, dus alle echte gebruikers,
+garages, meldingen en AI-logs zijn dan weg. Dat was al zo, het viel alleen niet op zolang er
+weinig live data was.
+
+Migraties draaien op de server gaat zo, omdat `artisan` daar niet beschikbaar is:
+
+1. De nieuwe migratiebestanden via `scp` naar `database/migrations/` op de server.
+2. In de productie-`.env` tijdelijk `AI_ALLOW_REMOTE_MIGRATE=true` zetten.
+3. `https://www.rev-race.nl/ai-migratie/<AI_DASHBOARD_TOKEN>` één keer openen. Die geeft de
+   uitvoer van `migrate --force` terug als JSON.
+4. `AI_ALLOW_REMOTE_MIGRATE` weer op `false` zetten. Een route die migraties kan draaien
+   hoort niet open te staan, ook niet achter een token.
+
+## AI-verbruik bekijken
+
+`https://www.rev-race.nl/ai-gebruik/<AI_DASHBOARD_TOKEN>` toont per dag wat de Anthropic API
+gekost heeft, welke IP's en accounts het verbruiken, welke zoekopdrachten het vaakst
+afgewezen zijn, en de laatste 50 aanroepen met echte token-aantallen. De pagina staat op
+`noindex` en geeft een 404 als het token niet klopt of niet ingesteld is.
 
 Mollie staat nog niet zichtbaar actief in de frontend; MOLLIE_KEY leeg laten tot premium live gaat.
 

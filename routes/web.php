@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiUsageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ComparisonController;
@@ -75,14 +76,38 @@ Route::middleware('auth')->group(function (): void {
 });
 
 Route::get('/api/motors', [MotorController::class, 'search'])->name('api.motors.search');
+
+// De AI-lookup is de enige route op de site die per aanroep geld kost (Anthropic API).
+// Daarom vereist hij een account: een aanvaller moet dan accounts aanmaken, en elke call
+// is in ai_usage_logs aan een gebruiker te koppelen en dus te blokkeren. De harde remmen
+// (dagbudget voor de hele site, daglimiet per account, negatieve cache) zitten in
+// AiSpendGuard en MotorLookupService, niet hier: middleware alleen is per IP en dus te
+// omzeilen met meerdere IP's.
 Route::post('/api/motors/lookup', [MotorController::class, 'lookup'])
-    ->middleware('throttle:15,1')
+    ->middleware(['auth', 'throttle:5,1'])
     ->name('api.motors.lookup');
+
+// Handmatige invoer kost niets, dus die blijft open voor gasten: iemand zonder account kan
+// zo nog steeds een motor toevoegen die nog niet in RevRace staat.
 Route::post('/api/motors/manual', [MotorController::class, 'storeManual'])
     ->middleware('throttle:15,1')
     ->name('api.motors.manual');
 Route::get('/api/simulatie/limiet', [SimulationController::class, 'limit'])->name('api.simulation.limit');
 Route::post('/api/simulatie', [SimulationController::class, 'run'])->name('api.simulation.run');
+
+// Inzicht in het AI-verbruik. Achter een token uit .env omdat RevRace geen rollen- of
+// adminsysteem heeft; staat AI_DASHBOARD_TOKEN niet in .env, dan geeft deze route een 404.
+Route::get('/ai-gebruik/{token}', [AiUsageController::class, 'show'])
+    ->middleware('throttle:10,1')
+    ->name('ai-usage');
+
+// Eenmalige migratieroute, nodig omdat artisan niet op de server draait en de
+// gedocumenteerde deploy-route (database.sqlite via scp) de productiedatabase zou
+// overschrijven. Staat standaard UIT: vereist naast het token ook AI_ALLOW_REMOTE_MIGRATE=true
+// in .env. Zet die vlag aan, roep de route één keer aan, zet hem daarna weer uit.
+Route::get('/ai-migratie/{token}', [AiUsageController::class, 'migrate'])
+    ->middleware('throttle:3,1')
+    ->name('ai-migrate');
 
 Route::get('/llms.txt', [PageController::class, 'llms'])->middleware('cache.public:3600,86400,604800')->name('llms');
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');

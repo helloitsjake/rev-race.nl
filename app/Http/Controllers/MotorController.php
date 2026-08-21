@@ -26,7 +26,7 @@ class MotorController extends Controller
         ]);
 
         try {
-            $motor = $motors->findOrFetch($data['query']);
+            $motor = $motors->findOrFetch($data['query'], $request->user(), (string) $request->ip());
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }

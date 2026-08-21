@@ -2,12 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\AiUsageLog;
 use App\Models\Article;
+use App\Support\AnthropicModel;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class NewsCrawlService
 {
+    public function __construct(private readonly AiSpendGuard $guard) {}
+
     /**
      * category_pattern selecteert alleen items die daadwerkelijk over een nieuw model gaan
      * (op basis van de categorie-tags die deze bronnen zelf aan zulke artikelen hangen),
@@ -112,17 +116,44 @@ Houd de toon professioneel, enthousiast en passend bij motorrijders.
 Geef een pakkende titel, een korte samenvatting (excerpt) en de body in Markdown-formaat.
 Geef je antwoord uitsluitend in JSON-formaat met de volgende keys: title, excerpt, body.";
 
+        // De crawler valt onder hetzelfde dagbudget als de bezoekers-lookup. Dat is bewust:
+        // is het budget opgestookt, dan is dat juist het moment om geen extra calls meer te
+        // doen. Het artikel wordt dan onbewerkt overgenomen in plaats van herschreven.
+        $blocked = $this->guard->blockedReason(AiSpendGuard::PURPOSE_NEWS_ARTICLE);
+
+        if ($blocked !== null) {
+            $this->guard->recordBlocked(AiSpendGuard::PURPOSE_NEWS_ARTICLE, $blocked, null, null, $title);
+
+            return [
+                'title' => $title,
+                'excerpt' => Str::limit($description, 150),
+                'body' => $description."\n\nBron: ".$link,
+            ];
+        }
+
+        $model = AnthropicModel::resolve();
+
         $response = Http::withHeaders([
             'x-api-key' => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
         ])->post('https://api.anthropic.com/v1/messages', [
-            'model' => config('services.anthropic.model'),
+            'model' => $model,
             'max_tokens' => 1000,
             'system' => $system,
             'messages' => [
                 ['role' => 'user', 'content' => "Titel: {$title}\n\nBeschrijving: {$description}\n\nBron: {$link}"],
             ],
         ]);
+
+        $this->guard->recordCall(
+            AiSpendGuard::PURPOSE_NEWS_ARTICLE,
+            $response->successful() ? AiUsageLog::OUTCOME_SUCCESS : AiUsageLog::OUTCOME_ERROR,
+            $model,
+            $response->json('usage'),
+            null,
+            null,
+            $title,
+        );
 
         $text = (string) $response->json('content.0.text');
         $text = preg_replace('/^```(?:json)?\s*|\s*```$/', '', trim($text));

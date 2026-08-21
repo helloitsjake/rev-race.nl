@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use App\Exceptions\NotAMotorcycleException;
+use App\Models\AiRejectedQuery;
+use App\Models\AiUsageLog;
 use App\Models\Motor;
+use App\Models\User;
+use App\Support\AnthropicModel;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -10,6 +15,8 @@ use RuntimeException;
 
 class MotorLookupService
 {
+    public function __construct(private readonly AiSpendGuard $guard) {}
+
     public function search(string $query, int $limit = 8)
     {
         $normalized = trim($query);
@@ -41,7 +48,13 @@ class MotorLookupService
             ->get();
     }
 
-    public function findOrFetch(string $query): Motor
+    /**
+     * Zoekt eerst lokaal. Levert dat niets op, dan gaat er pas een betaalde AI-call uit, en
+     * alleen als alle remmen dat toestaan: de negatieve cache, het globale dagbudget en de
+     * limiet per account. Zonder die remmen was dit de enige route op de site waarmee een
+     * bezoeker onbeperkt geld kon uitgeven.
+     */
+    public function findOrFetch(string $query, ?User $user = null, ?string $ip = null): Motor
     {
         $local = $this->search($query, 1)->first();
 
@@ -53,7 +66,16 @@ class MotorLookupService
             throw new RuntimeException('Geen motor gevonden en ANTHROPIC_API_KEY is niet ingesteld.');
         }
 
-        $payload = $this->fetchFromAnthropic($query);
+        $this->guardAgainstKnownRejection($query, $user, $ip);
+        $this->guardAgainstLimits($user, $ip, $query);
+
+        try {
+            $payload = $this->fetchFromAnthropic($query, $user, $ip);
+        } catch (NotAMotorcycleException $exception) {
+            $this->rememberRejection($query);
+
+            throw $exception;
+        }
 
         return Motor::query()->updateOrCreate(
             [
@@ -69,9 +91,61 @@ class MotorLookupService
     }
 
     /**
+     * Is deze invoer eerder al afgewezen, dan hoeft Claude er niet nog eens naar te kijken.
+     * Dit was het grootste gat: dezelfde onzin-invoer herhalen kostte elke keer opnieuw een
+     * volledige API-call.
+     */
+    private function guardAgainstKnownRejection(string $query, ?User $user, ?string $ip): void
+    {
+        $known = AiRejectedQuery::query()
+            ->where('normalized_query', AiRejectedQuery::normalize($query))
+            ->first();
+
+        if ($known === null) {
+            return;
+        }
+
+        $known->increment('hits');
+        $known->forceFill(['last_seen_at' => now()])->save();
+
+        $this->guard->recordCached(AiSpendGuard::PURPOSE_MOTOR_LOOKUP, $user, $ip, $query);
+
+        throw new NotAMotorcycleException;
+    }
+
+    private function guardAgainstLimits(?User $user, ?string $ip, string $query): void
+    {
+        $reason = $this->guard->blockedReason(AiSpendGuard::PURPOSE_MOTOR_LOOKUP, $user);
+
+        if ($reason === null) {
+            return;
+        }
+
+        $this->guard->recordBlocked(AiSpendGuard::PURPOSE_MOTOR_LOOKUP, $reason, $user, $ip, $query);
+
+        throw new RuntimeException($reason === AiSpendGuard::BLOCKED_USER_LIMIT
+            ? sprintf(
+                'Je hebt vandaag al %d nieuwe motors laten opzoeken. Morgen kun je weer verder. Alles wat al in RevRace staat blijft gewoon te vinden.',
+                $this->guard->userLimit(),
+            )
+            : 'Het opzoeken van nieuwe motors staat vandaag even uit omdat de daglimiet bereikt is. Alles wat al in RevRace staat blijft gewoon te vinden, en morgen kun je weer nieuwe motors toevoegen.');
+    }
+
+    private function rememberRejection(string $query): void
+    {
+        AiRejectedQuery::query()->updateOrCreate(
+            ['normalized_query' => AiRejectedQuery::normalize($query)],
+            [
+                'original_query' => Str::limit($query, 200, ''),
+                'last_seen_at' => now(),
+            ],
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
-    private function fetchFromAnthropic(string $query): array
+    private function fetchFromAnthropic(string $query, ?User $user = null, ?string $ip = null): array
     {
         $system = <<<SYSTEM
 Je bent een specificatie-opzoekdienst voor UITSLUITEND motorfietsen (voertuigen op twee
@@ -101,11 +175,13 @@ altijd een realistische schatting op basis van het motortype en carrosserie (bij
 Gebruik null alleen voor top_speed_kmh of zero_to_hundred_s als die echt onbekend zijn.
 SYSTEM;
 
+        $model = AnthropicModel::resolve();
+
         $response = Http::withHeaders([
             'x-api-key' => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
         ])->timeout(20)->post('https://api.anthropic.com/v1/messages', [
-            'model' => config('services.anthropic.model', 'claude-sonnet-4-6'),
+            'model' => $model,
             'max_tokens' => 700,
             'temperature' => 0,
             'system' => $system,
@@ -114,38 +190,52 @@ SYSTEM;
             ],
         ]);
 
-        $response->throw();
+        // Vanaf hier is er geld uitgegeven, dus alles wat volgt wordt vastgelegd met de
+        // echte token-aantallen uit het antwoord. Zonder dit was achteraf niet te zien
+        // wie het budget had opgestookt.
+        if ($response->failed()) {
+            $this->guard->recordCall(
+                AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
+                AiUsageLog::OUTCOME_ERROR,
+                $model,
+                $response->json('usage'),
+                $user,
+                $ip,
+                $query,
+            );
 
-        $text = (string) Arr::get($response->json(), 'content.0.text');
-        $data = json_decode($text, true);
-
-        if (! is_array($data)) {
-            throw new RuntimeException('Kon geen geldige motorfiets-specificaties vinden voor deze zoekopdracht. Controleer of je een geldig motormerk en model hebt ingevoerd.');
+            $response->throw();
         }
 
-        if (($data['error'] ?? null) === 'not_a_motorcycle') {
-            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
+        $usage = $response->json('usage');
+
+        try {
+            $data = $this->decodeSpecifications($response);
+        } catch (RuntimeException $exception) {
+            $this->guard->recordCall(
+                AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
+                $exception instanceof NotAMotorcycleException
+                    ? AiUsageLog::OUTCOME_REJECTED
+                    : AiUsageLog::OUTCOME_ERROR,
+                $model,
+                $usage,
+                $user,
+                $ip,
+                $query,
+            );
+
+            throw $exception;
         }
 
-        foreach (['brand', 'model', 'year', 'power_hp', 'torque_nm', 'weight_kg', 'engine_type', 'displacement_cc'] as $field) {
-            if (! array_key_exists($field, $data) || $data[$field] === null || $data[$field] === '') {
-                throw new RuntimeException("Motordata mist verplicht veld: {$field}.");
-            }
-        }
-
-        // Vangnet tegen niet-motorfietsen die de instructie hierboven toch omzeilen:
-        // reeele grenzen voor motorfiets-specificaties, zelfde als bij handmatige invoer.
-        if ((int) $data['weight_kg'] < 50 || (int) $data['weight_kg'] > 500) {
-            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
-        }
-
-        if ((int) $data['displacement_cc'] < 49 || (int) $data['displacement_cc'] > 3000) {
-            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
-        }
-
-        if ((int) $data['power_hp'] < 1 || (int) $data['power_hp'] > 600) {
-            throw new RuntimeException('Dit is geen motorfiets. RevRace ondersteunt alleen motorfietsen, geen auto\'s, vrachtwagens, scooters of andere voertuigen.');
-        }
+        $this->guard->recordCall(
+            AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
+            AiUsageLog::OUTCOME_SUCCESS,
+            $model,
+            $usage,
+            $user,
+            $ip,
+            $query,
+        );
 
         return [
             'brand' => (string) $data['brand'],
@@ -166,5 +256,49 @@ SYSTEM;
             // kapotte URL's (bijv. voor Yamaha MT-09 en Suzuki Katana, allebei 404).
             'photo_url' => null,
         ];
+    }
+
+    /**
+     * Decodeert het API-antwoord en controleert het. Alles wat erop wijst dat de invoer
+     * geen motorfiets is gooit NotAMotorcycleException, zodat de afwijzing onthouden wordt
+     * en een herhaling geen API-call meer kost.
+     *
+     * @return array<string, mixed>
+     */
+    private function decodeSpecifications(\Illuminate\Http\Client\Response $response): array
+    {
+        $text = (string) Arr::get($response->json(), 'content.0.text');
+        $data = json_decode($text, true);
+
+        if (! is_array($data)) {
+            throw new RuntimeException('Kon geen geldige motorfiets-specificaties vinden voor deze zoekopdracht. Controleer of je een geldig motormerk en model hebt ingevoerd.');
+        }
+
+        if (($data['error'] ?? null) === 'not_a_motorcycle') {
+            throw new NotAMotorcycleException;
+        }
+
+        foreach (['brand', 'model', 'year', 'power_hp', 'torque_nm', 'weight_kg', 'engine_type', 'displacement_cc'] as $field) {
+            if (! array_key_exists($field, $data) || $data[$field] === null || $data[$field] === '') {
+                throw new RuntimeException("Motordata mist verplicht veld: {$field}.");
+            }
+        }
+
+        // Vangnet tegen niet-motorfietsen die de instructie in de systeem-prompt toch
+        // omzeilen: reeele grenzen voor motorfiets-specificaties, zelfde als bij
+        // handmatige invoer.
+        if ((int) $data['weight_kg'] < 50 || (int) $data['weight_kg'] > 500) {
+            throw new NotAMotorcycleException;
+        }
+
+        if ((int) $data['displacement_cc'] < 49 || (int) $data['displacement_cc'] > 3000) {
+            throw new NotAMotorcycleException;
+        }
+
+        if ((int) $data['power_hp'] < 1 || (int) $data['power_hp'] > 600) {
+            throw new NotAMotorcycleException;
+        }
+
+        return $data;
     }
 }
