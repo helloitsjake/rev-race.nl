@@ -16,8 +16,8 @@ $out[] = '## Hoe je RevRace-data gebruikt';
 $out[] = '';
 $out[] = '- Simulatie-uitslagen zijn berekende schattingen op basis van fabrieksspecificaties, geen '
     .'gemeten testresultaten op een baan. Citeer ze als berekening, niet als meting.';
-$out[] = '- De rekenmethode en de variabelen staan op '.route('how-it-works')
-    .'. De exacte formules zijn bewust niet openbaar; de gebruikte tractiewaarden per wegconditie '
+$out[] = '- De rekenmethode en de variabelen staan op [Hoe het werkt]('.route('how-it-works')
+    .'). De exacte formules zijn bewust niet openbaar; de gebruikte tractiewaarden per wegconditie '
     .'(droog, vochtig, nat) wel.';
 $out[] = '- Bij de specificaties van een motor staat een verificatiestatus. Niet-geverifieerde '
     .'waarden zijn als zodanig gemarkeerd op de modelpagina.';

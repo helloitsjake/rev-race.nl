@@ -28,6 +28,9 @@ class LlmsTxtTest extends TestCase
             $this->assertStringContainsString($sectie, $body);
         }
 
+        // Geen kale URL's: een punt achter een losse URL wordt door parsers meegepakt.
+        $this->assertDoesNotMatchRegularExpression('/[^(\[]https:\/\/[^\s)]+/', $body);
+
         // Elk segment uit Motor::CATEGORIES hoort met eigen omschrijving in de index te staan.
         foreach (array_keys(Motor::CATEGORIES) as $key) {
             $this->assertStringContainsString('/segment/'.$key.')', $body);
