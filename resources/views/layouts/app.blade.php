@@ -118,6 +118,12 @@
         <div class="wrap footer">
             <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon', ['dark' => true])Rev<span style="color:var(--redline)">Race</span></a>
             <div class="footer__links">
+                {{-- Enige sitebrede plek die naar deze 3 pagina's linkt: stonden zonder deze
+                     footer-links nergens bereikbaar vanuit navigatie en waren daardoor orphan
+                     (Ahrefs "Orphan page", 18 aug), ondanks vermelding in de sitemap. --}}
+                <a href="{{ route('toplijst.show', 'beste-pk-kg-verhouding') }}">Beste pk/kg-verhouding</a>
+                <a href="{{ route('toplijst.show', 'hoogste-topsnelheid') }}">Hoogste topsnelheid</a>
+                <a href="{{ route('toplijst.show', 'snelste-0-100-sprint') }}">Snelste 0-100 sprint</a>
                 <a href="{{ route('partners.apply') }}">Partner worden</a>
                 <a href="{{ route('yearly-report.show') }}">Staat van de Nederlandse motorrijder</a>
                 <a href="{{ route('privacy') }}">Privacy</a>

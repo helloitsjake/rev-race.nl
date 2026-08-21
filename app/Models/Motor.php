@@ -90,10 +90,18 @@ class Motor extends Model
      * Zonder bouwjaar, voor titels/meta descriptions op vergelijkingspagina's: het jaartal
      * duwde titels structureel over de lengtelimiet (Ahrefs "title too long" op vrijwel alle
      * vergelijkingen). Het jaar blijft wel op de pagina zelf staan, alleen niet in title/meta.
+     *
+     * Ook het "(...)"-deel van $model (bv. "Road Glide Ultra (per 2020 modeljaar hernoemd naar
+     * Road Glide Limited)") valt hier weg: dat zijn 22 modellen met een lange verduidelijking of
+     * chassiscode, die met een tweede modelnaam erbij en " - RevRace" nog steeds ver over de
+     * titellimiet ging (Ahrefs "title too long", 659 resterende vergelijkingspagina's na de vorige
+     * fix). Op de pagina zelf (label(), H1, tabel) blijft de volledige naam gewoon staan.
      */
     public function shortLabel(): string
     {
-        return "{$this->brand} {$this->model}";
+        $model = trim(preg_replace('/\s*\([^)]*\)/', '', $this->model));
+
+        return "{$this->brand} {$model}";
     }
 
     public function slug(): string

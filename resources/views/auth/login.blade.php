@@ -2,6 +2,9 @@
 
 @section('title', 'Inloggen - RevRace')
 @section('description', 'Log in op je RevRace-account voor je garage, opgeslagen simulaties en persoonlijke motorvergelijkingen.')
+{{-- Functionele accountpagina zonder unieke content: was indexeerbaar en niet in de sitemap
+     (Ahrefs "Indexable page not in sitemap", 18 aug). --}}
+@section('robots', 'noindex, follow')
 
 @section('content')
     <header class="chapter">

@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Motor;
 use App\Services\SimulationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ComparisonController extends Controller
 {
-    public function show(string $slug, SimulationService $simulations): View
+    public function show(string $slug, SimulationService $simulations): View|RedirectResponse
     {
         [$slugA, $slugB] = $this->splitSlug($slug);
 
@@ -19,6 +20,16 @@ class ComparisonController extends Controller
         $motorB = $motors->first(fn (Motor $motor) => $motor->slug() === $slugB);
 
         abort_if(! $motorA || ! $motorB || $motorA->is($motorB), 404);
+
+        // Elk paar is via twee URL's bereikbaar (A-vs-B en B-vs-A): modelpagina's linken naar
+        // "zichzelf-vs-de-ander" (zie BrandController::modelComparisons()), dus beide richtingen
+        // krijgen echte inkomende links. pairs() (de sitemap) neemt per paar maar één richting op,
+        // dus de andere bleef zonder redirect gewoon indexeerbaar: Ahrefs zag dit als 706
+        // "indexable page not in sitemap" (18 aug). 301 naar de canonieke richting bundelt ook de
+        // linkwaarde van beide modelpagina's op één URL i.p.v. die te versnipperen.
+        if ($this->sortKey($motorA) > $this->sortKey($motorB)) {
+            return redirect()->route('compare.show', "{$motorB->slug()}-vs-{$motorA->slug()}", 301);
+        }
 
         // De uitkomst hangt alleen af van motorA/motorB (vaste afstand, geen rijdersgewicht op
         // deze statische vergelijkpagina), dus cachen op basis van hun id's + updated_at is
@@ -121,5 +132,16 @@ class ComparisonController extends Controller
         $parts = explode('-vs-', $slug, 2);
 
         return [$parts[0] ?? '', $parts[1] ?? ''];
+    }
+
+    /**
+     * Zelfde sorteervolgorde als pairs() (category, brand, model): bepaalt welke van de twee
+     * richtingen canoniek is.
+     *
+     * @return array{0: ?string, 1: string, 2: string}
+     */
+    private function sortKey(Motor $motor): array
+    {
+        return [$motor->category, $motor->brand, $motor->model];
     }
 }

@@ -38,9 +38,16 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
+            // Zonder WAL serialiseert elke write (o.a. Cache::remember() op /vergelijk/) op een
+            // exclusieve lock over het hele bestand; onder crawlconcurrentie gaf dat TTFB's tot
+            // 25-30s (Ahrefs "Slow page", 18 aug). WAL laat lezers gewoon doorgaan tijdens een
+            // write; busy_timeout laat een write die toch op een andere write wacht een paar
+            // seconden queuen in plaats van direct "database is locked" te gooien. NORMAL is de
+            // door SQLite aanbevolen synchronous-instelling bij WAL (iets minder fsync-overhead;
+            // bij stroomuitval theoretisch een net gecommit record kwijt, niet bij een app-crash).
+            'busy_timeout' => env('DB_SQLITE_BUSY_TIMEOUT', 5000),
+            'journal_mode' => env('DB_SQLITE_JOURNAL_MODE', 'wal'),
+            'synchronous' => env('DB_SQLITE_SYNCHRONOUS', 'normal'),
             'transaction_mode' => 'DEFERRED',
         ],
 
