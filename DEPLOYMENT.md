@@ -66,6 +66,31 @@ AI_DASHBOARD_TOKEN=...        # eigen token voor productie, niet die van lokaal
 AI_ALLOW_REMOTE_MIGRATE=false
 ```
 
+## Wat er op de server NIET beschikbaar is
+
+De chroot van de Plesk-subscription is extreem uitgekleed. Ga niet uit van standaard
+Unix-tools. Wat er wel is: `grep`, `cat`, `cp`, `mv`, `rm`, `printf`, `echo`, `head`,
+`tail`, `ln`, `touch`, `tar`, `ls`, `mkdir`.
+
+Wat er **niet** is: `php` (en dus geen `artisan`), `composer`, `sed`, `awk`, `tr`, `sort`,
+`wc`, `tee`, `diff`, `cmp`, `stat`, `date`, `md5sum`, `sha1sum`, `cksum`, `openssl`.
+
+Praktisch gevolg: een regel in `.env` wijzigen kan niet met `sed`. Doe het zo:
+
+```bash
+cd /rev-race-app \
+  && grep -v '^SLEUTEL=' .env > .env.tmp \
+  && printf 'SLEUTEL=nieuwe-waarde\n' >> .env.tmp \
+  && cp .env.tmp .env && rm -f .env.tmp
+```
+
+Schrijf de echte `.env` pas over als het tijdelijke bestand compleet is, dan laat een
+halve mislukking je `.env` intact.
+
+Let ook op: een `if diff ... ; then` constructie geeft hier stilzwijgend de verkeerde tak,
+omdat `diff` niet bestaat en dus non-zero exit geeft. Vergelijken kan met
+`grep -c -F -x -f bestand1 bestand2`.
+
 ## Migraties naar de server (let op)
 
 Stap 5 hierboven zegt dat je bij migraties de lokale `database.sqlite` meestuurt. **Doe dat
