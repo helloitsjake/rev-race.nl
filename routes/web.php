@@ -84,4 +84,5 @@ Route::post('/api/motors/manual', [MotorController::class, 'storeManual'])
 Route::get('/api/simulatie/limiet', [SimulationController::class, 'limit'])->name('api.simulation.limit');
 Route::post('/api/simulatie', [SimulationController::class, 'run'])->name('api.simulation.run');
 
+Route::get('/llms.txt', [PageController::class, 'llms'])->middleware('cache.public:3600,86400,604800')->name('llms');
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');

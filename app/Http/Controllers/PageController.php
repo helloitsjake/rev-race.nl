@@ -252,6 +252,32 @@ class PageController extends Controller
         ]);
     }
 
+    /**
+     * llms.txt volgens de specificatie op llmstxt.org: een gecureerde markdown-index voor LLM's
+     * en agents. Bewust geen dump van alle ~11.000 URL's, dat is precies wat sitemap.xml al doet.
+     * Dynamisch in plaats van een statisch bestand in public/, zodat de aantallen en de
+     * artikellijst niet gaan afwijken van de site zelf (zelfde reden als bij sitemap.xml).
+     *
+     * Alleen eigen kennisartikelen (source_url is null); de uit nieuwsbronnen herschreven
+     * releaseberichten wisselen te snel en horen niet in een gecureerde index.
+     */
+    public function llms()
+    {
+        return response()
+            ->view('llms', [
+                'motorCount' => Motor::query()->count(),
+                'brandCount' => Motor::query()->distinct()->count('brand'),
+                'segments' => Motor::CATEGORIES,
+                'segmentDescriptions' => SegmentController::DESCRIPTIONS,
+                'toplijsten' => ToplijstController::lists(),
+                'guides' => Article::query()->published()->whereNull('source_url')
+                    ->orderBy('title')->get(),
+                'newsCount' => Article::query()->published()->whereNotNull('source_url')->count(),
+            ])
+            ->header('Content-Type', 'text/plain; charset=utf-8')
+            ->header('X-Content-Type-Options', 'nosniff');
+    }
+
     public function sitemap()
     {
         $brandSlugs = Motor::query()->pluck('brand')->unique()->map(fn ($brand) => Str::slug($brand))->values();
