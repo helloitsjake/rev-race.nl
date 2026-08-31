@@ -16,6 +16,80 @@
         'wet' => ['t' => 0.70, 'b' => 0.72, 'c' => 0.65],
         'rain' => ['t' => 0.45, 'b' => 0.50, 'c' => 0.40],
     ];
+
+    /*
+     * FAQ per vergelijking, gevuld uit de eigen simulatie- en specificatiedata.
+     *
+     * Waarom juist hier: dit sjabloon vult ruim 10.000 pagina's en levert volgens Search Console
+     * (3 maanden t/m 31 augustus 2026) 100 van de 122 klikken van de hele site, met de hoogste
+     * CTR van alle contenttypes op de homepage na. Eén wijziging aan dit sjabloon raakt dus
+     * precies het deel van de site dat aantoonbaar werkt.
+     *
+     * Dezelfde collectie voedt het zichtbare blok en het FAQPage-schema, zodat de twee niet uit
+     * elkaar kunnen lopen (Google eist dat het antwoord ook echt op de pagina staat).
+     */
+    $sameDryRainWinner = $rainWinner->is($dryWinner);
+    $faq = collect([
+        [
+            'q' => "Welke is sneller, de {$motorA->label()} of de {$motorB->label()}?",
+            'a' => "Op droog asfalt wint de {$dryWinner->label()}, met een verschil van "
+                . number_format($dryResult['delta_s'], 2) . ' seconde over 500 meter. '
+                . ($sameDryRainWinner
+                    ? "Ook op nat wegdek blijft de {$rainWinner->label()} voorliggen."
+                    : "Op nat wegdek draait dat om: dan wint de {$rainWinner->label()}."),
+        ],
+        [
+            'q' => "Welke heeft meer vermogen, de {$motorA->label()} of de {$motorB->label()}?",
+            'a' => $powerDiff > 0
+                ? "De {$strongerMotor->label()} heeft met {$strongerMotor->power_hp} pk het meeste vermogen, {$powerDiff} pk meer dan de "
+                    . ($strongerMotor->is($motorA) ? $motorB->label() : $motorA->label()) . '.'
+                : "Beide leveren {$motorA->power_hp} pk, dus op vermogen ontlopen ze elkaar niet.",
+        ],
+        [
+            'q' => "Welke is lichter, de {$motorA->label()} of de {$motorB->label()}?",
+            'a' => $weightDiff > 0
+                ? "De {$lighterMotor->label()} is met {$lighterMotor->weight_kg} kg de lichtste van de twee, {$weightDiff} kg minder dan de "
+                    . ($lighterMotor->is($motorA) ? $motorB->label() : $motorA->label())
+                    . '. Dat telt door in acceleratie en in hoe handelbaar de motor aanvoelt.'
+                : "Beide wegen {$motorA->weight_kg} kg, dus op gewicht is er geen verschil.",
+        ],
+        [
+            'q' => 'Wat is het verschil in pk per kilo?',
+            'a' => "De {$motorA->label()} zit op " . number_format($motorA->powerToWeight(), 2)
+                . " pk/kg, de {$motorB->label()} op " . number_format($motorB->powerToWeight(), 2)
+                . ' pk/kg. Die verhouding zegt meer over hoe fel een motor optrekt dan het vermogen alleen.',
+        ],
+        [
+            'q' => 'Zijn deze motoren geschikt voor een A2-rijbewijs?',
+            'a' => match (true) {
+                $motorA->isA2Eligible() && $motorB->isA2Eligible() => "Beide blijven binnen de A2-grenzen van maximaal 35 kW en maximaal 0,20 kW per kilo.",
+                $motorA->isA2Eligible() => "Alleen de {$motorA->label()} blijft binnen de A2-grenzen. De {$motorB->label()} valt er met {$motorB->power_hp} pk buiten.",
+                $motorB->isA2Eligible() => "Alleen de {$motorB->label()} blijft binnen de A2-grenzen. De {$motorA->label()} valt er met {$motorA->power_hp} pk buiten.",
+                default => "Geen van beide is A2-geschikt: allebei zitten ze boven de grens van 35 kW of 0,20 kW per kilo.",
+            },
+        ],
+    ]);
+
+    /*
+     * Motorcycle-schema voor beide motoren, hetzelfde subtype als op de modelpagina's. Bewust
+     * geen 'Product': dat vraagt om offers/review/aggregateRating die RevRace niet heeft, en
+     * levert dan een rich-results-validatiefout op.
+     */
+    $motorcycleSchema = fn (\App\Models\Motor $motor) => [
+        '@type' => 'Motorcycle',
+        'name' => $motor->label(),
+        'brand' => ['@type' => 'Brand', 'name' => $motor->brand],
+        'category' => $motor->categoryLabel(),
+        'url' => route('brands.model', [\Illuminate\Support\Str::slug($motor->brand), $motor->slug()]),
+        'additionalProperty' => array_values(array_filter([
+            ['@type' => 'PropertyValue', 'name' => 'Vermogen', 'value' => $motor->power_hp, 'unitText' => 'pk'],
+            ['@type' => 'PropertyValue', 'name' => 'Koppel', 'value' => $motor->torque_nm, 'unitText' => 'Nm'],
+            ['@type' => 'PropertyValue', 'name' => 'Gewicht', 'value' => $motor->weight_kg, 'unitText' => 'kg'],
+            ['@type' => 'PropertyValue', 'name' => 'Cilinderinhoud', 'value' => $motor->displacement_cc, 'unitText' => 'cc'],
+            $motor->top_speed_kmh ? ['@type' => 'PropertyValue', 'name' => 'Topsnelheid', 'value' => $motor->top_speed_kmh, 'unitText' => 'km/u'] : null,
+            ['@type' => 'PropertyValue', 'name' => 'Vermogen/gewicht', 'value' => number_format($motor->powerToWeight(), 2), 'unitText' => 'pk/kg'],
+        ])),
+    ];
 @endphp
 
 @section('title', "{$motorA->shortLabel()} vs {$motorB->shortLabel()} - RevRace")
@@ -41,6 +115,28 @@
         ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
         ['@type' => 'ListItem', 'position' => 2, 'name' => 'Simulatie', 'item' => route('simulation.index')],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $motorA->label().' vs '.$motorB->label()],
+    ],
+]) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => $faq->map(fn (array $item) => [
+        '@type' => 'Question',
+        'name' => $item['q'],
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['a']],
+    ])->all(),
+]) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@type' => 'ItemList',
+    'name' => $motorA->label().' vs '.$motorB->label(),
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'item' => $motorcycleSchema($motorA)],
+        ['@type' => 'ListItem', 'position' => 2, 'item' => $motorcycleSchema($motorB)],
     ],
 ]) !!}
 </script>
@@ -187,6 +283,12 @@
             @include('partials.simulation-confidence', ['motorA' => $motorA, 'motorB' => $motorB])
         </div>
     </section>
+
+    @include('partials.faq', [
+        'faq' => $faq,
+        'eyebrow' => 'Veelgestelde vragen',
+        'heading' => $motorA->shortLabel() . ' of ' . $motorB->shortLabel() . '?',
+    ])
 
     @if($related->isNotEmpty())
         <section class="chapter" id="verder">

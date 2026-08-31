@@ -78,17 +78,34 @@ class SegmentController extends Controller
 
         abort_if($motors->isEmpty(), 404);
 
+        /*
+         * Elke motor in het segment koppelen aan zijn directe buur in de pk/kg-ranglijst, in
+         * plaats van alleen de zes zwaarste.
+         *
+         * Waarom: Ahrefs zag op 18 augustus 9.597 indexeerbare pagina's met precies één
+         * inkomende interne link, en Search Console laat over de drie maanden t/m 31 augustus
+         * zien dat maar 877 van de ruim 10.000 vergelijkingspagina's ooit vertoond zijn. De
+         * pagina's zijn identiek van opbouw, dus dat verschil zit in het aantal interne
+         * verwijzingen. Zes links per segmentpagina dekten samen 36 van de 10.000 pagina's.
+         *
+         * De buur in de pk/kg-ranglijst is bovendien inhoudelijk de nuttigste vergelijking: dat
+         * zijn de twee modellen die daadwerkelijk tegen elkaar afgewogen worden. De eerste zes
+         * blijven als kaarten in beeld, de rest staat in een uitklapblok (zelfde patroon als de
+         * modelpagina), zodat de pagina niet omslaat in een linklijst.
+         */
         $comparisons = $motors
-            ->take(12)
             ->map(function (Motor $motor, int $i) use ($motors) {
-                $partner = $motors->get($i + 1) ?? $motors->first();
+                $partner = $motors->get($i + 1);
 
                 return $partner && ! $partner->is($motor)
-                    ? ['motorA' => $motor, 'motorB' => $partner, 'slug' => "{$motor->slug()}-vs-{$partner->slug()}"]
+                    ? [
+                        'motorA' => $motor,
+                        'motorB' => $partner,
+                        'slug' => ComparisonController::canonicalSlug($motor, $partner),
+                    ]
                     : null;
             })
             ->filter()
-            ->take(6)
             ->values();
 
         return view('segment-show', [

@@ -1,7 +1,52 @@
 @extends('layouts.app')
 
-@section('title', $motor->label() . ': specificaties en vergelijkingen - RevRace')
-@section('description', $motor->label() . ' levert ' . $motor->power_hp . ' pk bij ' . $motor->weight_kg . ' kg (' . number_format($motor->powerToWeight(), 2) . ' pk/kg). Specificaties, categorie en directe vergelijkingen op RevRace.')
+@php
+    /*
+     * Search Console (3 maanden t/m 31 augustus 2026) laat zien dat de zoekvraag naar deze
+     * pagina's letterlijk "{model} gewicht" en "{model} topsnelheid" is, niet "{model}
+     * specificaties". Die pagina's stonden op positie 9 tot 11 met nul klikken: de vraag werd
+     * wel vertoond, maar de title beantwoordde 'm niet zichtbaar. Vandaar de specificaties in
+     * de title in plaats van het woord "specificaties".
+     *
+     * Topsnelheid staat alleen in de title als die er ook echt is: het veld is leeg bij twee
+     * derde van de modellen, en een title die iets belooft wat de pagina niet toont kost
+     * uiteindelijk meer clicks dan het oplevert.
+     */
+    $specSummary = $motor->top_speed_kmh ? 'vermogen, gewicht en topsnelheid' : 'vermogen, gewicht en specificaties';
+
+    /*
+     * Eén bron voor zowel het zichtbare FAQ-blok als het FAQPage-schema, zodat de twee niet uit
+     * elkaar kunnen lopen. Alleen vragen waarvoor de data er is: een FAQ met "onbekend" als
+     * antwoord helpt de bezoeker niet en is voor Google een kwaliteitssignaal de verkeerde kant op.
+     */
+    $faq = collect([
+        [
+            'q' => 'Hoeveel pk heeft de ' . $motor->label() . '?',
+            'a' => $motor->label() . ' levert ' . $motor->power_hp . ' pk en ' . $motor->torque_nm . ' Nm koppel, bij een gewicht van ' . $motor->weight_kg . ' kg. Dat komt neer op ' . number_format($motor->powerToWeight(), 2) . ' pk per kilo.',
+        ],
+        [
+            'q' => 'Hoe zwaar is de ' . $motor->label() . '?',
+            'a' => 'De ' . $motor->label() . ' weegt ' . $motor->weight_kg . ' kg. In combinatie met ' . $motor->power_hp . ' pk geeft dat een vermogen/gewicht-verhouding van ' . number_format($motor->powerToWeight(), 2) . ' pk/kg.',
+        ],
+        $motor->top_speed_kmh ? [
+            'q' => 'Wat is de topsnelheid van de ' . $motor->label() . '?',
+            'a' => 'De opgegeven topsnelheid van de ' . $motor->label() . ' is ' . $motor->top_speed_kmh . ' km/u.',
+        ] : null,
+        $motor->zero_to_hundred_s ? [
+            'q' => 'Hoe snel gaat de ' . $motor->label() . ' van 0 naar 100?',
+            'a' => 'De ' . $motor->label() . ' doet ongeveer ' . number_format($motor->zero_to_hundred_s, 1) . ' seconden over de sprint van 0 naar 100 km/u.',
+        ] : null,
+        [
+            'q' => 'Is de ' . $motor->label() . ' geschikt voor een A2-rijbewijs?',
+            'a' => $motor->isA2Eligible()
+                ? 'Ja. Met ' . $motor->power_hp . ' pk en ' . $motor->weight_kg . ' kg blijft de ' . $motor->label() . ' binnen de A2-grenzen van maximaal 35 kW en maximaal 0,20 kW per kilo, zonder dat er een opvoerkit aan te pas komt.'
+                : 'Nee. Met ' . $motor->power_hp . ' pk en ' . $motor->weight_kg . ' kg valt de ' . $motor->label() . ' buiten de A2-grenzen van maximaal 35 kW en maximaal 0,20 kW per kilo.',
+        ],
+    ])->filter()->values();
+@endphp
+
+@section('title', $motor->label() . ': ' . $specSummary . ' - RevRace')
+@section('description', $motor->label() . ' levert ' . $motor->power_hp . ' pk bij ' . $motor->weight_kg . ' kg (' . number_format($motor->powerToWeight(), 2) . ' pk/kg)' . ($motor->top_speed_kmh ? ', topsnelheid ' . $motor->top_speed_kmh . ' km/u' : '') . '. Alle specificaties en directe vergelijkingen.')
 
 @push('scripts')
 <script type="application/ld+json">
@@ -31,7 +76,23 @@
         ['@type' => 'PropertyValue', 'name' => 'Koppel', 'value' => $motor->torque_nm, 'unitText' => 'Nm'],
         ['@type' => 'PropertyValue', 'name' => 'Gewicht', 'value' => $motor->weight_kg, 'unitText' => 'kg'],
         ['@type' => 'PropertyValue', 'name' => 'Cilinderinhoud', 'value' => $motor->displacement_cc, 'unitText' => 'cc'],
+        // Alleen meegeven als de waarde er is: een PropertyValue met een lege value is voor
+        // Google een ongeldige property, geen neutrale.
+        ...($motor->top_speed_kmh ? [['@type' => 'PropertyValue', 'name' => 'Topsnelheid', 'value' => $motor->top_speed_kmh, 'unitText' => 'km/u']] : []),
+        ...($motor->zero_to_hundred_s ? [['@type' => 'PropertyValue', 'name' => 'Acceleratie 0-100 km/u', 'value' => $motor->zero_to_hundred_s, 'unitText' => 's']] : []),
+        ['@type' => 'PropertyValue', 'name' => 'Vermogen/gewicht', 'value' => number_format($motor->powerToWeight(), 2), 'unitText' => 'pk/kg'],
     ],
+]) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => $faq->map(fn (array $item) => [
+        '@type' => 'Question',
+        'name' => $item['q'],
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['a']],
+    ])->all(),
 ]) !!}
 </script>
 @endpush
@@ -179,6 +240,12 @@
             </div>
         </section>
     @endif
+
+    @include('partials.faq', [
+        'faq' => $faq,
+        'eyebrow' => 'Veelgestelde vragen',
+        'heading' => 'Over de ' . $motor->label(),
+    ])
 
     <section class="chapter chapter--dark chapter--tight">
         <div class="wrap cta-line">

@@ -20,9 +20,16 @@ use Illuminate\Support\Facades\Route;
 
 // Publieke, niet-persoonlijke pagina's: expliciete Cache-Control zodat browser/CDN mag cachen.
 // Bewust uitgesloten: pagina's met een GET-formulier dat na een mislukte POST validatiefouten
-// of een sessie-flash terug kan tonen op dezelfde route (contact, partner-worden, wizard).
+// of een sessie-flash terug kan tonen op dezelfde route (contact, partner-worden).
+//
+// De wizard stond hier eerder ook bij, maar ten onrechte: /welke-motor-past-bij-mij heeft geen
+// POST-tegenhanger, geen @csrf en geen flash-state. Het antwoord hangt volledig af van de
+// querystring, en caches sleutelen op de volledige URL inclusief query. Zonder deze header was
+// de best presterende commerciële pagina van de site (246 vertoningen in Search Console over de
+// laatste drie maanden) als enige publieke pagina uitgesloten van de cachelaag, en zette 'ie bij
+// elk bezoek een sessie- en XSRF-cookie voor bezoekers die niet inloggen.
 Route::get('/', [PageController::class, 'home'])->middleware('cache.public:300,3600,86400')->name('home');
-Route::get('/welke-motor-past-bij-mij', [WizardController::class, 'index'])->name('wizard.index');
+Route::get('/welke-motor-past-bij-mij', [WizardController::class, 'index'])->middleware('cache.public:1800,3600,86400')->name('wizard.index');
 Route::get('/simulatie', [SimulationController::class, 'index'])->name('simulation.index');
 Route::get('/meest-gezocht', [PageController::class, 'mostSearched'])->middleware('cache.public:1800,3600,86400')->name('most-searched.index');
 Route::get('/partners', [PageController::class, 'partners'])->middleware('cache.public:3600,86400,604800')->name('partners.index');

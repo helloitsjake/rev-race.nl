@@ -1,39 +1,47 @@
 @php echo '<?xml version="1.0" encoding="UTF-8"?>'; @endphp
+{{--
+    Geen <priority> en <changefreq>: Google negeert beide al jaren. Wel <lastmod>, het enige veld
+    dat wél meeweegt bij de vraag of een pagina opnieuw gecrawld moet worden. Vaste pagina's
+    krijgen geen lastmod, omdat er voor die pagina's geen betrouwbare wijzigingsdatum bestaat.
+--}}
+@php
+    $lastmod = fn ($date) => $date ? '<lastmod>' . \Illuminate\Support\Carbon::parse($date)->toAtomString() . '</lastmod>' : '';
+@endphp
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    <url><loc>{{ route('home') }}</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('wizard.index') }}</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('simulation.index') }}</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('most-searched.index') }}</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
-    <url><loc>{{ route('partners.index') }}</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
-    <url><loc>{{ route('partners.apply') }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
-    <url><loc>{{ route('how-it-works') }}</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-    <url><loc>{{ route('kennis.index') }}</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('about') }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
-    <url><loc>{{ route('privacy') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
-    <url><loc>{{ route('contact') }}</loc><priority>0.2</priority><changefreq>yearly</changefreq></url>
-    <url><loc>{{ route('brands.index') }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('segments.index') }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-    <url><loc>{{ route('a2-motoren') }}</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
-    <url><loc>{{ route('yearly-report.show') }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-    @foreach($brandSlugs as $slug)
-        <url><loc>{{ route('brands.show', $slug) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    <url><loc>{{ route('home') }}</loc></url>
+    <url><loc>{{ route('wizard.index') }}</loc></url>
+    <url><loc>{{ route('simulation.index') }}</loc></url>
+    <url><loc>{{ route('most-searched.index') }}</loc></url>
+    <url><loc>{{ route('partners.index') }}</loc></url>
+    <url><loc>{{ route('partners.apply') }}</loc></url>
+    <url><loc>{{ route('how-it-works') }}</loc></url>
+    <url><loc>{{ route('kennis.index') }}</loc></url>
+    <url><loc>{{ route('about') }}</loc></url>
+    <url><loc>{{ route('privacy') }}</loc></url>
+    <url><loc>{{ route('contact') }}</loc></url>
+    <url><loc>{{ route('brands.index') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    <url><loc>{{ route('segments.index') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    <url><loc>{{ route('a2-motoren') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    <url><loc>{{ route('yearly-report.show') }}</loc></url>
+    @foreach($brandSlugs as $brand)
+        <url><loc>{{ route('brands.show', $brand['slug']) }}</loc>{!! $lastmod($brand['lastmod']) !!}</url>
     @endforeach
     @foreach($modelSlugs as $model)
-        <url><loc>{{ route('brands.model', [$model['brand'], $model['model']]) }}</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+        <url><loc>{{ route('brands.model', [$model['brand'], $model['model']]) }}</loc>{!! $lastmod($model['lastmod']) !!}</url>
     @endforeach
-    @foreach($segmentKeys as $key)
-        <url><loc>{{ route('segments.show', $key) }}</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+    @foreach($segments as $segment)
+        <url><loc>{{ route('segments.show', $segment['key']) }}</loc>{!! $lastmod($segment['lastmod']) !!}</url>
     @endforeach
     @foreach($partners as $partner)
-        <url><loc>{{ route('partners.show', $partner) }}</loc><priority>0.4</priority><changefreq>monthly</changefreq></url>
+        <url><loc>{{ route('partners.show', $partner) }}</loc>{!! $lastmod($partner->updated_at) !!}</url>
     @endforeach
     @foreach($articles as $article)
-        <url><loc>{{ route('kennis.show', $article) }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+        <url><loc>{{ route('kennis.show', $article) }}</loc>{!! $lastmod($article->updated_at) !!}</url>
     @endforeach
     @foreach($toplijsten as $slug)
-        <url><loc>{{ route('toplijst.show', $slug) }}</loc><priority>0.5</priority><changefreq>weekly</changefreq></url>
+        <url><loc>{{ route('toplijst.show', $slug) }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
     @endforeach
     @foreach($pairs as $pair)
-        <url><loc>{{ route('compare.show', $pair) }}</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+        <url><loc>{{ route('compare.show', $pair['slug']) }}</loc>{!! $lastmod($pair['lastmod']) !!}</url>
     @endforeach
 </urlset>

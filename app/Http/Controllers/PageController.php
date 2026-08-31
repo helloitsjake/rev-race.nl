@@ -281,13 +281,37 @@ class PageController extends Controller
             ->header('X-Content-Type-Options', 'nosniff');
     }
 
+    /**
+     * De sitemap draagt per URL een <lastmod> en geen <priority>/<changefreq> meer: die laatste
+     * twee worden door Google genegeerd, <lastmod> is het enige veld dat meeweegt bij de vraag
+     * of hercrawlen zin heeft. De datum komt steeds van de onderliggende data (motor, artikel,
+     * partner), niet van de deploy, zodat 'ie alleen verschuift als de pagina echt anders werd.
+     * Vaste pagina's krijgen bewust geen lastmod: daar is geen betrouwbare wijzigingsdatum voor,
+     * en een verzonnen datum is schadelijker dan geen datum.
+     */
     public function sitemap()
     {
-        $brandSlugs = Motor::query()->pluck('brand')->unique()->map(fn ($brand) => Str::slug($brand))->values();
-        $modelSlugs = Motor::query()->get()->map(fn (Motor $motor) => [
+        $motors = Motor::query()->get();
+
+        $brandSlugs = $motors->groupBy('brand')->map(fn ($group, $brand) => [
+            'slug' => Str::slug($brand),
+            'lastmod' => $group->max('updated_at'),
+        ])->values();
+
+        $modelSlugs = $motors->map(fn (Motor $motor) => [
             'brand' => Str::slug($motor->brand),
             'model' => $motor->slug(),
+            'lastmod' => $motor->updated_at,
         ]);
+
+        $segments = collect(array_keys(Motor::CATEGORIES))->map(fn (string $key) => [
+            'key' => $key,
+            'lastmod' => $motors->where('category', $key)->max('updated_at'),
+        ]);
+
+        // Toplijsten zijn afgeleid van de hele database, dus elke motorwijziging kan de volgorde
+        // veranderen. De nieuwste motorwijziging is daarmee de juiste lastmod.
+        $motorsLastmod = $motors->max('updated_at');
 
         return response()
             ->view('sitemap', [
@@ -297,7 +321,8 @@ class PageController extends Controller
                 'pairs' => ComparisonController::pairs(),
                 'brandSlugs' => $brandSlugs,
                 'modelSlugs' => $modelSlugs,
-                'segmentKeys' => array_keys(Motor::CATEGORIES),
+                'segments' => $segments,
+                'motorsLastmod' => $motorsLastmod,
             ])
             ->header('Content-Type', 'application/xml');
     }

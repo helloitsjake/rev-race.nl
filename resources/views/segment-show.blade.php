@@ -26,7 +26,7 @@
                 <span>{{ $label }}</span>
             </nav>
             <span class="eyebrow">Segment</span>
-            <h1>{{ $label }}</h1>
+            <h1>Beste {{ $buyingLabel }}</h1>
             <p class="lede">{{ $description }} {{ $motors->count() }} {{ $motors->count() === 1 ? 'model' : 'modellen' }} in de database, hieronder gesorteerd op vermogen/gewicht.</p>
             @if($buyingIntro)
                 <p class="lede">{!! str_replace(
@@ -66,8 +66,12 @@
                         <h2>Populaire {{ Str::lower($label) }}-vergelijkingen</h2>
                     </div>
                 </div>
+                @php
+                    $featuredComparisons = $comparisons->take(6);
+                    $restComparisons = $comparisons->slice(6)->values();
+                @endphp
                 <div class="kb-grid">
-                    @foreach($comparisons as $row)
+                    @foreach($featuredComparisons as $row)
                         <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
                             <h3>{{ $row['motorA']->label() }}</h3>
                             <p>vs {{ $row['motorB']->label() }}</p>
@@ -75,6 +79,20 @@
                         </a>
                     @endforeach
                 </div>
+                @if($restComparisons->isNotEmpty())
+                    <details class="report-disclosure">
+                        <summary>Toon alle {{ $comparisons->count() }} {{ Str::lower($label) }}-vergelijkingen</summary>
+                        <div class="kb-grid" style="margin-top: 1.2rem">
+                            @foreach($restComparisons as $row)
+                                <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
+                                    <h3>{{ $row['motorA']->label() }}</h3>
+                                    <p>vs {{ $row['motorB']->label() }}</p>
+                                    <span class="kb-card__link">Bekijk vergelijking &rarr;</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             </div>
         </section>
     @endif

@@ -27,7 +27,7 @@ class ComparisonController extends Controller
         // dus de andere bleef zonder redirect gewoon indexeerbaar: Ahrefs zag dit als 706
         // "indexable page not in sitemap" (18 aug). 301 naar de canonieke richting bundelt ook de
         // linkwaarde van beide modelpagina's op één URL i.p.v. die te versnipperen.
-        if ($this->sortKey($motorA) > $this->sortKey($motorB)) {
+        if (self::sortKey($motorA) > self::sortKey($motorB)) {
             return redirect()->route('compare.show', "{$motorB->slug()}-vs-{$motorA->slug()}", 301);
         }
 
@@ -104,7 +104,13 @@ class ComparisonController extends Controller
      * supersport) die niemand daadwerkelijk zoekt. De /vergelijk/{slug} route zelf blijft open voor
      * elke twee motoren, dit beperkt alleen wat er in de sitemap gepubliceerd wordt.
      *
-     * @return array<int, string>
+     * Levert per paar ook een lastmod op: de laatste wijziging van de twee betrokken motoren.
+     * De vergelijkingspagina bevat geen eigen tekst die los van de motordata verandert, dus dat
+     * is precies het moment waarop de inhoud van de pagina daadwerkelijk anders werd. Google
+     * gebruikt <lastmod> om te bepalen of hercrawlen zin heeft; <priority> en <changefreq>
+     * worden genegeerd en staan daarom niet meer in de sitemap.
+     *
+     * @return Collection<int, array{slug: string, lastmod: \Illuminate\Support\Carbon|null}>
      */
     public static function pairs(): Collection
     {
@@ -117,7 +123,10 @@ class ComparisonController extends Controller
                     continue;
                 }
 
-                $pairs->push("{$motorA->slug()}-vs-{$motorB->slug()}");
+                $pairs->push([
+                    'slug' => self::canonicalSlug($motorA, $motorB),
+                    'lastmod' => collect([$motorA->updated_at, $motorB->updated_at])->filter()->max(),
+                ]);
             }
         }
 
@@ -140,8 +149,23 @@ class ComparisonController extends Controller
      *
      * @return array{0: ?string, 1: string, 2: string}
      */
-    private function sortKey(Motor $motor): array
+    private static function sortKey(Motor $motor): array
     {
         return [$motor->category, $motor->brand, $motor->model];
+    }
+
+    /**
+     * De canonieke slug voor een paar, ongeacht in welke volgorde de twee motoren aangeleverd
+     * worden. Elke plek in de app die naar een vergelijking linkt hoort hier langs: de niet-
+     * canonieke richting krijgt in show() een 301, en een interne link naar een redirect is
+     * verspilde linkwaarde plus een extra hop voor de crawler.
+     */
+    public static function canonicalSlug(Motor $first, Motor $second): string
+    {
+        [$a, $b] = self::sortKey($first) > self::sortKey($second)
+            ? [$second, $first]
+            : [$first, $second];
+
+        return "{$a->slug()}-vs-{$b->slug()}";
     }
 }
