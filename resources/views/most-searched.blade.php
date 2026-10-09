@@ -34,7 +34,7 @@
                             </div>
                             <div>
                                 <span class="rank-row__count">{{ $row['uses'] }}&times; gesimuleerd</span>
-                                <div class="rank-row__ratio">{{ number_format($row['motor']->powerToWeight(), 3) }} pk/kg</div>
+                                <div class="rank-row__ratio">{{ number_format($row['motor']->powerToWeight(), 3, ',', '.') }} pk/kg</div>
                             </div>
                             <a class="btn btn--ghost" href="{{ route('simulation.index', ['motor_a' => $row['motor']->id]) }}">Simuleer</a>
                         </div>

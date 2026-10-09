@@ -25,7 +25,7 @@ $out[] = '- RevRace verkoopt niets en publiceert geen prijzen of voorraad. Het i
     .'en kennisbron, geen dealer.';
 $out[] = '- Kennisartikelen in de categorie "Nieuwe releases" zijn herschreven uit externe '
     .'motornieuwsbronnen en vermelden die bron. De overige kennisartikelen zijn eigen redactie.';
-$out[] = '- Eigenaar en auteur: Jake Andreas, actief circuitrijder, bouwt RevRace als eenmansproject.';
+$out[] = '- Eigenaren en auteurs: de broers Jake en Rory Andreas. Ze rijden trackdays op een Honda CB1300 (2006) en een KTM 1290 Super Duke (2021) en bouwen RevRace samen.';
 $out[] = '';
 $out[] = '## Kernpagina\'s';
 $out[] = '';

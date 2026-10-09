@@ -18,7 +18,7 @@
     <link rel="icon" type="image/png" sizes="256x256" href="{{ asset('images/brand/icon-256.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
-    <meta name="theme-color" content="#D7401F">
+    <meta name="theme-color" content="#F2F1EC">
 
     <meta property="og:site_name" content="RevRace">
     <meta property="og:type" content="website">
@@ -36,7 +36,9 @@
     <script type="application/ld+json">
     {!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'RevRace', 'url' => 'https://www.rev-race.nl']) !!}
     </script>
+    <link rel="preload" href="{{ asset('fonts/inter-tight-800.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('css/revrace.css') }}?v={{ filemtime(public_path('css/revrace.css')) }}">
+    <script>document.documentElement.classList.add('js')</script>
     @stack('head')
 </head>
 <body>
@@ -44,7 +46,7 @@
     <div class="consent-banner__inner wrap">
         <div class="consent-banner__text">
             <p class="consent-banner__title">Cookies op RevRace</p>
-            <p>Functionele cookies zijn altijd nodig (inloggen, beveiliging) en staan aan. Voor het meten van bezoekersaantallen gebruiken we optioneel Google Tag Manager en Ahrefs Web Analytics &mdash; pas na jouw toestemming. Lees meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
+            <p>Functionele cookies zijn altijd nodig (inloggen, beveiliging) en staan aan. Voor het meten van bezoekersaantallen gebruiken we optioneel Google Tag Manager en Ahrefs Web Analytics, pas na jouw toestemming. Lees meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
         </div>
         <div class="consent-banner__actions">
             <button type="button" class="btn btn--ghost" data-consent-action="reject">Alleen noodzakelijk</button>
@@ -53,48 +55,48 @@
     </div>
 </div>
 @unless($embedded ?? false)
-    <div class="topbar">
-        <span>Server-side motorsimulatie</span>
-        <span>{{ \App\Models\SimulationLog::LIMIT }} gratis simulaties per 24 uur</span>
-    </div>
-    <nav class="nav wrap">
-        <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon')Rev<span>Race</span></a>
-        <input type="checkbox" id="nav-toggle" class="nav__toggle-input">
-        <label for="nav-toggle" class="nav__burger" aria-label="Menu"><span></span><span></span><span></span></label>
-        <div class="nav__panel">
-            <div class="nav__links">
-                <a href="{{ route('home') }}" class="@if(request()->routeIs('home')) is-active @endif">Home</a>
-                <details class="nav__dropdown @if(request()->routeIs('wizard.*', 'simulation.*', 'most-searched.*', 'kennis.*')) is-active @endif">
-                    <summary>Ontdekken</summary>
-                    <div class="nav__dropdown-menu">
-                        <a href="{{ route('wizard.index') }}">Welke motor past bij mij</a>
-                        <a href="{{ route('simulation.index') }}">Simulatie</a>
-                        <a href="{{ route('most-searched.index') }}">Meest gezocht</a>
-                        <a href="{{ route('kennis.index') }}">Kennis</a>
-                    </div>
-                </details>
-                <a href="{{ route('partners.index') }}" class="@if(request()->routeIs('partners.index')) is-active @endif">Partners</a>
-                <a href="{{ route('how-it-works') }}" class="@if(request()->routeIs('how-it-works')) is-active @endif">Hoe het werkt</a>
-                <a href="{{ route('about') }}" class="@if(request()->routeIs('about')) is-active @endif">Over ons</a>
-                @auth
-                    <a href="{{ route('garage.index') }}" class="@if(request()->routeIs('garage.*')) is-active @endif">Garage</a>
-                    <a href="{{ route('profile.edit') }}" class="@if(request()->routeIs('profile.*')) is-active @endif">Mijn account</a>
-                @endauth
+    <header class="header">
+        <nav class="nav wrap" aria-label="Hoofdmenu">
+            <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon')Rev<span>Race</span></a>
+            <input type="checkbox" id="nav-toggle" class="nav__toggle-input" aria-label="Menu openen">
+            <label for="nav-toggle" class="nav__burger" aria-hidden="true"><span></span><span></span><span></span></label>
+            <div class="nav__panel">
+                <div class="nav__links">
+                    <a href="{{ route('wizard.index') }}" class="@if(request()->routeIs('wizard.*')) is-active @endif">Motor kiezen</a>
+                    <a href="{{ route('simulation.index') }}" class="@if(request()->routeIs('simulation.*', 'compare.*')) is-active @endif">Vergelijken</a>
+                    <a href="{{ route('kennis.index') }}" class="@if(request()->routeIs('kennis.*')) is-active @endif">Kennisbank</a>
+                    <details class="nav__dropdown @if(request()->routeIs('most-searched.*', 'brands.*', 'segments.*', 'a2-motoren', 'toplijst.*', 'partners.*')) is-active @endif">
+                        <summary>Ontdekken</summary>
+                        <div class="nav__dropdown-menu">
+                            <a href="{{ route('most-searched.index') }}">Meest gezocht</a>
+                            <a href="{{ route('brands.index') }}">Merken</a>
+                            <a href="{{ route('segments.index') }}">Segmenten</a>
+                            <a href="{{ route('a2-motoren') }}">A2-motoren</a>
+                            <a href="{{ route('partners.index') }}">Partners</a>
+                        </div>
+                    </details>
+                    <a href="{{ route('about') }}" class="@if(request()->routeIs('about')) is-active @endif">Over RevRace</a>
+                    @auth
+                        <a href="{{ route('garage.index') }}" class="@if(request()->routeIs('garage.*')) is-active @endif">Garage</a>
+                        <a href="{{ route('profile.edit') }}" class="@if(request()->routeIs('profile.*')) is-active @endif">Mijn account</a>
+                    @endauth
+                </div>
+                <div class="nav__actions">
+                    @auth
+                        <span class="nav__user">{{ Str::limit(auth()->user()->name, 16) }}</span>
+                        <form method="post" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="btn btn--ghost" type="submit">Uitloggen</button>
+                        </form>
+                    @else
+                        <a class="nav__login" href="{{ route('login') }}">Inloggen</a>
+                        <a class="btn btn--primary" href="{{ route('register') }}">Account aanmaken</a>
+                    @endauth
+                </div>
             </div>
-            <div class="nav__actions">
-                @auth
-                    <span class="nav__user">{{ Str::upper(Str::limit(auth()->user()->name, 12, '')) }}</span>
-                    <form method="post" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="btn btn--ghost" type="submit">Uitloggen</button>
-                    </form>
-                @else
-                    <a class="nav__login" href="{{ route('login') }}">Inloggen</a>
-                    <a class="btn btn--primary" href="{{ route('register') }}">Account aanmaken</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+        </nav>
+        <span class="header__progress" aria-hidden="true"></span>
+    </header>
 @endunless
 
 <main class="page">
@@ -114,9 +116,9 @@
 </main>
 
 @unless($embedded ?? false)
-    <footer class="chapter--dark">
+    <footer class="site-footer">
         <div class="wrap footer">
-            <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon', ['dark' => true])Rev<span style="color:var(--redline)">Race</span></a>
+            <a class="nav__logo" href="{{ route('home') }}">@include('partials.brand-icon', ['dark' => true])Rev<span>Race</span></a>
             <div class="footer__links">
                 {{-- Enige sitebrede plek die naar deze 3 pagina's linkt: stonden zonder deze
                      footer-links nergens bereikbaar vanuit navigatie en waren daardoor orphan
@@ -124,13 +126,14 @@
                 <a href="{{ route('toplijst.show', 'beste-pk-kg-verhouding') }}">Beste pk/kg-verhouding</a>
                 <a href="{{ route('toplijst.show', 'hoogste-topsnelheid') }}">Hoogste topsnelheid</a>
                 <a href="{{ route('toplijst.show', 'snelste-0-100-sprint') }}">Snelste 0-100 sprint</a>
+                <a href="{{ route('how-it-works') }}">Hoe het werkt</a>
                 <a href="{{ route('partners.apply') }}">Partner worden</a>
                 <a href="{{ route('yearly-report.show') }}">Staat van de Nederlandse motorrijder</a>
                 <a href="{{ route('privacy') }}">Privacy</a>
                 <button type="button" class="footer__link-btn" data-consent-open>Cookie-instellingen</button>
                 <a href="{{ route('contact') }}">Contact</a>
             </div>
-            <small>© {{ date('Y') }} RevRace - www.rev-race.nl</small>
+            <small>© {{ date('Y') }} RevRace · Jake en Rory Andreas</small>
         </div>
     </footer>
 @endunless

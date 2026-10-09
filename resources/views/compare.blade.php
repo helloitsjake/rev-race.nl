@@ -33,7 +33,7 @@
         [
             'q' => "Welke is sneller, de {$motorA->label()} of de {$motorB->label()}?",
             'a' => "Op droog asfalt wint de {$dryWinner->label()}, met een verschil van "
-                . number_format($dryResult['delta_s'], 2) . ' seconde over 500 meter. '
+                . number_format($dryResult['delta_s'], 2, ',', '.') . ' seconde over 500 meter. '
                 . ($sameDryRainWinner
                     ? "Ook op nat wegdek blijft de {$rainWinner->label()} voorliggen."
                     : "Op nat wegdek draait dat om: dan wint de {$rainWinner->label()}."),
@@ -55,8 +55,8 @@
         ],
         [
             'q' => 'Wat is het verschil in pk per kilo?',
-            'a' => "De {$motorA->label()} zit op " . number_format($motorA->powerToWeight(), 2)
-                . " pk/kg, de {$motorB->label()} op " . number_format($motorB->powerToWeight(), 2)
+            'a' => "De {$motorA->label()} zit op " . number_format($motorA->powerToWeight(), 2, ',', '.')
+                . " pk/kg, de {$motorB->label()} op " . number_format($motorB->powerToWeight(), 2, ',', '.')
                 . ' pk/kg. Die verhouding zegt meer over hoe fel een motor optrekt dan het vermogen alleen.',
         ],
         [
@@ -215,8 +215,8 @@
                 </div>
                 <div class="spec__row">
                     <div class="spec__label">Pk per kg</div>
-                    <div class="spec__value">{{ number_format($motorA->powerToWeight(), 2) }}</div>
-                    <div class="spec__value">{{ number_format($motorB->powerToWeight(), 2) }}</div>
+                    <div class="spec__value">{{ number_format($motorA->powerToWeight(), 2, ',', '.') }}</div>
+                    <div class="spec__value">{{ number_format($motorB->powerToWeight(), 2, ',', '.') }}</div>
                 </div>
                 <div class="spec__row">
                     <div class="spec__label">Motortype</div>
@@ -259,22 +259,22 @@
                     <div class="panel__head">
                         <span>Sprint 500m</span>
                         @if($mu)
-                            <span class="mu">tractie {{ number_format($mu['t'], 2) }} &middot; rem {{ number_format($mu['b'], 2) }} &middot; bocht {{ number_format($mu['c'], 2) }}</span>
+                            <span class="mu">tractie {{ number_format($mu['t'], 2, ',', '.') }} &middot; rem {{ number_format($mu['b'], 2, ',', '.') }} &middot; bocht {{ number_format($mu['c'], 2, ',', '.') }}</span>
                         @endif
                     </div>
                     <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $motorA->label() }}</span><span class="ratio">{{ number_format($motorA->powerToWeight(), 2) }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorA->power_hp }} pk</span><span>{{ $motorA->weight_kg }} kg</span><span>{{ number_format($result['time_a_s'], 2) }}s</span></div>
+                        <div class="bike-row__name"><span>{{ $motorA->label() }}</span><span class="ratio">{{ number_format($motorA->powerToWeight(), 2, ',', '.') }} pk/kg</span></div>
+                        <div class="bike-row__meta"><span>{{ $motorA->power_hp }} pk</span><span>{{ $motorA->weight_kg }} kg</span><span>{{ number_format($result['time_a_s'], 2, ',', '.') }}s</span></div>
                         <div class="bar"><span style="width:{{ $widthA }}%"></span></div>
                     </div>
                     <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $motorB->label() }}</span><span class="ratio">{{ number_format($motorB->powerToWeight(), 2) }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorB->power_hp }} pk</span><span>{{ $motorB->weight_kg }} kg</span><span>{{ number_format($result['time_b_s'], 2) }}s</span></div>
+                        <div class="bike-row__name"><span>{{ $motorB->label() }}</span><span class="ratio">{{ number_format($motorB->powerToWeight(), 2, ',', '.') }} pk/kg</span></div>
+                        <div class="bike-row__meta"><span>{{ $motorB->power_hp }} pk</span><span>{{ $motorB->weight_kg }} kg</span><span>{{ number_format($result['time_b_s'], 2, ',', '.') }}s</span></div>
                         <div class="bar"><span style="width:{{ $widthB }}%"></span></div>
                     </div>
                     @if($key !== 'dry' && $winner->isNot($dryWinner))
                         <div class="panel__foot">
-                            <p style="color: var(--paper-60); font-size: 0.9375rem">Bij deze wegconditie wint de {{ $winner->label() }} in plaats van de {{ $dryWinner->label() }}, die op droog asfalt voorlag. Verschil: {{ number_format($result['delta_s'], 2) }}s.</p>
+                            <p style="color: var(--paper-60); font-size: 0.9375rem">Bij deze wegconditie wint de {{ $winner->label() }} in plaats van de {{ $dryWinner->label() }}, die op droog asfalt voorlag. Verschil: {{ number_format($result['delta_s'], 2, ',', '.') }}s.</p>
                         </div>
                     @endif
                 </div>

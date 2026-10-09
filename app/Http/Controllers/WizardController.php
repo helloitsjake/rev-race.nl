@@ -41,7 +41,7 @@ class WizardController extends Controller
         return [
             'snelweg' => 'Snelweg, lange afstanden',
             'binnendoor' => 'Binnendoor, kronkelwegen',
-            'bergen' => 'Bergen, pashaarspeldbochten',
+            'bergen' => 'Bergen, haarspeldbochten',
         ];
     }
 

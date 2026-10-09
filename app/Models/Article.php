@@ -17,8 +17,8 @@ class Article extends Model
     public const NEWS_CATEGORY = 'Nieuwe releases';
 
     protected $attributes = [
-        'author_name' => 'Jake Andreas',
-        'author_bio' => 'Oprichter en bouwer van RevRace. Kennisartikelen worden onderbouwd met officiële bronnen en Ahrefs-zoekwoordonderzoek, "nieuwe releases" worden automatisch herschreven uit geverifieerde motornieuwsbronnen.',
+        'author_name' => 'Jake en Rory Andreas',
+        'author_bio' => 'Broers en oprichters van RevRace. Ze rijden trackdays op een Honda CB1300 en een KTM 1290 Super Duke. Kennisartikelen onderbouwen ze met officiële bronnen, "nieuwe releases" worden automatisch herschreven uit geverifieerde motornieuwsbronnen.',
     ];
 
     protected $fillable = [

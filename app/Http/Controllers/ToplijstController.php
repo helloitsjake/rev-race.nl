@@ -20,7 +20,7 @@ class ToplijstController extends Controller
                 'unit' => 'pk/kg',
                 'direction' => 'desc',
                 'value' => fn (Motor $motor) => $motor->powerToWeight(),
-                'format' => fn ($value) => number_format($value, 2),
+                'format' => fn ($value) => number_format($value, 2, ',', '.'),
             ],
             'snelste-0-100-sprint' => [
                 'title' => 'Snelste 0 naar 100 sprint',
@@ -28,7 +28,7 @@ class ToplijstController extends Controller
                 'unit' => 's',
                 'direction' => 'asc',
                 'value' => fn (Motor $motor) => $motor->zero_to_hundred_s,
-                'format' => fn ($value) => number_format($value, 1).'s',
+                'format' => fn ($value) => number_format($value, 1, ',', '.').'s',
             ],
             'hoogste-topsnelheid' => [
                 'title' => 'Hoogste topsnelheid',
@@ -36,7 +36,7 @@ class ToplijstController extends Controller
                 'unit' => 'km/h',
                 'direction' => 'desc',
                 'value' => fn (Motor $motor) => $motor->top_speed_kmh,
-                'format' => fn ($value) => number_format($value, 0).' km/h',
+                'format' => fn ($value) => number_format($value, 0, ',', '.').' km/h',
             ],
         ];
     }

@@ -7,7 +7,7 @@
     $faqs = [
         [
             'question' => 'Hoe bepaalt RevRace welke motor bij mij past?',
-            'answer' => 'Je rijstijl (bochten, snelheid of relax) en het terrein waar je vooral rijdt worden vertaald naar een score per motorcategorie, zoals naked, sport, tourer, adventure, cruiser of retro. Rijstijl weegt daarbij zwaarder dan terrein: terrein is alleen de omgeving, rijstijl zegt direct iets over het karakter van de motor dat bij je past. Binnen de best passende categorie rangschikken we vervolgens elke motor op basis van de verhouding tussen vermogen en gewicht, altijd vergeleken met andere motoren in dezelfde categorie, zodat een lichte 125cc-retro niet oneerlijk wordt afgezet tegen een zware cruiser.',
+            'answer' => 'Je rijstijl (bochten, snelheid of plezier) en het terrein waar je vooral rijdt worden vertaald naar een score per motorcategorie, zoals naked, sport, tourer, adventure, cruiser of retro. Rijstijl weegt daarbij twee keer zo zwaar als terrein. Binnen de best passende categorie rangschikken we elke motor op wat bij jouw rijstijl past: voor snelheid het meeste vermogen per kilo, voor bochten een lichte, wendbare motor met genoeg vermogen, en voor plezier het rustige midden. Altijd vergeleken met motoren uit dezelfde categorie, zodat een lichte retro niet oneerlijk wordt afgezet tegen een zware cruiser.',
         ],
         [
             'question' => 'Wat betekent het label "A2 geschikt"?',
@@ -53,253 +53,183 @@
 @endpush
 
 @section('content')
-    <header class="chapter chapter--tight">
-        <div class="wrap">
-            <span class="eyebrow">Welke motor past bij mij</span>
-            <h1>Vertel hoe je rijdt, wij zoeken uit wat past</h1>
-            <p class="lede">Geen vakjargon om zelf te kiezen. Vertel iets over jezelf en hoe je het liefst rijdt, en we vertalen dat naar motoren die daar echt bij passen.</p>
-        </div>
-    </header>
+    @php
+        $arrow = '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5"/></svg>';
+        $voorkeurIcons = [
+            'bochten' => '<path d="M4 18c0-6 5-5 7-9s1-6 7-6"/>',
+            'snelheid' => '<path d="M3 11h15M13 6l5 5-5 5"/>',
+            'relax' => '<circle cx="11" cy="11" r="7.5"/><path d="M8 12.5c1.5 1.7 4.5 1.7 6 0"/>',
+        ];
+        $voorkeurKort = ['bochten' => ['Bochten en leunhoek', 'Wendbaar, licht, sportief'], 'snelheid' => ['Snel op het rechte stuk', 'Vermogen en acceleratie'], 'relax' => ['Rijden voor het plezier', 'Comfortabel, geen haast']];
+        $ervaringKort = ['beginner' => ['Net rijbewijs of A2', 'Alleen motoren tot 35 kW'], 'ervaren' => ['Vol rijbewijs', 'Alle motoren']];
+        $simUrl = fn ($motor) => route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht]));
+        $googleUrl = fn ($motor) => 'https://www.google.com/search?q='.urlencode($motor->label());
+    @endphp
 
-    <section class="chapter chapter--tight">
-        <div class="wrap">
-            <div class="panel">
-                <p>
-                    Dit is geen quiz met een vaste uitkomst uit een lijstje, maar een advies dat direct uit onze motordatabase
-                    wordt berekend. We vertalen je rijstijl en het terrein waar je vooral rijdt naar een motorcategorie, en
-                    rangschikken daarbinnen elke motor op de verhouding tussen vermogen en gewicht, zodat het advies past bij
-                    zowel je manier van rijden als je ervaring.
-                </p>
-                <p style="margin-top:10px">
-                    Geef je aan net je rijbewijs te hebben of op een A2-rijbewijs te rijden, dan tonen we alleen motoren die
-                    aan de Europese A2-eisen voldoen: maximaal 35 kW vermogen en een verhouding van vermogen tot gewicht van
-                    niet meer dan 0,20 kW per kilo. Twijfel je tussen twee modellen uit het advies? Race ze daarna tegen
-                    elkaar in de <a class="accent" href="{{ route('simulation.index') }}">simulator</a> om te zien hoe ze
-                    zich verhouden op droog, vochtig en nat asfalt.
-                </p>
-                <p style="margin-top:10px">
-                    Achter de schermen telt je antwoord op "wat past het best bij jouw rijstijl" twee keer zo zwaar mee als
-                    waar je vooral rijdt: rijstijl zegt direct iets over het karakter van een motor, terrein is vooral de
-                    omgeving eromheen. Elke categorie krijgt op die manier een score, en categorieën die minder dan één punt
-                    van elkaar verschillen tonen we allebei, tot een maximum van twee, zodat het advies niet onnodig smal
-                    wordt bij een logisch gelijkspel tussen bijvoorbeeld sport en adventure. Binnen de gekozen categorie(ën)
-                    laten we de zes best passende motoren zien op basis van vermogen ten opzichte van gewicht, altijd
-                    vergeleken met andere motoren uit dezelfde categorie: een lichte retro-klassieker wordt zo niet oneerlijk
-                    afgezet tegen een zware cruiser. De rest van de matches verdwijnt niet, die blijft opvraagbaar via
-                    "Bekijk alle modellen in deze categorie".
-                </p>
-                <p style="margin-top:10px">
-                    Dit werkt zowel voor iemand die voor het eerst een motor kiest als voor een ervaren rijder die zich
-                    oriënteert op een ander segment: je hoeft zelf geen vakjargon als "naked" of "adventure" te kennen, dat
-                    volgt vanzelf uit je antwoorden. Het is nadrukkelijk een datagedreven eerste selectie op basis van
-                    specificaties, geen vervanging voor zelf op de motor zitten of een proefrit bij een dealer. Gebruik het
-                    om een shortlist te maken, en laat de simulator daarna de doorslag geven tussen je favorieten.
-                </p>
-                <p style="margin-top:10px">
-                    Leeftijd, lengte en gewicht hieronder zijn optioneel en hebben geen van drieën invloed op welke motoren
-                    worden geadviseerd. Leeftijd en lengte worden alleen gebruikt om de uitleg bij je resultaat persoonlijker
-                    te maken. Gewicht werkt wel door: vul je dat in, dan wordt het automatisch meegenomen zodra je vanuit het
-                    advies doorklikt naar de simulator, ook als je niet bent ingelogd.
-                </p>
-            </div>
-        </div>
-    </section>
+    <div class="wrap" style="padding-block:clamp(28px,4vw,56px) clamp(28px,4vw,44px)">
+        <p class="turn"><b>T1</b> Advies op rijstijl</p>
+        <h1 style="max-width:16ch">Vertel hoe je rijdt, wij zoeken uit wat past</h1>
+        <p class="lede" style="margin-top:20px">Geen vakjargon nodig. Je antwoorden worden vertaald naar een type motor, en binnen dat type zoeken we de motoren die het beste bij jouw rijstijl en ervaring passen.</p>
+    </div>
 
-    <section class="chapter chapter--tight">
-        <div class="wrap">
-            <form method="get" action="{{ route('wizard.index') }}">
-                <div style="margin-bottom:1.4rem">
-                    <span class="field-label">Over jou (optioneel)</span>
-                    <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
-                        <div class="form-row">
-                            <label for="leeftijd">Leeftijd</label>
-                            <input id="leeftijd" name="leeftijd" type="number" min="16" max="99" value="{{ $leeftijd }}" placeholder="Bijv. 28">
-                        </div>
-                        <div class="form-row">
-                            <label for="lengte">Lengte (cm)</label>
-                            <input id="lengte" name="lengte" type="number" min="140" max="220" value="{{ $lengte }}" placeholder="Bijv. 180">
-                        </div>
-                        <div class="form-row">
-                            <label for="gewicht">Gewicht (kg)</label>
-                            <input id="gewicht" name="gewicht" type="number" min="30" max="180" value="{{ $gewicht }}" placeholder="Bijv. 75">
-                        </div>
-                    </div>
+    <div class="wrap wiz" style="padding-bottom:clamp(72px,9vw,120px)">
+        <form class="wiz-form" method="get" action="{{ route('wizard.index') }}#advies" data-wizard-form>
+            <div class="sectorbar" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+            <fieldset>
+                <legend><em>S1</em> Je rij-ervaring</legend>
+                <div class="cards cards--2">
+                    @foreach($experienceLevels as $key => $label)
+                        <label class="choice-card"><input type="radio" name="ervaring" value="{{ $key }}" @checked($selectedErvaring === $key) required><span><b>{{ $ervaringKort[$key][0] ?? $label }}</b><small>{{ $ervaringKort[$key][1] ?? '' }}</small></span></label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend><em>S2</em> Je rijstijl</legend>
+                <div class="cards">
+                    @foreach($voorkeuren as $key => $label)
+                        <label class="choice-card"><input type="radio" name="voorkeur" value="{{ $key }}" @checked($selectedVoorkeur === $key)><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $voorkeurIcons[$key] ?? '' !!}</svg><span><b>{{ $voorkeurKort[$key][0] ?? $label }}</b><small>{{ $voorkeurKort[$key][1] ?? '' }}</small></span></label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend><em>S3</em> Waar je vooral rijdt <small>meerdere mogelijk</small></legend>
+                <div class="cards">
+                    @foreach($terreinen as $key => $label)
+                        <label class="choice-card choice-card--multi"><input type="checkbox" name="terrein[]" value="{{ $key }}" @checked(in_array($key, $selectedTerrein, true))><span><b>{{ $label }}</b></span></label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend><em>S4</em> Over jou <small>optioneel</small></legend>
+                <div class="fields">
+                    <div><label for="leeftijd">Leeftijd</label><div class="unit"><input id="leeftijd" name="leeftijd" type="number" min="16" max="99" value="{{ $leeftijd }}" placeholder="28"><i>jr</i></div></div>
+                    <div><label for="lengte">Lengte</label><div class="unit"><input id="lengte" name="lengte" type="number" min="140" max="220" value="{{ $lengte }}" placeholder="180"><i>cm</i></div></div>
+                    <div><label for="gewicht">Gewicht</label><div class="unit"><input id="gewicht" name="gewicht" type="number" min="30" max="180" value="{{ $gewicht }}" placeholder="75"><i>kg</i></div></div>
+                </div>
+                <p class="hint">Je gewicht nemen we mee als je doorklikt naar de simulator. Leeftijd en lengte hebben geen invloed op het advies.</p>
+            </fieldset>
+
+            <button class="btn btn--primary" type="submit">Geef me advies {!! $arrow !!}</button>
+        </form>
+
+        <div>
+            <div class="result" id="advies" aria-live="polite" @if($anyMatches && $anyMatches->isNotEmpty()) data-lights-on-load @endif>
+                <div class="grid-head">
+                    <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                    @if($anyMatches && $anyMatches->isNotEmpty())
+                        <p class="status">{{ $topMatches->count() }} van de <b>{{ $topMatches->count() + $moreMatches->count() }}</b> matches</p>
+                    @endif
                 </div>
 
-                <div class="form-row">
-                    <span class="field-label">Wat is je rij-ervaring?</span>
-                    <div class="choice-row">
-                        @foreach($experienceLevels as $key => $label)
-                            <label class="choice @if($selectedErvaring === $key) is-active @endif">
-                                <input type="radio" name="ervaring" value="{{ $key }}" @checked($selectedErvaring === $key)>
-                                {{ $label }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <span class="field-label">Wat past het best bij jouw rijstijl?</span>
-                    <div class="choice-row">
-                        @foreach($voorkeuren as $key => $label)
-                            <label class="choice @if($selectedVoorkeur === $key) is-active @endif">
-                                <input type="radio" name="voorkeur" value="{{ $key }}" @checked($selectedVoorkeur === $key)>
-                                {{ $label }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <span class="field-label">Waar rijd je vooral? (meerdere mogelijk)</span>
-                    <div class="choice-row">
-                        @foreach($terreinen as $key => $label)
-                            <label class="choice @if(in_array($key, $selectedTerrein, true)) is-active @endif">
-                                <input type="checkbox" name="terrein[]" value="{{ $key }}" @checked(in_array($key, $selectedTerrein, true))>
-                                {{ $label }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-
-                <button class="btn btn--primary" type="submit">Geef me advies</button>
-            </form>
-        </div>
-    </section>
-
-    @if($anyMatches !== null)
-        <section class="chapter chapter--tight">
-            <div class="wrap">
-                @if($anyMatches->isNotEmpty())
-                    @php
-                        $profielZin = ($lengte || $gewicht) ? ', en rekening houdend met je lengte en gewicht' : '';
-                        $totalCount = $topMatches->count() + $moreMatches->count();
-                    @endphp
-                    <span class="eyebrow">Advies</span>
-                    <h2>Ons advies voor jou</h2>
-                    <p class="lede" style="margin-bottom:1.6em">
+                @if($anyMatches === null)
+                    <h2>Jouw startopstelling</h2>
+                    <p class="because">Kies links je rij-ervaring en je rijstijl of het terrein waar je rijdt. Dan zetten we hier de zes motoren neer die het beste bij je passen.</p>
+                @elseif($anyMatches->isNotEmpty())
+                    <h2>Jouw startopstelling</h2>
+                    <p class="because">
                         @if(count($reasonParts))
-                            Omdat je aangaf: {{ implode(' en ', $reasonParts) }}{{ $profielZin }}, passen deze motoren het best bij je.
+                            Omdat je aangaf: <b>{!! implode('</b> en <b>', array_map('e', $reasonParts)) !!}</b>.
                         @else
                             Op basis van je antwoorden passen deze motoren het best bij je.
                         @endif
                     </p>
-
                     @if($merkFallbackUsed)
-                        <p class="note-inline">Van {{ $selectedMerk }} hebben we geen match in deze categorie, hieronder ons advies zonder merkfilter.</p>
+                        <p class="note-inline">Van {{ $selectedMerk }} hebben we geen match in deze categorie, hieronder het advies zonder merkfilter.</p>
                     @endif
 
-                    @if($availableBrands->count() > 1)
-                        <form method="get" action="{{ route('wizard.index') }}" style="margin-top:14px;margin-bottom:8px;max-width:280px">
-                            <input type="hidden" name="ervaring" value="{{ $selectedErvaring }}">
-                            @if($selectedVoorkeur)<input type="hidden" name="voorkeur" value="{{ $selectedVoorkeur }}">@endif
-                            @foreach($selectedTerrein as $t)<input type="hidden" name="terrein[]" value="{{ $t }}">@endforeach
-                            @if($leeftijd)<input type="hidden" name="leeftijd" value="{{ $leeftijd }}">@endif
-                            @if($lengte)<input type="hidden" name="lengte" value="{{ $lengte }}">@endif
-                            @if($gewicht)<input type="hidden" name="gewicht" value="{{ $gewicht }}">@endif
-
-                            <div class="form-row">
-                                <label for="merk">Versmal op merk (optioneel)</label>
-                                <select id="merk" name="merk" onchange="this.form.submit()">
+                    <div class="tools">
+                        @if($availableBrands->count() > 1)
+                            <form method="get" action="{{ route('wizard.index') }}#advies">
+                                <input type="hidden" name="ervaring" value="{{ $selectedErvaring }}">
+                                @if($selectedVoorkeur)<input type="hidden" name="voorkeur" value="{{ $selectedVoorkeur }}">@endif
+                                @foreach($selectedTerrein as $t)<input type="hidden" name="terrein[]" value="{{ $t }}">@endforeach
+                                @if($leeftijd)<input type="hidden" name="leeftijd" value="{{ $leeftijd }}">@endif
+                                @if($lengte)<input type="hidden" name="lengte" value="{{ $lengte }}">@endif
+                                @if($gewicht)<input type="hidden" name="gewicht" value="{{ $gewicht }}">@endif
+                                <div class="select"><select name="merk" aria-label="Versmal op merk" onchange="this.form.submit()">
                                     <option value="">Alle merken</option>
                                     @foreach($availableBrands as $brand)
                                         <option value="{{ $brand }}" @selected($selectedMerk === $brand)>{{ $brand }}</option>
                                     @endforeach
-                                </select>
-                            </div>
-                        </form>
-                    @endif
+                                </select></div>
+                            </form>
+                        @endif
+                        @foreach($topCategories as $categorie)
+                            <a href="{{ route('segments.show', $categorie) }}">Alle {{ Str::lower(\App\Models\Motor::CATEGORIES[$categorie] ?? $categorie) }}-modellen</a>
+                        @endforeach
+                        @if($selectedErvaring === 'beginner')
+                            <a href="{{ route('a2-motoren') }}">Alle A2-motoren</a>
+                        @endif
+                    </div>
 
-                    @if(count($topCategories) || $selectedErvaring === 'beginner')
-                        <div class="hero__ctas" style="margin-top:14px;margin-bottom:clamp(28px,4vw,44px)">
-                            @foreach($topCategories as $categorie)
-                                <a class="btn btn--ghost" href="{{ route('segments.show', $categorie) }}">Alle {{ Str::lower(\App\Models\Motor::CATEGORIES[$categorie] ?? $categorie) }}-modellen</a>
-                            @endforeach
-                            @if($selectedErvaring === 'beginner')
-                                <a class="btn btn--ghost" href="{{ route('a2-motoren') }}">Alle A2 motoren</a>
-                            @endif
-                        </div>
-                    @endif
-
-                    <div class="match-grid">
+                    <div class="startgrid startgrid--six">
                         @foreach($topMatches as $motor)
-                            <article class="match-card">
-                                <p class="match-card__badge">
-                                    {{ $motor->categoryLabel() }}
-                                    @if($motor->isA2Eligible())
-                                        &middot; <span style="color:var(--telemetry)">A2 geschikt</span>
-                                    @endif
-                                </p>
-                                <h3>{{ $motor->label() }}</h3>
-                                <div class="spec-mini"><span><b>{{ $motor->power_hp }}</b> pk</span><span><b>{{ $motor->weight_kg }}</b> kg</span><span><b>{{ number_format($motor->powerToWeight(), 3) }}</b> pk/kg</span></div>
-                                <a class="btn btn--primary match-card__cta" href="{{ route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht])) }}">Simuleer met deze motor</a>
-                                <a class="btn btn--ghost" style="margin-top:0.6rem;justify-content:center" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
-                            </article>
+                            <div class="slot" style="--odd:{{ $loop->index % 2 }}">
+                                <div class="slot__pos">P{{ $loop->iteration }}</div>
+                                <div class="slot__car">
+                                    <div class="slot__name">{{ $motor->label() }}@if($motor->isA2Eligible())<span class="a2">A2</span>@endif</div>
+                                    <div class="slot__seg">{{ $motor->categoryLabel() }}</div>
+                                    <div class="slot__specs"><span><b>{{ $motor->power_hp }}</b> pk</span><span><b>{{ $motor->weight_kg }}</b> kg</span><span><b>{{ number_format($motor->powerToWeight(), 2, ',', '') }}</b> pk/kg</span></div>
+                                    <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $googleUrl($motor) }}" target="_blank" rel="noopener">Zoek deze motor</a></div>
+                                </div>
+                            </div>
                         @endforeach
                     </div>
 
                     @if($moreMatches->isNotEmpty())
-                        <details style="margin-top:clamp(28px,4vw,44px)">
-                            <summary style="cursor:pointer;font-weight:600">Bekijk alle {{ $totalCount }} modellen in deze categorie</summary>
-                            <div class="match-grid" style="margin-top:20px">
+                        <details class="more-list">
+                            <summary>Bekijk alle {{ $topMatches->count() + $moreMatches->count() }} matches</summary>
+                            <div class="model-list model-list--compact" style="padding:0;background:none">
+                                <div class="model-row model-row--head"><span>Model</span><span class="model-row__num">pk</span><span class="model-row__num">kg</span><span class="model-row__num">pk/kg</span></div>
                                 @foreach($moreMatches as $motor)
-                                    <article class="match-card">
-                                        <p class="match-card__badge">
-                                            {{ $motor->categoryLabel() }}
-                                            @if($motor->isA2Eligible())
-                                                &middot; <span style="color:var(--telemetry)">A2 geschikt</span>
-                                            @endif
-                                        </p>
-                                        <h3>{{ $motor->label() }}</h3>
-                                        <div class="spec-mini"><span><b>{{ $motor->power_hp }}</b> pk</span><span><b>{{ $motor->weight_kg }}</b> kg</span><span><b>{{ number_format($motor->powerToWeight(), 3) }}</b> pk/kg</span></div>
-                                        <a class="btn btn--primary match-card__cta" href="{{ route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht])) }}">Simuleer met deze motor</a>
-                                        <a class="btn btn--ghost" style="margin-top:0.6rem;justify-content:center" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
-                                    </article>
+                                    <div class="model-row">
+                                        <span class="model-row__name"><a href="{{ $simUrl($motor) }}">{{ $motor->label() }}</a></span>
+                                        <span class="model-row__num">{{ $motor->power_hp }}</span>
+                                        <span class="model-row__num">{{ $motor->weight_kg }}</span>
+                                        <span class="model-row__num model-row__num--strong">{{ number_format($motor->powerToWeight(), 2, ',', '') }}</span>
+                                    </div>
                                 @endforeach
                             </div>
                         </details>
                     @endif
                 @else
-                    <div class="panel">
-                        <h2>Nog geen match in deze combinatie</h2>
-                        <p style="margin-top:8px">Voor deze combinatie van antwoorden staat op dit moment geen motor in onze database die volledig past. De database groeit nog, probeer een andere rijstijl of bekijk de volledige toplijst.</p>
-
-                        @if($fallback && $fallback->isNotEmpty())
-                            <p style="margin-top:14px;color:var(--paper-60)">Wel A2 geschikt, in andere categorieën:</p>
-                            <div class="match-grid" style="margin-top:16px">
-                                @foreach($fallback as $motor)
-                                    <article class="match-card">
-                                        <p class="match-card__badge">{{ $motor->categoryLabel() }}</p>
-                                        <h3>{{ $motor->label() }}</h3>
-                                        <a class="btn btn--ghost match-card__cta" style="justify-content:center" href="{{ route('simulation.index', ['motor_a' => $motor->id]) }}">Simuleer met deze motor</a>
-                                        <a class="btn btn--ghost" style="margin-top:0.6rem;justify-content:center" href="https://www.google.com/search?q={{ urlencode($motor->label()) }}" target="_blank" rel="noopener">Zoek deze motor</a>
-                                    </article>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <div class="hero__ctas" style="margin-top:18px">
-                            <a class="btn btn--ghost" href="{{ route('toplijst.show', 'beste-pk-kg-verhouding') }}">Bekijk een toplijst</a>
-                            <a class="btn btn--ghost" href="{{ route('simulation.index') }}">Naar de simulator</a>
+                    <h2>Nog geen match in deze combinatie</h2>
+                    <p class="because">Voor deze combinatie staat er nog geen motor in onze database die volledig past. De database groeit nog: probeer een andere rijstijl of bekijk een toplijst.</p>
+                    @if($fallback && $fallback->isNotEmpty())
+                        <p class="because" style="margin-top:18px">Wel A2-geschikt, in andere categorieën:</p>
+                        <div class="startgrid startgrid--six">
+                            @foreach($fallback->take(6) as $motor)
+                                <div class="slot" style="--odd:{{ $loop->index % 2 }}">
+                                    <div class="slot__pos">P{{ $loop->iteration }}</div>
+                                    <div class="slot__car is-in">
+                                        <div class="slot__name">{{ $motor->label() }}</div>
+                                        <div class="slot__seg">{{ $motor->categoryLabel() }}</div>
+                                        <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $googleUrl($motor) }}" target="_blank" rel="noopener">Zoek deze motor</a></div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                    </div>
+                    @endif
+                    <div class="tools"><a href="{{ route('toplijst.show', 'beste-pk-kg-verhouding') }}">Bekijk een toplijst</a><a href="{{ route('simulation.index') }}">Naar de simulator</a></div>
                 @endif
             </div>
-        </section>
-    @endif
 
-    <section class="chapter chapter--tight">
-        <div class="wrap">
-            <span class="eyebrow">Veelgestelde vragen</span>
-            <h2>Hoe het advies werkt</h2>
-            <div class="faq">
-                @foreach($faqs as $faq)
-                    <details class="faq-item" @if($loop->first) open @endif>
-                        <summary>{{ $faq['question'] }}</summary>
-                        <p>{{ $faq['answer'] }}</p>
-                    </details>
-                @endforeach
+            <div class="how">
+                <p class="turn"><b>S5</b> Veelgestelde vragen</p>
+                <h3>Hoe het advies werkt</h3>
+                <div class="faq">
+                    @foreach($faqs as $faq)
+                        <details class="faq-item" @if($loop->first) open @endif>
+                            <summary>{{ $faq['question'] }}</summary>
+                            <p>{{ $faq['answer'] }}</p>
+                        </details>
+                    @endforeach
+                </div>
             </div>
         </div>
-    </section>
+    </div>
 @endsection

@@ -19,7 +19,9 @@ class ExampleTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('RevRace')
-            ->assertSee('Start gratis simulatie');
+            ->assertSee('jouw rijstijl?', false)
+            ->assertSee('Volledig advies op maat')
+            ->assertSee('data-style-picker', false);
     }
 
     public function test_guest_can_run_a_simulation_and_get_a_share_link(): void

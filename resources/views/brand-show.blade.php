@@ -49,7 +49,7 @@
                         <div class="model-row__cat">{{ $motor->categoryLabel() }}</div>
                         <div class="model-row__num model-row__num--strong">{{ $motor->power_hp }}</div>
                         <div class="model-row__num">{{ $motor->weight_kg }}</div>
-                        <div class="model-row__num">{{ number_format($motor->powerToWeight(), 2) }}</div>
+                        <div class="model-row__num">{{ number_format($motor->powerToWeight(), 2, ',', '.') }}</div>
                     </div>
                 @endforeach
             </div>

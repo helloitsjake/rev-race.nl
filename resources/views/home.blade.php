@@ -1,149 +1,162 @@
 @extends('layouts.app')
 
-@section('title', 'RevRace - Welke motor past bij jou? Vergelijk en simuleer')
-@section('description', 'Ontdek welke motor bij jouw rijstijl past. Vergelijk motoren op vermogen, gewicht en wegconditie met een gratis rijsimulatie.')
+@section('title', 'RevRace - Welke motor past het beste bij jouw rijstijl?')
+@section('description', 'Ontdek welke motor bij jouw rijstijl past. Advies op basis van vermogen, gewicht en rijervaring, plus een gratis rijsimulatie om motoren te vergelijken.')
 
 @push('head')
     <meta name="ahrefs-site-verification" content="8f2470a126e81d20eb49805c8cf579484fd2b61a109fa70e1395870349d60250">
 @endpush
 
+@php
+    $arrow = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>';
+    $start = $styleAdvice['beginner']['bochten'] ?? [];
+@endphp
+
 @section('content')
-    <header class="chapter">
-        <div class="wrap hero">
-            <div>
-                <p class="eyebrow">Geen marketingpraatjes</p>
-                <h1>Welke motor wint de race?</h1>
-                <p class="lede">Vergelijk twee motoren op vermogen, gewicht en wegconditie. Onze simulator rekent de race door — in seconden, zonder fabrieksfolder.</p>
-                <div class="hero__ctas">
-                    <a class="btn btn--primary" href="{{ route('simulation.index') }}">Start gratis simulatie</a>
-                    <a class="btn btn--ghost" href="{{ route('how-it-works') }}">Hoe het werkt</a>
-                </div>
-            </div>
-            <div class="panel">
-                @if($heroRace)
-                    <div class="panel__head"><span>Simulatie #hero</span><span class="live">live berekend</span></div>
-                    <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $heroRace['motor_a']->label() }}</span></div>
-                        <div class="bike-row__meta"><span>{{ number_format($heroRace['time_a_s'], 2) }}s</span><span>500m · droog asfalt</span></div>
-                        <div class="bar"><span style="width:{{ $heroRace['width_a'] }}%"></span></div>
-                    </div>
-                    <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $heroRace['motor_b']->label() }}</span></div>
-                        <div class="bike-row__meta"><span>{{ number_format($heroRace['time_b_s'], 2) }}s</span><span>500m · droog asfalt</span></div>
-                        <div class="bar"><span style="width:{{ $heroRace['width_b'] }}%"></span></div>
-                    </div>
-                @else
-                    <div class="panel__head"><span>Simulatie</span></div>
-                    <p style="color:var(--paper-60)">Kies twee motoren en bekijk de race.</p>
-                @endif
-                <div class="panel__foot"><a class="btn btn--ghost" href="{{ route('simulation.index') }}">Zelf vergelijken</a></div>
-            </div>
-        </div>
-    </header>
-
-    <section class="chapter chapter--dark chapter--tight">
-        <div class="wrap stats" style="border-top:none;margin-top:0;padding-top:0">
-            <div class="stat">
-                <div class="stat__value">{{ $motors->count() }}+</div>
-                <div class="stat__label">Motoren in de database</div>
-            </div>
-            <div class="stat">
-                <div class="stat__value">100%</div>
-                <div class="stat__label">Nederlands platform</div>
-            </div>
-            <div class="stat">
-                <div class="stat__value">0</div>
-                <div class="stat__label">Fabrieksfolders geloofd</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="chapter">
+    {{-- T0: rijstijlkiezer met startopstelling (signature-moment: lights out) --}}
+    <div class="hero2" data-style-picker>
+        <script type="application/json">@json($styleAdvice)</script>
         <div class="wrap">
-            <p class="eyebrow">Zo werkt het</p>
-            <h2>Drie stappen naar een eerlijk antwoord</h2>
-            <div class="match-grid" style="margin-top:clamp(28px,4vw,44px)">
-                <div class="match-card">
-                    <p class="match-card__badge">01</p>
-                    <h3>Kies twee motoren</h3>
-                    <p style="color:var(--ink-60)">Zoek in onze database of laat AI 'm opzoeken.</p>
+            <p class="turn"><b>T0</b> Startopstelling</p>
+            <h1>Welke motor past het beste bij <span>jouw rijstijl?</span></h1>
+            <div class="hero2__row">
+                <div class="sentence">
+                    <span>Ik rij het liefst</span>
+                    <div class="filter" role="group" aria-label="Rijstijl" data-key="voorkeur">
+                        <div class="filter__base">
+                            <button type="button" data-value="bochten" aria-pressed="true">door bochten</button>
+                            <button type="button" data-value="snelheid" aria-pressed="false">op het rechte stuk</button>
+                            <button type="button" data-value="relax" aria-pressed="false">voor het plezier</button>
+                        </div>
+                        <div class="filter__pill" aria-hidden="true"></div>
+                    </div>
+                    <span>met</span>
+                    <div class="filter" role="group" aria-label="Rijbewijs" data-key="ervaring">
+                        <div class="filter__base">
+                            <button type="button" data-value="beginner" aria-pressed="true">een A2-rijbewijs</button>
+                            <button type="button" data-value="ervaren" aria-pressed="false">een vol rijbewijs</button>
+                        </div>
+                        <div class="filter__pill" aria-hidden="true"></div>
+                    </div>
                 </div>
-                <div class="match-card">
-                    <p class="match-card__badge">02</p>
-                    <h3>Stel de conditie in</h3>
-                    <p style="color:var(--ink-60)">Rechte lijn of bochten, droog of nat asfalt.</p>
-                </div>
-                <div class="match-card">
-                    <p class="match-card__badge">03</p>
-                    <h3>Bekijk de race</h3>
-                    <p style="color:var(--ink-60)">En vind meteen waar je die motor kan kopen.</p>
-                </div>
+                <p class="hero2__aside">Kies hoe je rijdt. RevRace zet de drie motoren neer die daar het beste bij passen, op basis van vermogen, gewicht en wat dat op de weg betekent.</p>
             </div>
         </div>
-    </section>
 
-    @if($weeklyPopular->isNotEmpty())
-        <section class="chapter chapter--dark">
+        <div class="grid-panel" aria-live="polite">
             <div class="wrap">
-                <div class="kb-head">
-                    <div>
-                        <p class="eyebrow">Populair</p>
-                        <h2>Deze week populair</h2>
-                    </div>
-                    <a class="btn btn--ghost" href="{{ route('most-searched.index') }}">Bekijk alle →</a>
+                <div class="grid-head">
+                    <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                    <p class="status">Startopstelling uit <b>{{ $motors->count() }}</b> motoren</p>
                 </div>
-                <p class="lede" style="margin-bottom:2em">De modellen die andere bezoekers het vaakst tegen elkaar laten racen.</p>
-                <div class="rank-list">
-                    @foreach($weeklyPopular as $row)
-                        <div class="rank-row">
-                            <div class="rank-row__num">#{{ $loop->iteration }}</div>
-                            <div>
-                                <div class="rank-row__name">{{ $row['motor']->label() }}</div>
-                                <div class="rank-row__meta">{{ $row['motor']->power_hp }} pk · {{ $row['motor']->weight_kg }} kg · {{ $row['motor']->engine_type }}</div>
+                <div class="startgrid" data-startgrid>
+                    @foreach($start as $i => $m)
+                        <div class="slot" style="--row:{{ $i }}">
+                            <div class="slot__pos">P{{ $i + 1 }}</div>
+                            <div class="slot__car">
+                                <div class="slot__name"><a href="{{ $m['url'] }}">{{ $m['label'] }}</a>@if($m['a2'])<span class="a2">A2</span>@endif</div>
+                                <div class="slot__specs"><span><b>{{ $m['hp'] }}</b> pk</span><span><b>{{ $m['kg'] }}</b> kg</span><span><b>{{ number_format($m['hp'] / max($m['kg'], 1), 2, ',', '') }}</b> pk/kg</span></div>
                             </div>
-                            <div><span class="rank-row__count">{{ $row['uses'] }}× gesimuleerd</span><span class="rank-row__ratio">{{ number_format($row['motor']->powerToWeight(), 2) }} pk/kg</span></div>
-                            <a class="btn btn--ghost" href="{{ route('simulation.index', ['motor_a' => $row['motor']->id]) }}">Simuleer →</a>
                         </div>
                     @endforeach
+                </div>
+                <div class="grid-foot">
+                    <div class="sectors">
+                        <span><em>S1</em><b data-count="{{ $motors->count() }}">{{ $motors->count() }}</b> motoren</span>
+                        <span><em>S2</em><b data-count="{{ $a2Count }}">{{ $a2Count }}</b> A2-modellen</span>
+                        <span><em>S3</em><b data-count="{{ $segmentCount }}">{{ $segmentCount }}</b> segmenten</span>
+                    </div>
+                    <a class="btn btn--primary" data-advice-link href="{{ route('wizard.index', ['ervaring' => 'beginner', 'voorkeur' => 'bochten']) }}#advies">Volledig advies op maat {!! $arrow !!}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- T1: routes --}}
+    <section class="chapter">
+        <div class="wrap">
+            <div class="sec-head" data-reveal>
+                <div><p class="turn"><b>T1</b> Jouw route</p><h2>Vijf manieren om bij de juiste motor uit te komen</h2></div>
+                <p>Weet je al welke twee je twijfelt, laat ze dan tegen elkaar racen. Twijfel je nog over alles, begin dan bij je rijstijl.</p>
+            </div>
+            <div class="routes">
+                <a class="route" href="{{ route('wizard.index') }}" data-reveal><span class="route__no">01</span><h3>Advies op rijstijl</h3><p>Drie vragen over je ervaring, je rijstijl en waar je rijdt.</p><span class="route__go">{!! $arrow !!}</span></a>
+                <a class="route" href="{{ route('simulation.index') }}" data-reveal style="--d:60ms"><span class="route__no">02</span><h3>Twee motoren laten racen</h3>
+                    <p>@if($heroRace){{ $heroRace['motor_a']->label() }} tegen {{ $heroRace['motor_b']->label() }}: {{ number_format($heroRace['time_a_s'], 2, ',', '') }} s tegen {{ number_format($heroRace['time_b_s'], 2, ',', '') }} s over 500 meter.@else 500 meter, droog of nat, recht of bochtig. De simulator rekent het door.@endif</p><span class="route__go">{!! $arrow !!}</span></a>
+                <a class="route" href="{{ route('a2-motoren') }}" data-reveal style="--d:120ms"><span class="route__no">03</span><h3>A2-motoren</h3><p>Alle {{ $a2Count }} modellen onder 35 kW en 0,2 kW per kilo, per categorie.</p><span class="route__go">{!! $arrow !!}</span></a>
+                <a class="route" href="{{ route('segments.index') }}" data-reveal style="--d:180ms"><span class="route__no">04</span><h3>Segmenten</h3><p>Naked, sport, tourer, adventure, cruiser en retro naast elkaar.</p><span class="route__go">{!! $arrow !!}</span></a>
+                <a class="route" href="{{ route('brands.index') }}" data-reveal style="--d:240ms"><span class="route__no">05</span><h3>Merken</h3><p>Elk merk met alle modellen en de vergelijkingen die het vaakst gemaakt worden.</p><span class="route__go">{!! $arrow !!}</span></a>
+            </div>
+        </div>
+    </section>
+
+    {{-- T2: live timing (alleen als er genoeg data is, zie MIN_WEEKLY_POPULAR_USES) --}}
+    @if($weeklyPopular->isNotEmpty())
+        @php($bestRatio = $weeklyPopular->max(fn ($row) => $row['motor']->powerToWeight()))
+        <section class="chapter on-dark">
+            <div class="wrap">
+                <div class="sec-head" data-reveal>
+                    <div><p class="turn"><b>T2</b> Live timing</p><h2>Waar anderen deze week over twijfelen</h2></div>
+                    <p>De motoren die het vaakst in de simulator staan, met de cijfers die ertoe doen. Paars is de beste vermogen-gewichtverhouding in de lijst.</p>
+                </div>
+                <div class="timing">
+                    <div class="t-row t-head"><span>POS</span><span>MOTOR</span><span class="t-num t-hide">PK</span><span class="t-num t-hide">KG</span><span class="t-num">PK/KG</span><span class="t-num t-hide">SIMULATIES</span></div>
+                    @foreach($weeklyPopular as $row)
+                        @php($ratio = $row['motor']->powerToWeight())
+                        <a class="t-row" href="{{ route('simulation.index', ['motor_a' => $row['motor']->id]) }}" style="--d:{{ $loop->index * 120 }}ms">
+                            <span class="t-pos">{{ $loop->iteration }}</span>
+                            <span class="t-name">{{ $row['motor']->label() }}<small>{{ $row['motor']->categoryLabel() }}</small></span>
+                            <span class="t-num t-hide">{{ $row['motor']->power_hp }}</span>
+                            <span class="t-num t-hide">{{ $row['motor']->weight_kg }}</span>
+                            <span class="t-num @if($ratio === $bestRatio) t-best @endif">{{ number_format($ratio, 2, ',', '') }}</span>
+                            <span class="t-num t-hide">{{ $row['uses'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+                <div class="timing-legend"><span class="live">Laatste 7 dagen</span><span><i></i>Beste pk/kg</span><a href="{{ route('most-searched.index') }}">Volledige ranglijst</a></div>
+            </div>
+        </section>
+    @endif
+
+    {{-- T3: kennisbank --}}
+    @if($articles->isNotEmpty())
+        @php($feature = $articles->first())
+        <section class="chapter">
+            <div class="wrap">
+                <div class="sec-head" data-reveal>
+                    <div><p class="turn"><b>T3</b> Kennisbank</p><h2>Wat je wilt weten voordat je tekent</h2></div>
+                    <p>Geschreven voor wie net begint en voor wie al jaren rijdt. Met bronnen, zonder verkooppraat.</p>
+                </div>
+                <div class="kb">
+                    <a class="feature" href="{{ route('kennis.show', $feature) }}" data-reveal>
+                        <svg class="feature__line" viewBox="0 0 400 260" fill="none" aria-hidden="true"><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#141518" stroke-width="2"/><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#E4431E" stroke-width="2" stroke-dasharray="4 10"/><circle cx="250" cy="50" r="7" fill="#E4431E"/></svg>
+                        <span class="kicker">{{ $feature->category }}</span>
+                        <div><h3>{{ $feature->title }}</h3>@if($feature->excerpt)<p>{{ $feature->excerpt }}</p>@endif</div>
+                    </a>
+                    <div class="kb-list">
+                        @foreach($articles->slice(1) as $article)
+                            <a href="{{ route('kennis.show', $article) }}" data-reveal style="--d:{{ $loop->index * 60 }}ms"><span class="kicker">{{ $article->category }}</span><h4><span>{{ $article->title }}</span></h4>{!! $arrow !!}</a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </section>
     @endif
 
-    <section class="chapter">
-        <div class="wrap">
-            <p class="eyebrow">Overzicht</p>
-            <h2>Ontdek de database op jouw manier</h2>
-            <p class="lede" style="margin-bottom:2em">Liever bladeren dan simuleren, of nog geen idee welke motor je zoekt? Blader per merk, per rijstijl-segment, bekijk alle A2-geschikte motoren, of laat de wizard je op weg helpen.</p>
-            <div class="kb-grid">
-                <a class="kb-card" href="{{ route('wizard.index') }}">
-                    <h3>Welke motor past bij mij?</h3>
-                    <p>Beantwoord twee vragen over je rijstijl en krijg een advies uit de database.</p>
-                </a>
-                <a class="kb-card" href="{{ route('brands.index') }}">
-                    <h3>Alle merken</h3>
-                    <p>Elk merk in de database met alle modellen en vergelijkingen.</p>
-                </a>
-                <a class="kb-card" href="{{ route('segments.index') }}">
-                    <h3>Segmenten</h3>
-                    <p>Naked, sport, tourer, adventure, cruiser en retro naast elkaar.</p>
-                </a>
-                <a class="kb-card" href="{{ route('a2-motoren') }}">
-                    <h3>A2-motoren</h3>
-                    <p>Alle modellen die voldoen aan de Europese A2-eisen.</p>
-                </a>
-            </div>
-        </div>
-    </section>
+    {{-- T4: Jake en Rory --}}
+    @include('partials.riders', ['turn' => 'T4'])
 
-    <section class="chapter chapter--dark chapter--tight">
-        <div class="wrap" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2rem">
-            <div>
-                <p class="eyebrow">Voor bedrijven</p>
-                <h2 style="font-size:clamp(1.75rem,3vw,2.5rem)">Sta tussen de motoren die mensen écht vergelijken</h2>
-                <p class="lede" style="margin-top:0.6em;max-width:52ch">Word zichtbaar als dealer, verzekeraar of circuit precies op het moment dat bezoekers aan het vergelijken zijn.</p>
+    {{-- Finish (signature-moment 2) --}}
+    <div class="finish on-dark">
+        <span class="flag" aria-hidden="true"></span>
+        <div class="wrap">
+            <p class="turn"><b>FIN</b> Laatste ronde</p>
+            <h2>Drie vragen, en je weet welke motor bij je past</h2>
+            <p>Gratis en zonder account. Je ziet meteen je top 6, met uitleg waarom.</p>
+            <div class="finish__row">
+                <a class="btn btn--primary" href="{{ route('wizard.index') }}">Start het advies {!! $arrow !!}</a>
+                <a class="btn btn--line" href="{{ route('partners.apply') }}">Word partner</a>
             </div>
-            <a class="btn btn--primary" href="{{ route('partners.apply') }}">Word partner →</a>
         </div>
-    </section>
+    </div>
 @endsection

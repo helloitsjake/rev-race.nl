@@ -22,11 +22,11 @@
     $faq = collect([
         [
             'q' => 'Hoeveel pk heeft de ' . $motor->label() . '?',
-            'a' => $motor->label() . ' levert ' . $motor->power_hp . ' pk en ' . $motor->torque_nm . ' Nm koppel, bij een gewicht van ' . $motor->weight_kg . ' kg. Dat komt neer op ' . number_format($motor->powerToWeight(), 2) . ' pk per kilo.',
+            'a' => $motor->label() . ' levert ' . $motor->power_hp . ' pk en ' . $motor->torque_nm . ' Nm koppel, bij een gewicht van ' . $motor->weight_kg . ' kg. Dat komt neer op ' . number_format($motor->powerToWeight(), 2, ',', '.') . ' pk per kilo.',
         ],
         [
             'q' => 'Hoe zwaar is de ' . $motor->label() . '?',
-            'a' => 'De ' . $motor->label() . ' weegt ' . $motor->weight_kg . ' kg. In combinatie met ' . $motor->power_hp . ' pk geeft dat een vermogen/gewicht-verhouding van ' . number_format($motor->powerToWeight(), 2) . ' pk/kg.',
+            'a' => 'De ' . $motor->label() . ' weegt ' . $motor->weight_kg . ' kg. In combinatie met ' . $motor->power_hp . ' pk geeft dat een vermogen/gewicht-verhouding van ' . number_format($motor->powerToWeight(), 2, ',', '.') . ' pk/kg.',
         ],
         $motor->top_speed_kmh ? [
             'q' => 'Wat is de topsnelheid van de ' . $motor->label() . '?',
@@ -34,7 +34,7 @@
         ] : null,
         $motor->zero_to_hundred_s ? [
             'q' => 'Hoe snel gaat de ' . $motor->label() . ' van 0 naar 100?',
-            'a' => 'De ' . $motor->label() . ' doet ongeveer ' . number_format($motor->zero_to_hundred_s, 1) . ' seconden over de sprint van 0 naar 100 km/u.',
+            'a' => 'De ' . $motor->label() . ' doet ongeveer ' . number_format($motor->zero_to_hundred_s, 1, ',', '.') . ' seconden over de sprint van 0 naar 100 km/u.',
         ] : null,
         [
             'q' => 'Is de ' . $motor->label() . ' geschikt voor een A2-rijbewijs?',
@@ -46,7 +46,7 @@
 @endphp
 
 @section('title', $motor->label() . ': ' . $specSummary . ' - RevRace')
-@section('description', $motor->label() . ' levert ' . $motor->power_hp . ' pk bij ' . $motor->weight_kg . ' kg (' . number_format($motor->powerToWeight(), 2) . ' pk/kg)' . ($motor->top_speed_kmh ? ', topsnelheid ' . $motor->top_speed_kmh . ' km/u' : '') . '. Alle specificaties en directe vergelijkingen.')
+@section('description', $motor->label() . ' levert ' . $motor->power_hp . ' pk bij ' . $motor->weight_kg . ' kg (' . number_format($motor->powerToWeight(), 2, ',', '.') . ' pk/kg)' . ($motor->top_speed_kmh ? ', topsnelheid ' . $motor->top_speed_kmh . ' km/u' : '') . '. Alle specificaties en directe vergelijkingen.')
 
 @push('scripts')
 <script type="application/ld+json">
@@ -109,7 +109,7 @@
             <span class="eyebrow">{{ $motor->categoryLabel() }}</span>
             <h1>{{ $motor->label() }}</h1>
             <p class="lede">
-                {{ $motor->label() }} levert {{ $motor->power_hp }} pk bij {{ $motor->weight_kg }} kg, een vermogen/gewicht-verhouding van {{ number_format($motor->powerToWeight(), 2) }} pk/kg.
+                {{ $motor->label() }} levert {{ $motor->power_hp }} pk bij {{ $motor->weight_kg }} kg, een vermogen/gewicht-verhouding van {{ number_format($motor->powerToWeight(), 2, ',', '.') }} pk/kg.
                 @if($motor->isA2Eligible())
                     Op basis van deze specificaties A2-geschikt (zonder opvoerkit).
                 @endif
@@ -141,7 +141,7 @@
                 </div>
                 <div class="spec__row">
                     <div class="spec__label">Pk per kg</div>
-                    <div class="spec__value">{{ number_format($motor->powerToWeight(), 2) }}</div>
+                    <div class="spec__value">{{ number_format($motor->powerToWeight(), 2, ',', '.') }}</div>
                 </div>
                 <div class="spec__row">
                     <div class="spec__label">Motortype</div>

@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Motor;
 use App\Models\Partner;
 use App\Models\SimulationResult;
+use App\Services\MotorAdvisor;
 use App\Services\SimulationLimitService;
 use App\Services\SimulationService;
 use App\Http\Controllers\ComparisonController;
@@ -24,7 +25,7 @@ class PageController extends Controller
      */
     private const MIN_WEEKLY_POPULAR_USES = 3;
 
-    public function home(SimulationService $simulations): View
+    public function home(SimulationService $simulations, MotorAdvisor $advisor): View
     {
         $motors = Motor::query()->orderBy('brand')->orderBy('model')->get();
 
@@ -32,11 +33,50 @@ class PageController extends Controller
             ->filter(fn (array $row) => $row['uses'] >= self::MIN_WEEKLY_POPULAR_USES)
             ->values();
 
+        $articles = Article::query()->published()
+            ->where('category', '!=', Article::NEWS_CATEGORY)
+            ->orderByDesc('published_at')
+            ->limit(5)
+            ->get();
+
         return view('home', [
             'motors' => $motors,
+            'a2Count' => $motors->filter(fn (Motor $motor) => $motor->isA2Eligible())->count(),
+            'segmentCount' => count(Motor::CATEGORIES),
             'weeklyPopular' => $weeklyPopular,
             'heroRace' => $this->heroRace($motors, $simulations),
+            'styleAdvice' => $this->styleAdvice($advisor),
+            'articles' => $articles,
         ]);
+    }
+
+    /**
+     * De top 3 per rijstijl en rijbewijs voor de rijstijlkiezer in de hero. Komt uit dezelfde
+     * MotorAdvisor als de wizard, zodat "Volledig advies" daarna dezelfde motoren bovenaan toont.
+     *
+     * @return array<string, array<string, array<int, array{label: string, url: string, hp: int, kg: int, a2: bool}>>>
+     */
+    private function styleAdvice(MotorAdvisor $advisor): array
+    {
+        $advice = [];
+
+        foreach (array_keys(WizardController::experienceLevels()) as $ervaring) {
+            foreach (array_keys(WizardController::voorkeuren()) as $voorkeur) {
+                $advice[$ervaring][$voorkeur] = $advisor->advise($ervaring, $voorkeur)['matches']
+                    ->take(3)
+                    ->map(fn (Motor $motor) => [
+                        'label' => $motor->label(),
+                        'url' => route('brands.model', [Str::slug($motor->brand), $motor->slug()]),
+                        'hp' => (int) $motor->power_hp,
+                        'kg' => (int) $motor->weight_kg,
+                        'a2' => $motor->isA2Eligible(),
+                    ])
+                    ->values()
+                    ->all();
+            }
+        }
+
+        return $advice;
     }
 
     /**
