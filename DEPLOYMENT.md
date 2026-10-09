@@ -75,6 +75,10 @@ Unix-tools. Wat er wel is: `grep`, `cat`, `cp`, `mv`, `rm`, `printf`, `echo`, `h
 Wat er **niet** is: `php` (en dus geen `artisan`), `composer`, `sed`, `awk`, `tr`, `sort`,
 `wc`, `tee`, `diff`, `cmp`, `stat`, `date`, `md5sum`, `sha1sum`, `cksum`, `openssl`.
 
+`curl` is er wel, maar zonder CA-certificaten (fout 77). Een HTTPS-call vanuit de SSH-shell,
+bijvoorbeeld om de Anthropic-key te testen, zegt dus niets. Test zoiets via een Plesk-taak
+(die draait buiten de chroot) of via de Laravel-log.
+
 Praktisch gevolg: een regel in `.env` wijzigen kan niet met `sed`. Doe het zo:
 
 ```bash
