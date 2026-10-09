@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AiUsageLog;
 use App\Models\Article;
-use App\Support\AnthropicModel;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +12,10 @@ use Illuminate\Support\Str;
 
 class NewsCrawlService
 {
-    public function __construct(private readonly AiSpendGuard $guard) {}
+    public function __construct(
+        private readonly AiSpendGuard $guard,
+        private readonly OpenAiClient $ai,
+    ) {}
 
     /**
      * category_pattern selecteert alleen items die daadwerkelijk over een nieuw model gaan
@@ -143,41 +145,25 @@ Geef je antwoord uitsluitend in JSON-formaat met de volgende keys: title, excerp
             return null;
         }
 
-        $model = AnthropicModel::resolve();
-
-        $response = Http::withHeaders([
-            'x-api-key' => config('services.anthropic.key'),
-            'anthropic-version' => '2023-06-01',
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model' => $model,
-            'max_tokens' => 1000,
-            'system' => $system,
-            'messages' => [
-                ['role' => 'user', 'content' => "Titel: {$title}\n\nBeschrijving: {$description}\n\nBron: {$link}"],
-            ],
-        ]);
+        $reply = $this->ai->json($system, "Titel: {$title}\n\nBeschrijving: {$description}\n\nBron: {$link}", maxTokens: 1500);
 
         $this->guard->recordCall(
             AiSpendGuard::PURPOSE_NEWS_ARTICLE,
-            $response->successful() ? AiUsageLog::OUTCOME_SUCCESS : AiUsageLog::OUTCOME_ERROR,
-            $model,
-            $response->json('usage'),
+            $reply['ok'] ? AiUsageLog::OUTCOME_SUCCESS : AiUsageLog::OUTCOME_ERROR,
+            $reply['model'],
+            $reply['usage'],
             null,
             null,
             $title,
         );
 
-        if (!$response->successful()) {
-            $this->reportFailure(sprintf(
-                'Anthropic API gaf HTTP %d: %s',
-                $response->status(),
-                $response->json('error.message') ?? Str::limit($response->body(), 200),
-            ));
+        if (! $reply['ok']) {
+            $this->reportFailure(sprintf('OpenAI gaf HTTP %d: %s', $reply['status'], $reply['error']));
 
             return null;
         }
 
-        $text = (string) $response->json('content.0.text');
+        $text = (string) $reply['text'];
         $text = preg_replace('/^```(?:json)?\s*|\s*```$/', '', trim($text));
         $data = json_decode($text, true);
 
@@ -256,7 +242,7 @@ Geef je antwoord uitsluitend in JSON-formaat met de volgende keys: title, excerp
         try {
             Mail::raw(
                 "De nieuwscrawler van RevRace kon een artikel niet herschrijven, dus er is niets gepubliceerd.\n\n"
-                ."Reden: {$reason}\n\nDe volgende run probeert het opnieuw. Check de ANTHROPIC_API_KEY en het tegoed als dit blijft terugkomen.",
+                ."Reden: {$reason}\n\nDe volgende run probeert het opnieuw. Check de OPENAI_API_KEY en het tegoed als dit blijft terugkomen.",
                 fn ($message) => $message->to(config('ai.alert_email'))->subject('RevRace: nieuwscrawler kan niet herschrijven'),
             );
         } catch (\Throwable $exception) {

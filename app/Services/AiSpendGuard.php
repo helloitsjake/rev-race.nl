@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
- * Alles wat de Anthropic API kost gaat hier langs, zowel vooraf (mag deze call?) als
+ * Alles wat de OpenAI API kost gaat hier langs, zowel vooraf (mag deze call?) als
  * achteraf (wat heeft hij gekost?). Twee limieten, in deze volgorde:
  *
  *  1. Het globale dagbudget. Dit is de noodrem: is die op, dan gaat er niets meer uit,
@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  *  2. De limiet per account per 24 uur.
  *
  * De kosten komen uit de echte token-aantallen in het API-antwoord, niet uit een schatting,
- * zodat het dagbudget klopt met wat Anthropic in rekening brengt.
+ * zodat het dagbudget klopt met wat OpenAI in rekening brengt.
  */
 class AiSpendGuard
 {
@@ -126,7 +126,7 @@ class AiSpendGuard
     /**
      * Legt een echt gedane call vast, met de token-aantallen uit het API-antwoord.
      *
-     * @param  array<string, mixed>|null  $usage  de 'usage' uit het Anthropic-antwoord
+     * @param  array<string, mixed>|null  $usage  input_tokens en output_tokens (OpenAiClient vertaalt de OpenAI-velden)
      */
     public function recordCall(
         string $purpose,

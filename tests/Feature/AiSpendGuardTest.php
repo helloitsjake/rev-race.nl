@@ -22,8 +22,8 @@ class AiSpendGuardTest extends TestCase
         parent::setUp();
 
         config([
-            'services.anthropic.key' => 'test-key',
-            'services.anthropic.model' => 'claude-sonnet-4-6',
+            'services.openai.key' => 'test-key',
+            'services.openai.model' => 'gpt-5.4-mini',
             'ai.daily_budget_usd' => 2.20,
             'ai.lookups_per_user_per_day' => 5,
         ]);
@@ -31,24 +31,24 @@ class AiSpendGuardTest extends TestCase
 
     private function fakeMotorResponse(): void
     {
-        Http::fake(['api.anthropic.com/*' => Http::response([
-            'usage' => ['input_tokens' => 700, 'output_tokens' => 500],
-            'content' => [['text' => json_encode([
+        Http::fake(['api.openai.com/*' => Http::response([
+            'usage' => ['prompt_tokens' => 700, 'completion_tokens' => 500],
+            'choices' => [['message' => ['content' => json_encode([
                 'brand' => 'Yamaha', 'model' => 'MT-09', 'year' => 2024,
                 'power_hp' => 119, 'torque_nm' => 93, 'weight_kg' => 193,
                 'engine_type' => '3-cilinder', 'category' => 'naked',
                 'displacement_cc' => 890, 'top_speed_kmh' => 220,
                 'zero_to_hundred_s' => 3.2, 'drag_coefficient' => 0.6,
                 'frontal_area_m2' => 0.6,
-            ])]],
+            ])]]],
         ])]);
     }
 
     private function fakeRejection(): void
     {
-        Http::fake(['api.anthropic.com/*' => Http::response([
-            'usage' => ['input_tokens' => 700, 'output_tokens' => 12],
-            'content' => [['text' => json_encode(['error' => 'not_a_motorcycle'])]],
+        Http::fake(['api.openai.com/*' => Http::response([
+            'usage' => ['prompt_tokens' => 700, 'completion_tokens' => 12],
+            'choices' => [['message' => ['content' => json_encode(['error' => 'not_a_motorcycle'])]]],
         ])]);
     }
 
@@ -75,8 +75,8 @@ class AiSpendGuardTest extends TestCase
         $this->assertSame(700, $log->input_tokens);
         $this->assertSame(500, $log->output_tokens);
         $this->assertSame('10.0.0.1', $log->ip_address);
-        // 700/1M * $3 + 500/1M * $15 = 0.0021 + 0.0075 = 0.0096
-        $this->assertSame('0.009600', (string) $log->cost_usd);
+        // 700/1M * $0,75 + 500/1M * $4,50 = 0.000525 + 0.00225 = 0.002775
+        $this->assertSame('0.002775', (string) $log->cost_usd);
     }
 
     public function test_een_lokale_treffer_kost_niets(): void

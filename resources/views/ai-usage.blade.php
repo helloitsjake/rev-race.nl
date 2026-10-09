@@ -43,7 +43,7 @@
 <body>
 <div class="wrap">
     <h1>AI-verbruik</h1>
-    <p class="sub">Elke aanroep van de Anthropic API, inclusief de geblokkeerde. Bedragen in dollars, want Anthropic rekent in dollars.</p>
+    <p class="sub">Elke aanroep van de OpenAI API, inclusief de geblokkeerde. Bedragen in dollars, want OpenAI rekent in dollars.</p>
 
     @php
         $share = $budget > 0 ? min(1, $spentToday / $budget) : 0;

@@ -7,15 +7,16 @@ use App\Models\AiRejectedQuery;
 use App\Models\AiUsageLog;
 use App\Models\Motor;
 use App\Models\User;
-use App\Support\AnthropicModel;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 class MotorLookupService
 {
-    public function __construct(private readonly AiSpendGuard $guard) {}
+    public function __construct(
+        private readonly AiSpendGuard $guard,
+        private readonly OpenAiClient $ai,
+    ) {}
 
     public function search(string $query, int $limit = 8)
     {
@@ -62,15 +63,15 @@ class MotorLookupService
             return $local;
         }
 
-        if (! config('services.anthropic.key')) {
-            throw new RuntimeException('Geen motor gevonden en ANTHROPIC_API_KEY is niet ingesteld.');
+        if (! config('services.openai.key')) {
+            throw new RuntimeException('Geen motor gevonden en OPENAI_API_KEY is niet ingesteld.');
         }
 
         $this->guardAgainstKnownRejection($query, $user, $ip);
         $this->guardAgainstLimits($user, $ip, $query);
 
         try {
-            $payload = $this->fetchFromAnthropic($query, $user, $ip);
+            $payload = $this->fetchFromAi($query, $user, $ip);
         } catch (NotAMotorcycleException $exception) {
             $this->rememberRejection($query);
 
@@ -84,14 +85,14 @@ class MotorLookupService
                 'year' => $payload['year'],
             ],
             $payload + [
-                'source' => 'anthropic',
+                'source' => 'openai',
                 'api_fetched_at' => now(),
             ],
         );
     }
 
     /**
-     * Is deze invoer eerder al afgewezen, dan hoeft Claude er niet nog eens naar te kijken.
+     * Is deze invoer eerder al afgewezen, dan hoeft de AI er niet nog eens naar te kijken.
      * Dit was het grootste gat: dezelfde onzin-invoer herhalen kostte elke keer opnieuw een
      * volledige API-call.
      */
@@ -145,7 +146,7 @@ class MotorLookupService
     /**
      * @return array<string, mixed>
      */
-    private function fetchFromAnthropic(string $query, ?User $user = null, ?string $ip = null): array
+    private function fetchFromAi(string $query, ?User $user = null, ?string $ip = null): array
     {
         $system = <<<SYSTEM
 Je bent een specificatie-opzoekdienst voor UITSLUITEND motorfietsen (voertuigen op twee
@@ -175,42 +176,31 @@ altijd een realistische schatting op basis van het motortype en carrosserie (bij
 Gebruik null alleen voor top_speed_kmh of zero_to_hundred_s als die echt onbekend zijn.
 SYSTEM;
 
-        $model = AnthropicModel::resolve();
-
-        $response = Http::withHeaders([
-            'x-api-key' => config('services.anthropic.key'),
-            'anthropic-version' => '2023-06-01',
-        ])->timeout(20)->post('https://api.anthropic.com/v1/messages', [
-            'model' => $model,
-            'max_tokens' => 700,
-            'temperature' => 0,
-            'system' => $system,
-            'messages' => [
-                ['role' => 'user', 'content' => $query],
-            ],
-        ]);
+        $reply = $this->ai->json($system, $query, maxTokens: 900, timeout: 25);
+        $model = $reply['model'];
+        $usage = $reply['usage'];
 
         // Vanaf hier is er geld uitgegeven, dus alles wat volgt wordt vastgelegd met de
         // echte token-aantallen uit het antwoord. Zonder dit was achteraf niet te zien
         // wie het budget had opgestookt.
-        if ($response->failed()) {
+        if (! $reply['ok']) {
             $this->guard->recordCall(
                 AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
                 AiUsageLog::OUTCOME_ERROR,
                 $model,
-                $response->json('usage'),
+                $usage,
                 $user,
                 $ip,
                 $query,
             );
 
-            $response->throw();
+            Log::error('AI-lookup mislukt: '.$reply['error']);
+
+            throw new RuntimeException('De AI-zoekfunctie is even niet bereikbaar. Probeer het later opnieuw, of voeg de motor handmatig toe.');
         }
 
-        $usage = $response->json('usage');
-
         try {
-            $data = $this->decodeSpecifications($response);
+            $data = $this->decodeSpecifications((string) $reply['text']);
         } catch (RuntimeException $exception) {
             $this->guard->recordCall(
                 AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
@@ -265,9 +255,9 @@ SYSTEM;
      *
      * @return array<string, mixed>
      */
-    private function decodeSpecifications(\Illuminate\Http\Client\Response $response): array
+    private function decodeSpecifications(string $text): array
     {
-        $text = (string) Arr::get($response->json(), 'content.0.text');
+        $text = preg_replace('/^```(?:json)?\s*|\s*```$/', '', trim($text));
         $data = json_decode($text, true);
 
         if (! is_array($data)) {

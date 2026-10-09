@@ -3,12 +3,12 @@
 return [
 
     /*
-     * Harde daglimiet voor alles wat de Anthropic API kost, voor de hele site samen.
+     * Harde daglimiet voor alles wat de OpenAI API kost, voor de hele site samen.
      * Is dit bedrag op, dan gaat er die dag geen enkele AI-call meer uit: niet voor
      * bezoekers, niet voor de nieuwscrawler. Dit is de noodrem die misbruik begrensd
      * houdt, ook als alle andere limieten falen.
      *
-     * Anthropic rekent in dollars, dus dit bedrag staat ook in dollars. $2.20 is
+     * OpenAI rekent in dollars, dus dit bedrag staat ook in dollars. $2.20 is
      * ongeveer 2 euro, dat is ruwweg 150 nieuwe motors per dag.
      */
     'daily_budget_usd' => (float) env('AI_DAILY_BUDGET_USD', 2.20),
@@ -43,16 +43,17 @@ return [
     'allow_remote_migrate' => (bool) env('AI_ALLOW_REMOTE_MIGRATE', false),
 
     /*
-     * Prijs per miljoen tokens in dollars, per model. Bron: Anthropic pricing.
+     * Prijs per miljoen tokens in dollars, per model. Bron: OpenAI pricing, 9 okt 2026
+     * (developers.openai.com/api/docs/pricing).
      * Staat een model hier niet in, dan rekent AiSpendGuard met 'unknown': bewust
      * de duurste tarieven, zodat een onbekend model het budget nooit stil oprekt.
      */
     'prices' => [
-        'claude-sonnet-4-6' => ['input' => 3.00, 'output' => 15.00],
-        'claude-sonnet-5' => ['input' => 3.00, 'output' => 15.00],
-        'claude-haiku-4-5' => ['input' => 1.00, 'output' => 5.00],
-        'claude-opus-5' => ['input' => 5.00, 'output' => 25.00],
-        'claude-opus-4-8' => ['input' => 5.00, 'output' => 25.00],
+        'gpt-5.4-mini' => ['input' => 0.75, 'output' => 4.50],
+        'gpt-5.4-nano' => ['input' => 0.20, 'output' => 1.25],
+        'gpt-5.4' => ['input' => 2.50, 'output' => 15.00],
+        'gpt-5-mini' => ['input' => 0.25, 'output' => 2.00],
+        'gpt-4.1-mini' => ['input' => 0.40, 'output' => 1.60],
         'unknown' => ['input' => 10.00, 'output' => 50.00],
     ],
 

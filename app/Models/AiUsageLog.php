@@ -12,7 +12,7 @@ class AiUsageLog extends Model
     /** Er is daadwerkelijk een API-call gedaan en die leverde een motor op. */
     public const OUTCOME_SUCCESS = 'success';
 
-    /** Er is een API-call gedaan, Claude wees de invoer af als niet-motorfiets. */
+    /** Er is een API-call gedaan, de AI wees de invoer af als niet-motorfiets. */
     public const OUTCOME_REJECTED = 'rejected';
 
     /** Afgewezen op basis van de negatieve cache: geen API-call, geen kosten. */

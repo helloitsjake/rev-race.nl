@@ -26,7 +26,7 @@
             <p style="margin-top:0.6em">Je kiest bij je eerste bezoek of je de analytische cookies toestaat. Die keuze kun je op elk moment wijzigen via <button type="button" class="accent" style="background:none;border:none;padding:0;font:inherit;cursor:pointer;text-decoration:underline" data-consent-open>cookie-instellingen</button>, ook onderaan elke pagina te vinden.</p>
 
             <h2>Externe diensten</h2>
-            <p>De site kan motorgegevens ophalen via Anthropic wanneer een API-key is ingesteld. Betalingen zijn in deze MVP nog niet zichtbaar geactiveerd.</p>
+            <p>Staat een motor niet in onze database, dan kan de site de specificaties opzoeken via OpenAI. Daarbij sturen we alleen de zoekopdracht mee (bijvoorbeeld "bmw s1000rr 2022"), geen naam, e-mailadres of andere persoonsgegevens. Ook nieuwsartikelen over nieuwe modellen worden via OpenAI naar het Nederlands herschreven. Betalingen zijn in deze MVP nog niet zichtbaar geactiveerd.</p>
         </div>
     </section>
 @endsection

@@ -36,12 +36,12 @@ return [
     ],
 
     /*
-     * Vraag het model nooit direct hier op, maar via App\Support\AnthropicModel::resolve().
-     * Die klasse blokkeert Fable 5 en Mythos 5, ook als ANTHROPIC_MODEL daarop staat.
+     * Vraag het model nooit direct hier op, maar via App\Support\AiModel::resolve().
+     * Die klasse blokkeert de pro- en topmodellen, ook als OPENAI_MODEL daarop staat.
      */
-    'anthropic' => [
-        'key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-6'),
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-5.4-mini'),
     ],
 
 ];

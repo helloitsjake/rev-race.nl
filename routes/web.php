@@ -93,7 +93,7 @@ Route::middleware('auth')->group(function (): void {
 
 Route::get('/api/motors', [MotorController::class, 'search'])->name('api.motors.search');
 
-// De AI-lookup is de enige route op de site die per aanroep geld kost (Anthropic API).
+// De AI-lookup is de enige route op de site die per aanroep geld kost (OpenAI API).
 // Daarom vereist hij een account: een aanvaller moet dan accounts aanmaken, en elke call
 // is in ai_usage_logs aan een gebruiker te koppelen en dus te blokkeren. De harde remmen
 // (dagbudget voor de hele site, daglimiet per account, negatieve cache) zitten in

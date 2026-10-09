@@ -33,7 +33,7 @@ class AiUsageDashboardTest extends TestCase
             'purpose' => AiSpendGuard::PURPOSE_MOTOR_LOOKUP,
             'outcome' => AiUsageLog::OUTCOME_SUCCESS,
             'ip_address' => '203.0.113.7',
-            'model' => 'claude-sonnet-4-6',
+            'model' => 'gpt-5.4-mini',
             'query' => 'Yamaha MT-09 2024',
             'input_tokens' => 700,
             'output_tokens' => 500,

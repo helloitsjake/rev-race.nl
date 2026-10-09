@@ -31,32 +31,32 @@ XML;
         parent::setUp();
 
         config([
-            'services.anthropic.key' => 'test-key',
-            'services.anthropic.model' => 'claude-sonnet-4-6',
+            'services.openai.key' => 'test-key',
+            'services.openai.model' => 'gpt-5.4-mini',
             'ai.daily_budget_usd' => 2.20,
         ]);
 
         Mail::fake();
     }
 
-    private function fakeFeeds(array $anthropicResponse, int $status = 200): void
+    private function fakeFeeds(array $aiResponse, int $status = 200): void
     {
         Http::fake([
             'ultimatemotorcycling.com/*' => Http::response(self::FEED),
             'www.mcnews.com.au/*' => Http::response('<rss><channel></channel></rss>'),
-            'api.anthropic.com/*' => Http::response($anthropicResponse, $status),
+            'api.openai.com/*' => Http::response($aiResponse, $status),
         ]);
     }
 
     private function dutchAiResponse(): array
     {
         return [
-            'usage' => ['input_tokens' => 600, 'output_tokens' => 300],
-            'content' => [['text' => json_encode([
+            'usage' => ['prompt_tokens' => 600, 'completion_tokens' => 300],
+            'choices' => [['message' => ['content' => json_encode([
                 'title' => 'Nederlandse titel',
                 'excerpt' => 'Korte Nederlandse samenvatting.',
                 'body' => self::DUTCH_BODY,
-            ])]],
+            ])]]],
         ];
     }
 
@@ -77,7 +77,7 @@ XML;
 
     public function test_bij_een_api_fout_wordt_er_niets_gepubliceerd_en_wordt_het_gemeld(): void
     {
-        $this->fakeFeeds(['error' => ['message' => 'API key is invalid.']], 401);
+        $this->fakeFeeds(['error' => ['message' => 'Incorrect API key provided.']], 401);
 
         app(NewsCrawlService::class)->crawl();
 
@@ -87,7 +87,7 @@ XML;
 
     public function test_een_onbruikbaar_ai_antwoord_wordt_niet_gepubliceerd(): void
     {
-        $this->fakeFeeds(['usage' => ['input_tokens' => 1, 'output_tokens' => 1], 'content' => [['text' => 'geen json']]]);
+        $this->fakeFeeds(['usage' => ['prompt_tokens' => 1, 'completion_tokens' => 1], 'choices' => [['message' => ['content' => 'geen json']]]]);
 
         app(NewsCrawlService::class)->crawl();
 
@@ -115,6 +115,20 @@ XML;
         $this->assertStringEndsWith('Bron: https://example.com/test-bike', $article->body);
     }
 
+    public function test_het_verzoek_aan_openai_heeft_de_juiste_vorm(): void
+    {
+        $this->fakeFeeds($this->dutchAiResponse());
+
+        app(NewsCrawlService::class)->crawl();
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.openai.com/v1/chat/completions'
+            && $request->hasHeader('Authorization', 'Bearer test-key')
+            && $request['model'] === 'gpt-5.4-mini'
+            && $request['response_format'] === ['type' => 'json_object']
+            && isset($request['max_completion_tokens']));
+        $this->assertSame(0.0018, (float) \App\Models\AiUsageLog::sole()->cost_usd);
+    }
+
     public function test_engelse_artikelen_worden_herschreven_met_behoud_van_slug_en_datum(): void
     {
         $article = $this->englishArticle();
@@ -134,7 +148,7 @@ XML;
     public function test_engelse_artikelen_blijven_ongewijzigd_als_herschrijven_faalt(): void
     {
         $article = $this->englishArticle();
-        $this->fakeFeeds(['error' => ['message' => 'API key is invalid.']], 401);
+        $this->fakeFeeds(['error' => ['message' => 'Incorrect API key provided.']], 401);
 
         app(NewsCrawlService::class)->rewriteUntranslated();
 
