@@ -54,8 +54,8 @@ SESSION_DRIVER=database
 QUEUE_CONNECTION=database
 CACHE_STORE=database
 
-ANTHROPIC_API_KEY=...
-ANTHROPIC_MODEL=claude-sonnet-4-6   # Fable 5 / Mythos 5 worden in code geblokkeerd
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5.4-mini           # pro- en topmodellen worden in code geblokkeerd (App\Support\AiModel)
 
 # AI-kosten en misbruikbescherming, zie config/ai.php
 AI_DAILY_BUDGET_USD=2.20
@@ -76,7 +76,7 @@ Wat er **niet** is: `php` (en dus geen `artisan`), `composer`, `sed`, `awk`, `tr
 `wc`, `tee`, `diff`, `cmp`, `stat`, `date`, `md5sum`, `sha1sum`, `cksum`, `openssl`.
 
 `curl` is er wel, maar zonder CA-certificaten (fout 77). Een HTTPS-call vanuit de SSH-shell,
-bijvoorbeeld om de Anthropic-key te testen, zegt dus niets. Test zoiets via een Plesk-taak
+bijvoorbeeld om de OpenAI-key te testen, zegt dus niets. Test zoiets via een Plesk-taak
 (die draait buiten de chroot) of via de Laravel-log.
 
 Praktisch gevolg: een regel in `.env` wijzigen kan niet met `sed`. Doe het zo:
@@ -113,7 +113,7 @@ Migraties draaien op de server gaat zo, omdat `artisan` daar niet beschikbaar is
 
 ## AI-verbruik bekijken
 
-`https://www.rev-race.nl/ai-gebruik/<AI_DASHBOARD_TOKEN>` toont per dag wat de Anthropic API
+`https://www.rev-race.nl/ai-gebruik/<AI_DASHBOARD_TOKEN>` toont per dag wat de OpenAI API
 gekost heeft, welke IP's en accounts het verbruiken, welke zoekopdrachten het vaakst
 afgewezen zijn, en de laatste 50 aanroepen met echte token-aantallen. De pagina staat op
 `noindex` en geeft een 404 als het token niet klopt of niet ingesteld is.
