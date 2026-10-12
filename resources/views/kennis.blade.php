@@ -34,7 +34,7 @@
                     <a class="feature" href="{{ route('kennis.show', $feature) }}" data-reveal>
                         <svg class="feature__line" viewBox="0 0 400 260" fill="none" aria-hidden="true"><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#141518" stroke-width="2"/><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#E4431E" stroke-width="2" stroke-dasharray="4 10"/><circle cx="250" cy="50" r="7" fill="#E4431E"/></svg>
                         <span class="kicker">{{ $feature->category }}</span>
-                        <div><h3>{{ $feature->title }}</h3>@if($feature->excerpt)<p>{{ $feature->excerpt }}</p>@endif</div>
+                        <div><h2>{{ $feature->title }}</h2>@if($feature->excerpt)<p>{{ $feature->excerpt }}</p>@endif</div>
                     </a>
                     <div>
                         @if($categories->count() > 1)
@@ -48,7 +48,7 @@
                         <div class="kb-list" data-filter-grid="kennis">
                             @foreach($articles as $article)
                                 @continue($article->is($feature))
-                                <a href="{{ route('kennis.show', $article) }}" data-filter-category="{{ Str::slug($article->category) }}"><span class="kicker">{{ $article->category }}</span><h4><span>{{ $article->title }}</span></h4>{!! $arrow !!}</a>
+                                <a href="{{ route('kennis.show', $article) }}" data-filter-category="{{ Str::slug($article->category) }}"><span class="kicker">{{ $article->category }}</span><h3><span>{{ $article->title }}</span></h3>{!! $arrow !!}</a>
                             @endforeach
                         </div>
                     </div>

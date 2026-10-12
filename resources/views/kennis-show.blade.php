@@ -135,7 +135,7 @@
                 </div>
                 <div class="kb-list">
                     @foreach($related as $item)
-                        <a href="{{ route('kennis.show', $item) }}"><span class="kicker">{{ $item->category }}</span><h4><span>{{ $item->title }}</span></h4><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+                        <a href="{{ route('kennis.show', $item) }}"><span class="kicker">{{ $item->category }}</span><h3><span>{{ $item->title }}</span></h3><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
                     @endforeach
                 </div>
             </div>

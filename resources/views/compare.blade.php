@@ -150,7 +150,6 @@
                 <a href="{{ route('simulation.index') }}">Simulatie</a> <span class="sep">&rarr;</span>
                 {{ $motorA->label() }} vs {{ $motorB->label() }}
             </nav>
-            <span class="eyebrow">Vergelijking</span>
             <h1>{{ $motorA->label() }} vs {{ $motorB->label() }}</h1>
             <p class="lede">Op droog asfalt wint de {{ $dryWinner->label() }}. Bekijk hieronder hoe dat verandert per wegconditie.</p>
         </div>
@@ -158,7 +157,7 @@
 
     <section class="chapter chapter--tight">
         <div class="wrap">
-            <div class="panel">
+            <div class="panel panel--text">
                 <p style="margin-bottom: 1.2em">
                     Wie is er nou sneller, de <b>{{ $motorA->label() }}</b> of de <b>{{ $motorB->label() }}</b>? Op papier heeft de
                     <b>{{ $strongerMotor->label() }}</b> met {{ $strongerMotor->power_hp }} pk het meeste vermogen
