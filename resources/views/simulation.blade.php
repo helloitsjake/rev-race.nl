@@ -19,73 +19,74 @@
         <div class="wrap sim__head">
             <p class="turn"><b>T0</b> Startlijn</p>
             <h1>Welke motor is sneller? <span>Laat ze racen.</span></h1>
+        </div>
 
-            <form class="sim__form" data-sim-form novalidate>
-                <div class="sentence sim__line">
-                    <span>Race de</span>
-                    @foreach(['A' => 'Bijv. Honda CB650R 2023', 'B' => 'Bijv. Yamaha MT-07 2024'] as $side => $placeholder)
-                        <div class="pickfield pickfield--{{ strtolower($side) }}" data-pickfield="{{ $side }}">
-                            <label class="sr-only" for="motor-{{ strtolower($side) }}">Motor {{ $side }}</label>
-                            <input class="pickfield__input" id="motor-{{ strtolower($side) }}" data-motor-input="{{ $side }}" autocomplete="off" spellcheck="false" placeholder="{{ $placeholder }}" role="combobox" aria-expanded="false" aria-controls="sug-{{ strtolower($side) }}" aria-autocomplete="list">
-                            <div class="pickfield__list" id="sug-{{ strtolower($side) }}" role="listbox" data-suggestions="{{ $side }}" hidden></div>
-                        </div>
-                        @if($side === 'A')<span>tegen de</span>@endif
-                    @endforeach
+        {{-- Eén cockpit: de motoren kies je op hun eigen rijstrook, de instellingen staan naast de startknop. --}}
+        <form class="grid-panel sim__race" data-sim-form data-race-panel novalidate aria-labelledby="race-status">
+            <div class="wrap">
+                <div class="grid-head">
+                    <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                    <p class="status" id="race-status" data-status aria-live="polite">Kies twee motoren</p>
                 </div>
 
-                <div class="sentence sim__line">
-                    <span>op</span>
-                    <div class="filter" role="group" aria-label="Soort race" data-option="road_type">
-                        <div class="filter__base">
-                            <button type="button" data-value="straight" aria-pressed="true">het rechte stuk</button>
-                            <button type="button" data-value="twisty" aria-pressed="false">een kronkelweg</button>
-                            <button type="button" data-value="topspeed" aria-pressed="false">topsnelheid</button>
-                            <button type="button" data-value="braking" aria-pressed="false">de rem</button>
+                <div class="track sim__track">
+                    @foreach(['a' => 'Bijv. Honda CB650R 2023', 'b' => 'Bijv. Yamaha MT-07 2024'] as $side => $placeholder)
+                        @php($S = strtoupper($side))
+                        <div class="lane lane--{{ $side }} is-empty" data-lane="{{ $side }}">
+                            <div class="pickfield pickfield--{{ $side }}" data-pickfield="{{ $S }}">
+                                <label class="sr-only" for="motor-{{ $side }}">Motor {{ $S }}</label>
+                                <input class="pickfield__input" id="motor-{{ $side }}" data-motor-input="{{ $S }}" autocomplete="off" spellcheck="false" placeholder="Kies motor {{ $S }}" role="combobox" aria-expanded="false" aria-controls="sug-{{ $side }}" aria-autocomplete="list">
+                                <div class="pickfield__list" id="sug-{{ $side }}" role="listbox" data-suggestions="{{ $S }}" hidden></div>
+                            </div>
+                            <span class="lane__rail" aria-hidden="true"><i class="lane__bike" data-bike>@include('partials.bike-icon', ['category' => null])</i></span>
+                            <span class="lane__time" data-lane-time aria-hidden="true">&nbsp;</span>
                         </div>
-                        <div class="filter__pill" aria-hidden="true"></div>
-                    </div>
-                    <span data-when="condition">met</span>
-                    <div class="filter" role="group" aria-label="Wegdek" data-option="road_condition" data-when="condition">
-                        <div class="filter__base">
-                            <button type="button" data-value="dry" aria-pressed="true">droog</button>
-                            <button type="button" data-value="wet" aria-pressed="false">vochtig</button>
-                            <button type="button" data-value="rain" aria-pressed="false">nat</button>
-                        </div>
-                        <div class="filter__pill" aria-hidden="true"></div>
-                    </div>
-                    <span data-when="condition">asfalt</span>
-                    <label class="sim__sel" data-when="distance">
-                        <span>over</span>
-                        <select data-option="distance_m" aria-label="Afstand">
-                            <option value="100">100 m</option>
-                            <option value="250">250 m</option>
-                            <option value="402">402 m (1/4 mijl)</option>
-                            <option value="500" selected>500 m</option>
-                            <option value="805">805 m (1/2 mijl)</option>
-                            <option value="1000">1 km</option>
-                            <option value="2000">2 km</option>
-                        </select>
-                    </label>
-                    <label class="sim__sel" data-when="speed" hidden>
-                        <span>vanaf</span>
-                        <select data-option="speed_kmh" aria-label="Beginsnelheid">
-                            <option value="50">50 km/u</option>
-                            <option value="100" selected>100 km/u</option>
-                            <option value="130">130 km/u</option>
-                            <option value="160">160 km/u</option>
-                        </select>
-                    </label>
+                    @endforeach
+                    <div class="lane lane--marks" aria-hidden="true"><span></span><span class="track__marks" data-marks><span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500 m</span></span><span></span></div>
                 </div>
 
                 <div class="sim__go">
+                    <div class="sim__opts">
+                        <label class="chip"><span class="sr-only">Soort race</span>
+                            <select data-option="road_type">
+                                <option value="straight" selected>Rechte lijn</option>
+                                <option value="twisty">Kronkelweg</option>
+                                <option value="topspeed">Topsnelheid</option>
+                                <option value="braking">Remweg</option>
+                            </select>
+                        </label>
+                        <label class="chip" data-when="condition"><span class="sr-only">Wegdek</span>
+                            <select data-option="road_condition">
+                                <option value="dry" selected>Droog</option>
+                                <option value="wet">Vochtig</option>
+                                <option value="rain">Nat</option>
+                            </select>
+                        </label>
+                        <label class="chip" data-when="distance"><span class="sr-only">Afstand</span>
+                            <select data-option="distance_m">
+                                <option value="100">100 m</option>
+                                <option value="250">250 m</option>
+                                <option value="402">402 m</option>
+                                <option value="500" selected>500 m</option>
+                                <option value="805">805 m</option>
+                                <option value="1000">1 km</option>
+                                <option value="2000">2 km</option>
+                            </select>
+                        </label>
+                        <label class="chip" data-when="speed" hidden><span class="sr-only">Beginsnelheid</span>
+                            <select data-option="speed_kmh">
+                                <option value="50">Vanaf 50 km/u</option>
+                                <option value="100" selected>Vanaf 100 km/u</option>
+                                <option value="130">Vanaf 130 km/u</option>
+                                <option value="160">Vanaf 160 km/u</option>
+                            </select>
+                        </label>
+                        <label class="chip chip--kg">Rijder <input type="number" inputmode="numeric" min="0" max="180" name="rider_kg" value="{{ $riderKg }}" placeholder="0" aria-label="Gewicht rijder in kg"> kg</label>
+                    </div>
+                    <p class="sim__limit" data-limit aria-live="polite"></p>
                     <button class="btn btn--red sim__start" type="submit" data-run disabled>
                         <span data-run-label>Start de race</span>{!! $arrow !!}
                     </button>
-                    <div class="sim__riders">
-                        <label>Rijder A <input type="number" inputmode="numeric" min="0" max="180" name="rider_a_kg" value="{{ $riderKg }}" placeholder="kg"> kg</label>
-                        <label>Rijder B <input type="number" inputmode="numeric" min="0" max="180" name="rider_b_kg" value="{{ $riderKg }}" placeholder="kg"> kg</label>
-                    </div>
-                    <p class="sim__limit" data-limit aria-live="polite"></p>
                 </div>
                 <p class="sim__msg" data-message role="alert" hidden></p>
 
@@ -95,26 +96,6 @@
                         @include('partials.manual-motor-form', ['side' => $side])
                     </div>
                 @endforeach
-            </form>
-        </div>
-
-        <section class="grid-panel sim__race" aria-labelledby="race-status" data-race-panel>
-            <div class="wrap">
-                <div class="grid-head">
-                    <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-                    <p class="status" id="race-status" data-status aria-live="polite">Kies twee motoren</p>
-                </div>
-
-                <div class="track sim__track" aria-hidden="true">
-                    @foreach(['a', 'b'] as $side)
-                        <div class="lane lane--{{ $side }} is-empty" data-lane="{{ $side }}">
-                            <span class="lane__name" data-lane-name>Motor {{ strtoupper($side) }}</span>
-                            <span class="lane__rail"><i class="lane__bike" data-bike>@include('partials.bike-icon', ['category' => null])</i></span>
-                            <span class="lane__time" data-lane-time>&nbsp;</span>
-                        </div>
-                    @endforeach
-                    <div class="lane lane--marks"><span></span><span class="track__marks" data-marks><span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500 m</span></span><span></span></div>
-                </div>
 
                 <div class="sim__result" data-result hidden>
                     <div class="sim__verdict">
@@ -146,7 +127,7 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </form>
     </div>
 
     <section class="chapter chapter--tight sim-notes">

@@ -68,7 +68,6 @@
     closeList(side);
     const lane = lanes[side.toLowerCase()];
     lane.classList.remove('is-empty');
-    qs('[data-lane-name]', lane).textContent = motor.short_label || motor.label;
     const bike = qs('[data-bike]', lane);
     bike.innerHTML = bikeIcon(motor.category);
     bike.style.setProperty('--p', 0);
@@ -188,6 +187,13 @@
     input.addEventListener('keydown', (e) => {
       const list = qs(`[data-suggestions="${side}"]`, root);
       const opts = qsa('.pickfield__opt', list);
+      if (e.key === 'Enter') {
+        // Enter kiest de eerste suggestie in plaats van het formulier te versturen.
+        e.preventDefault();
+        if (!list.hidden && opts[0] && !opts[0].dataset.ai) opts[0].click();
+        else if (selected.A && selected.B) form.requestSubmit();
+        return;
+      }
       if (list.hidden || !opts.length) return;
       const i = opts.indexOf(document.activeElement);
       if (e.key === 'ArrowDown') { e.preventDefault(); opts[Math.min(i + 1, opts.length - 1)].focus(); }
@@ -213,14 +219,12 @@
     qsa('[data-when="condition"]', root).forEach((el) => { el.hidden = mode === 'topspeed'; });
     qsa('[data-when="distance"]', root).forEach((el) => { el.hidden = !(mode === 'straight' || mode === 'twisty'); });
     qsa('[data-when="speed"]', root).forEach((el) => { el.hidden = mode !== 'braking'; });
-    // Een verborgen filter heeft geen breedte; opnieuw meten zodra hij weer zichtbaar is.
-    filters.forEach((f) => f.reset && f.reset());
   };
-  const filters = qsa('.filter[data-option]', root).map((f) => (RR.bindFilter ? RR.bindFilter(f, (value) => {
-    options[f.dataset.option] = value;
-    if (f.dataset.option === 'road_type') syncOptions();
-  }) : null)).filter(Boolean);
-  qsa('select[data-option]', root).forEach((sel) => sel.addEventListener('change', () => { options[sel.dataset.option] = Number(sel.value); }));
+  const NUMERIC = ['distance_m', 'speed_kmh'];
+  qsa('select[data-option]', root).forEach((sel) => sel.addEventListener('change', () => {
+    options[sel.dataset.option] = NUMERIC.includes(sel.dataset.option) ? Number(sel.value) : sel.value;
+    if (sel.dataset.option === 'road_type') syncOptions();
+  }));
 
   /* ---------- race ---------- */
 
@@ -457,8 +461,13 @@
     renderChart(r); // na het tonen, anders is de breedte 0
     if (!RUST) { resultBox.classList.remove('is-in'); void resultBox.offsetWidth; }
     resultBox.classList.add('is-in');
-    const w = r.winner === 'A' ? selected.A : selected.B;
-    setStatus(`Finish &middot; P1 <b>${esc(w.short_label || w.label)}</b>`);
+    setStatus('Finish');
+    // Breng de aanbodkaarten in beeld, maar laat de onderkant van de baan zichtbaar.
+    const pick = qs('[data-pick]', root).getBoundingClientRect();
+    if (pick.bottom > window.innerHeight) {
+      const target = window.scrollY + resultBox.getBoundingClientRect().top - window.innerHeight * 0.22;
+      setTimeout(() => window.scrollTo({ top: target, behavior: RUST ? 'auto' : 'smooth' }), RUST ? 0 : 450);
+    }
   };
 
   /* ---------- starten ---------- */
@@ -470,8 +479,9 @@
       motor_b_id: selected.B.id,
       road_type: options.road_type,
       road_condition: options.road_condition,
-      rider_a_kg: kg('rider_a_kg'),
-      rider_b_kg: kg('rider_b_kg'),
+      // Eén rijder op beide motoren: zo vergelijk je de motoren, niet de rijders.
+      rider_a_kg: kg('rider_kg'),
+      rider_b_kg: kg('rider_kg'),
     };
     if (options.road_type === 'straight' || options.road_type === 'twisty') body.distance_m = options.distance_m;
     if (options.road_type === 'braking') body.speed_kmh = options.speed_kmh;
@@ -540,8 +550,7 @@
     lightsOff();
     setStatus('Lights out');
     await playRace(last);
-    const w = last.winner === 'A' ? selected.A : selected.B;
-    setStatus(`Finish &middot; P1 <b>${esc(w.short_label || w.label)}</b>`);
+    setStatus('Finish');
     busy = false; syncRun();
   });
 
