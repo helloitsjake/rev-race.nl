@@ -8,6 +8,7 @@ use App\Services\SimulationLimitService;
 use App\Services\SimulationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -26,7 +27,54 @@ class SimulationController extends Controller
             'preselectA' => $preselectA ? MotorController::serialize($preselectA) : null,
             'preselectB' => $preselectB && $preselectB->isNot($preselectA) ? MotorController::serialize($preselectB) : null,
             'preselectKg' => $preselectKg,
+            'duels' => $this->popularDuels(),
         ]);
+    }
+
+    /**
+     * Snelstart voor de lege staat van de simulatie: de vaakst gesimuleerde paren, aangevuld met
+     * een paar bekende duels zolang er nog weinig data is. Eén klik = een complete race.
+     *
+     * @return array<int, array{a: array<string, mixed>, b: array<string, mixed>}>
+     */
+    private function popularDuels(): array
+    {
+        return Cache::remember('simulation.popular-duels', 3600, function () {
+            $pairs = SimulationResult::query()
+                ->selectRaw('motor_a_id, motor_b_id, count(*) as n')
+                ->groupBy('motor_a_id', 'motor_b_id')
+                ->orderByDesc('n')
+                ->limit(12)
+                ->get()
+                ->map(fn ($row) => [Motor::find($row->motor_a_id), Motor::find($row->motor_b_id)]);
+
+            $find = fn (string $brand, string $model) => Motor::query()
+                ->where('brand', $brand)->where('model', 'like', "%{$model}%")
+                ->orderByDesc('year')->first();
+            $curated = collect([
+                [['Yamaha', 'MT-07'], ['Kawasaki', 'Z650']],
+                [['Honda', 'CB650R'], ['Yamaha', 'MT-07']],
+                [['KTM', '390 Duke'], ['Yamaha', 'MT-03']],
+                [['BMW', 'S 1000 RR'], ['Ducati', 'Panigale V4']],
+            ])->map(fn ($pair) => [$find(...$pair[0]), $find(...$pair[1])]);
+
+            $seen = [];
+
+            return $pairs->concat($curated)
+                ->filter(fn ($pair) => $pair[0] && $pair[1] && $pair[0]->isNot($pair[1]))
+                ->filter(function ($pair) use (&$seen) {
+                    $key = collect([$pair[0]->id, $pair[1]->id])->sort()->implode('-');
+                    if (isset($seen[$key])) {
+                        return false;
+                    }
+
+                    return $seen[$key] = true;
+                })
+                ->take(4)
+                ->map(fn ($pair) => ['a' => MotorController::serialize($pair[0]), 'b' => MotorController::serialize($pair[1])])
+                ->values()
+                ->all();
+        });
     }
 
     public function limit(Request $request, SimulationLimitService $limits): JsonResponse

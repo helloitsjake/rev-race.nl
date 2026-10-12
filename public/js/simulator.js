@@ -1,6 +1,7 @@
-// Simulatiepagina 2.0 (12-10-2026). Keuze als zin, startlichten terwijl de server rekent, dan de
-// race op de echte simulatiedata en direct daarna de keuzekaarten met aanbod. De embed gebruikt
-// nog simulation.js. Gedeelde stukken (veer-filter, lichten, race-rekenwerk) komen uit site.js.
+// Simulatiepagina, redesign 12-10-2026. Configurator links (alle opties zichtbaar), racescherm
+// rechts. Startlichten lopen terwijl de server rekent, dan de race op de echte simulatiedata, dan
+// het oordeel met een oplopend verschil en de keuzekaarten met aanbod. De embed gebruikt nog
+// simulation.js. Gedeelde stukken (veer-filter, race-rekenwerk) komen uit site.js.
 (() => {
   const cfg = window.REVRACE || {};
   const RR = window.RevRace || {};
@@ -13,41 +14,59 @@
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const comma = (n, d = 2) => Number(n).toFixed(d).replace('.', ',');
   const debounce = (fn, ms = 180) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-
-  const selected = { A: null, B: null };
-  const options = { road_type: 'straight', road_condition: 'dry', distance_m: 500, speed_kmh: 100 };
-  let last = null; // laatste uitslag, voor "kijk terug" zonder nieuwe simulatie
-  let busy = false;
+  const short = (m) => m.short_label || m.label;
+  const mobile = () => window.matchMedia('(max-width: 960px)').matches;
 
   const root = qs('[data-sim]');
   if (!root) return;
   const form = qs('[data-sim-form]', root);
-  const panel = qs('[data-race-panel]', root);
+  const monitor = qs('[data-race-panel]', root);
   const status = qs('[data-status]', root);
   const runBtn = qs('[data-run]', root);
   const runLabel = qs('[data-run-label]', root);
   const lanes = { a: qs('[data-lane="a"]', root), b: qs('[data-lane="b"]', root) };
-  const resultBox = qs('[data-result]', root);
+  const verdictBox = qs('[data-verdict]', root);
+  const offers = qs('[data-offers]');
 
-  /* ---------- status, limiet, meldingen ---------- */
+  const DISTANCES = [100, 250, 402, 500, 805, 1000, 2000];
+  const MODE = {
+    straight: { label: 'Rechte lijn', hint: 'Wie is het eerst over de streep, vanuit stilstand.' },
+    twisty: { label: 'Bochten', hint: 'Een weg met bochten: grip en gewicht tellen zwaarder dan pk.' },
+    topspeed: { label: 'Topsnelheid', hint: 'De opgegeven topsnelheid van de fabrikant.' },
+    braking: { label: 'Remweg', hint: 'Hoeveel meter je nodig hebt om stil te staan.' },
+  };
+  const COND = { dry: 'droog', wet: 'vochtig', rain: 'nat' };
+
+  const selected = { A: null, B: null };
+  const options = { road_type: 'straight', road_condition: 'dry', distance_m: 500, speed_kmh: 100 };
+  const history = [];
+  let shown = null; // de uitslag die nu in beeld is
+  let busy = false;
+
+  /* ---------- status, knop, limiet ---------- */
 
   const setStatus = (html) => { status.innerHTML = html; };
+
+  const syncRun = () => {
+    const ready = selected.A && selected.B;
+    runBtn.disabled = busy || !ready || Boolean(cfg.limit?.blocked);
+    runLabel.textContent = busy ? 'Race loopt' : !selected.A ? 'Kies motor A' : !selected.B ? 'Kies motor B' : shown ? 'Race opnieuw' : 'Start de race';
+    root.classList.toggle('is-ready', Boolean(ready) && !busy);
+  };
 
   const renderLimit = (limit) => {
     if (!limit) return;
     cfg.limit = limit;
     const el = qs('[data-limit]', root);
+    qs('[data-limit-fill]', root).style.transform = `scaleX(${Math.min(1, limit.used / limit.limit)})`;
     if (limit.blocked) {
       const reset = limit.reset_at ? new Date(limit.reset_at).toLocaleString('nl-NL', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : null;
-      el.innerHTML = `Daglimiet bereikt${reset ? `, weer races vanaf <b>${esc(reset)}</b>` : ''}.`;
+      el.innerHTML = `Daglimiet bereikt${reset ? `, weer races vanaf ${esc(reset)}` : ''}`;
     } else {
-      el.innerHTML = `<b>${limit.remaining}</b> van ${limit.limit} gratis races over vandaag`;
+      el.innerHTML = `Nog <b>${limit.remaining}</b> van ${limit.limit} gratis races vandaag`;
     }
+    qs('[data-limit-box]', root).classList.toggle('is-blocked', Boolean(limit.blocked));
     syncRun();
-  };
-
-  const syncRun = () => {
-    runBtn.disabled = busy || !selected.A || !selected.B || Boolean(cfg.limit?.blocked);
   };
 
   const message = (text) => {
@@ -56,51 +75,97 @@
     box.hidden = !text;
   };
 
+  // Na een uitslag: elke wijziging maakt de uitslag "oud" tot er opnieuw gestart is.
+  const markStale = () => {
+    if (!shown || busy) return;
+    monitor.classList.add('is-stale');
+    qs('[data-stale]', root).hidden = false;
+    setStatus('Klaar voor een nieuwe race');
+    syncRun();
+  };
+  const clearStale = () => {
+    monitor.classList.remove('is-stale');
+    qs('[data-stale]', root).hidden = true;
+  };
+
   /* ---------- motor kiezen ---------- */
 
   const bikeIcon = (category) => qs(`template[data-bike-icon="${category === 'sport' ? 'sport' : 'other'}"]`).innerHTML;
 
-  const pickMotor = (side, motor) => {
-    selected[side] = motor;
-    const input = qs(`[data-motor-input="${side}"]`, root);
-    input.value = motor.label;
-    qs(`[data-pickfield="${side}"]`, root).classList.add('is-set');
-    closeList(side);
-    const lane = lanes[side.toLowerCase()];
-    lane.classList.remove('is-empty');
+  const resetLane = (lane) => {
+    lane.classList.remove('is-winner', 'is-done');
     const bike = qs('[data-bike]', lane);
-    bike.innerHTML = bikeIcon(motor.category);
     bike.style.setProperty('--p', 0);
     bike.style.setProperty('--v', 0);
-    if (!RUST) { bike.classList.remove('is-rolling'); void bike.offsetWidth; bike.classList.add('is-rolling'); }
     qs('[data-lane-time]', lane).innerHTML = '&nbsp;';
-    if (selected.A && selected.B) setStatus('Klaar voor de start');
-    else setStatus(`Kies motor ${selected.A ? 'B' : 'A'}`);
+  };
+
+  const paintSide = (side) => {
+    const motor = selected[side];
+    const field = qs(`[data-pickfield="${side}"]`, root);
+    const lane = lanes[side.toLowerCase()];
+    field.classList.toggle('is-set', Boolean(motor));
+    qs(`[data-clear="${side}"]`, root).hidden = !motor;
+    lane.classList.toggle('is-empty', !motor);
+    resetLane(lane);
+    if (!motor) {
+      qs(`[data-specs="${side}"]`, root).innerHTML = '';
+      qs('[data-lane-name]', lane).textContent = `Motor ${side}`;
+      qs('[data-bike]', lane).innerHTML = bikeIcon(null);
+      return;
+    }
+    qs(`[data-motor-input="${side}"]`, root).value = motor.label;
+    qs(`[data-specs="${side}"]`, root).innerHTML = `<b>${motor.power_hp}</b> pk <i></i> <b>${motor.weight_kg}</b> kg <i></i> <b>${comma(motor.power_hp / Math.max(motor.weight_kg, 1))}</b> pk/kg${motor.category_label ? ` <i></i> ${esc(motor.category_label)}` : ''}${motor.a2 ? ' <span class="a2">A2</span>' : ''}`;
+    qs('[data-lane-name]', lane).textContent = short(motor);
+    const bike = qs('[data-bike]', lane);
+    bike.innerHTML = bikeIcon(motor.category);
+    if (!RUST) { bike.classList.remove('is-rolling'); void bike.offsetWidth; bike.classList.add('is-rolling'); }
+  };
+
+  const afterPick = () => {
+    qs('[data-empty]', root).hidden = Boolean(selected.A && selected.B) || Boolean(shown);
+    if (!shown) setStatus(selected.A && selected.B ? 'Klaar voor de start' : `Kies motor ${selected.A ? 'B' : 'A'}`);
+    markStale();
     syncRun();
   };
 
   const closeList = (side) => {
-    const list = qs(`[data-suggestions="${side}"]`, root);
-    list.hidden = true;
+    qs(`[data-suggestions="${side}"]`, root).hidden = true;
     qs(`[data-motor-input="${side}"]`, root).setAttribute('aria-expanded', 'false');
+  };
+
+  const pickMotor = (side, motor) => {
+    selected[side] = motor;
+    closeList(side);
+    paintSide(side);
+    afterPick();
+  };
+
+  // Het getypte deel vet in de suggestie (componentregels: autocomplete).
+  const mark = (label, query) => {
+    const q = query.trim();
+    const i = label.toLowerCase().indexOf(q.toLowerCase());
+    if (i < 0 || !q) return esc(label);
+    return `${esc(label.slice(0, i))}<b>${esc(label.slice(i, i + q.length))}</b>${esc(label.slice(i + q.length))}`;
   };
 
   const search = async (side, query) => {
     const list = qs(`[data-suggestions="${side}"]`, root);
     const input = qs(`[data-motor-input="${side}"]`, root);
     if (query.trim().length < 2) { closeList(side); return; }
+    if (list.hidden) { list.innerHTML = '<div class="mfield__skel"><i></i><i></i><i></i></div>'; list.hidden = false; }
     let motors = [];
     try {
       const res = await fetch(`${cfg.routes.motors}?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
       motors = (await res.json()).motors || [];
     } catch (e) { motors = []; }
-    if (input.value !== query) return; // er is intussen verder getypt
+    if (input.value !== query) return;
     list.innerHTML = motors.map((m, i) => `
-      <button type="button" role="option" class="pickfield__opt" data-i="${i}">
-        <span>${esc(m.label)}</span><small>${m.power_hp} pk · ${m.weight_kg} kg</small>
+      <button type="button" role="option" class="mfield__opt" data-i="${i}" style="--i:${i}">
+        <span>${mark(m.label, query)}</span><small>${m.power_hp} pk · ${m.weight_kg} kg</small>
       </button>`).join('') + `
-      <button type="button" role="option" class="pickfield__opt pickfield__opt--ai" data-ai>
-        <span>${motors.length ? 'Niet de goede?' : 'Staat er niet bij.'} Zoek &ldquo;${esc(query.trim())}&rdquo; op met AI</span>
+      <button type="button" role="option" class="mfield__opt mfield__opt--ai" data-ai>
+        <span>${motors.length ? 'Niet de goede?' : 'Niet gevonden.'} Zoek &ldquo;${esc(query.trim())}&rdquo; op met AI</span>
       </button>`;
     qsa('[data-i]', list).forEach((b) => b.addEventListener('click', () => pickMotor(side, motors[Number(b.dataset.i)])));
     qs('[data-ai]', list).addEventListener('click', () => lookupAi(side));
@@ -109,8 +174,7 @@
   };
 
   const lookupAi = async (side) => {
-    const input = qs(`[data-motor-input="${side}"]`, root);
-    const query = input.value.trim();
+    const query = qs(`[data-motor-input="${side}"]`, root).value.trim();
     closeList(side);
     if (query.length < 3) { message('Vul eerst merk, model en bouwjaar in, dan kan de AI ernaar zoeken.'); return; }
     const field = qs(`[data-pickfield="${side}"]`, root);
@@ -123,7 +187,7 @@
         body: JSON.stringify({ query }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 401) { message('Opzoeken met AI kan als je bent ingelogd. Je kunt de specs ook zelf invullen.'); showManual(side, query); return; }
+      if (res.status === 401) { message('Opzoeken met AI kan als je bent ingelogd. Je kunt de specs ook hieronder zelf invullen.'); showManual(side, query); return; }
       if (!res.ok) { message(data.message || 'Geen betrouwbare specs gevonden. Vul ze hieronder zelf in.'); showManual(side, query); return; }
       pickMotor(side, data.motor);
     } catch (e) {
@@ -135,13 +199,13 @@
 
   const showManual = (side, query) => {
     const wrap = qs(`[data-manual-wrap="${side}"]`, root);
-    const formEl = qs(`[data-manual-form="${side}"]`, wrap);
+    const box = qs(`[data-manual-form="${side}"]`, wrap);
     const year = (query.match(/\b(19[5-9]\d|20\d{2})\b/) || [''])[0];
     const rest = query.replace(year, '').trim().split(/\s+/);
-    const set = (f, v) => { const el = qs(`[data-manual="${f}"]`, formEl); if (el && !el.value) el.value = v; };
+    const set = (f, v) => { const el = qs(`[data-manual="${f}"]`, box); if (el && !el.value) el.value = v; };
     set('brand', rest.shift() || ''); set('model', rest.join(' ')); set('year', year);
     wrap.hidden = false;
-    formEl.hidden = false;
+    box.hidden = false;
   };
 
   const submitManual = async (side) => {
@@ -175,36 +239,41 @@
 
   ['A', 'B'].forEach((side) => {
     const input = qs(`[data-motor-input="${side}"]`, root);
+    const list = qs(`[data-suggestions="${side}"]`, root);
     input.addEventListener('input', debounce((e) => search(side, e.target.value)));
     input.addEventListener('input', () => {
       // Typen na een keuze maakt de keuze ongedaan, anders race je met iets anders dan er staat.
       if (selected[side] && input.value !== selected[side].label) {
         selected[side] = null;
-        qs(`[data-pickfield="${side}"]`, root).classList.remove('is-set');
-        syncRun();
+        paintSide(side);
+        afterPick();
       }
     });
+    input.addEventListener('focus', () => { if (selected[side]) input.select(); });
     input.addEventListener('keydown', (e) => {
-      const list = qs(`[data-suggestions="${side}"]`, root);
-      const opts = qsa('.pickfield__opt', list);
+      const opts = qsa('.mfield__opt', list);
       if (e.key === 'Enter') {
-        // Enter kiest de eerste suggestie in plaats van het formulier te versturen.
         e.preventDefault();
         if (!list.hidden && opts[0] && !opts[0].dataset.ai) opts[0].click();
-        else if (selected.A && selected.B) form.requestSubmit();
+        else if (!runBtn.disabled) form.requestSubmit();
         return;
       }
-      if (list.hidden || !opts.length) return;
-      const i = opts.indexOf(document.activeElement);
-      if (e.key === 'ArrowDown') { e.preventDefault(); opts[Math.min(i + 1, opts.length - 1)].focus(); }
+      if (e.key === 'ArrowDown' && !list.hidden && opts.length) { e.preventDefault(); opts[0].focus(); }
       if (e.key === 'Escape') closeList(side);
     });
-    qs(`[data-suggestions="${side}"]`, root).addEventListener('keydown', (e) => {
-      const opts = qsa('.pickfield__opt', e.currentTarget);
+    list.addEventListener('keydown', (e) => {
+      const opts = qsa('.mfield__opt', list);
       const i = opts.indexOf(document.activeElement);
       if (e.key === 'ArrowDown') { e.preventDefault(); opts[Math.min(i + 1, opts.length - 1)].focus(); }
       if (e.key === 'ArrowUp') { e.preventDefault(); (i <= 0 ? input : opts[i - 1]).focus(); }
       if (e.key === 'Escape') { closeList(side); input.focus(); }
+    });
+    qs(`[data-clear="${side}"]`, root).addEventListener('click', () => {
+      selected[side] = null;
+      input.value = '';
+      paintSide(side);
+      afterPick();
+      input.focus();
     });
     qs(`[data-manual-submit="${side}"]`, root)?.addEventListener('click', () => submitManual(side));
   });
@@ -212,19 +281,56 @@
     if (!e.target.closest('[data-pickfield]')) ['A', 'B'].forEach(closeList);
   });
 
+  qs('[data-swap]', root).addEventListener('click', (e) => {
+    [selected.A, selected.B] = [selected.B, selected.A];
+    ['A', 'B'].forEach((s) => { if (!selected[s]) qs(`[data-motor-input="${s}"]`, root).value = ''; paintSide(s); });
+    const btn = e.currentTarget;
+    btn.classList.remove('is-spun'); void btn.offsetWidth; btn.classList.add('is-spun');
+    afterPick();
+  });
+
   /* ---------- opties ---------- */
 
+  const filters = [];
   const syncOptions = () => {
     const mode = options.road_type;
     qsa('[data-when="condition"]', root).forEach((el) => { el.hidden = mode === 'topspeed'; });
     qsa('[data-when="distance"]', root).forEach((el) => { el.hidden = !(mode === 'straight' || mode === 'twisty'); });
     qsa('[data-when="speed"]', root).forEach((el) => { el.hidden = mode !== 'braking'; });
+    const hint = qs('[data-mode-hint]', root);
+    hint.textContent = MODE[mode].hint;
+    if (!RUST) { hint.classList.remove('is-new'); void hint.offsetWidth; hint.classList.add('is-new'); }
+    // Een filter die verborgen was heeft geen maat: opnieuw meten zodra hij zichtbaar is.
+    requestAnimationFrame(() => filters.forEach((f) => f && f.reset && f.reset()));
   };
-  const NUMERIC = ['distance_m', 'speed_kmh'];
-  qsa('select[data-option]', root).forEach((sel) => sel.addEventListener('change', () => {
-    options[sel.dataset.option] = NUMERIC.includes(sel.dataset.option) ? Number(sel.value) : sel.value;
-    if (sel.dataset.option === 'road_type') syncOptions();
-  }));
+  qsa('.filter[data-option]', root).forEach((f) => {
+    if (!RR.bindFilter) return;
+    filters.push(RR.bindFilter(f, (value) => {
+      const key = f.dataset.option;
+      options[key] = key === 'speed_kmh' ? Number(value) : value;
+      if (key === 'road_type') syncOptions();
+      markStale();
+    }));
+  });
+
+  const range = qs('[data-distance]', root);
+  const out = qs('[data-distance-out]', root);
+  const fmtDist = (d) => (d >= 1000 ? `${comma(d / 1000, d % 1000 ? 1 : 0)} km` : `${d} m`);
+  const syncRange = () => {
+    const d = DISTANCES[Number(range.value)];
+    options.distance_m = d;
+    out.textContent = fmtDist(d);
+    range.setAttribute('aria-valuetext', d >= 1000 ? `${d / 1000} kilometer` : `${d} meter`);
+    range.style.setProperty('--fill', `${(Number(range.value) / 6) * 100}%`);
+    qsa('.range__ticks span', root).forEach((t, i) => t.classList.toggle('is-on', i === Number(range.value)));
+  };
+  range.addEventListener('input', () => {
+    syncRange();
+    if (!RUST) { out.classList.remove('is-pop'); void out.offsetWidth; out.classList.add('is-pop'); }
+    markStale();
+  });
+  qsa('.range__ticks span', root).forEach((t, i) => t.addEventListener('click', () => { range.value = i; range.dispatchEvent(new Event('input')); }));
+  qs('[name="rider_kg"]', root).addEventListener('input', markStale);
 
   /* ---------- race ---------- */
 
@@ -235,42 +341,38 @@
   };
 
   const setMarks = (max, unit) => {
-    const labels = [0, 1, 2, 3, 4, 5].map((i) => {
+    const km = unit === 'm' && max >= 1000;
+    qs('[data-marks]', root).innerHTML = [0, 1, 2, 3, 4, 5].map((i) => {
       const v = (max / 5) * i;
-      const txt = max >= 2000 && unit === 'm' ? `${comma(v / 1000, v % 1000 ? 1 : 0)}` : String(Math.round(v));
-      return `<span>${txt}${i === 5 ? (max >= 2000 && unit === 'm' ? ' km' : ` ${unit}`) : ''}</span>`;
-    });
-    qs('[data-marks]', root).innerHTML = labels.join('');
+      const txt = km ? comma(v / 1000, v % 1000 ? 1 : 0) : String(Math.round(v));
+      return `<span>${txt}${i === 5 ? (km ? ' km' : ` ${unit}`) : ''}</span>`;
+    }).join('');
   };
 
-  // Bouwt per motor een functie van speeltijd (s) naar { x, v } plus het eindpunt, voor elk
-  // soort race. x is de positie op de baan als fractie, v de snelheid in km/u.
+  // Per soort race: een functie van speeltijd (s) naar { x (0..1), v (km/u), vn (0..1) }.
   const plan = (r) => {
     if (r.mode === 'race') {
-      const d = options.distance_m_ran;
-      const sides = { a: RR.raceTrace({ t: r.time_a_s, s: r.samples?.a || [] }, d), b: RR.raceTrace({ t: r.time_b_s, s: r.samples?.b || [] }, d) };
-      const vMax = Math.max(...(r.samples?.a || []).map((p) => p.v), ...(r.samples?.b || []).map((p) => p.v), 1);
-      const scale = Math.min(r.time_a_s, r.time_b_s) / 3.2; // snelste ongeveer 3,2 s in beeld
+      const d = r.run.distance_m;
+      const sa = r.samples?.a || [], sb = r.samples?.b || [];
+      const sides = { a: RR.raceTrace({ t: r.time_a_s, s: sa }, d), b: RR.raceTrace({ t: r.time_b_s, s: sb }, d) };
+      const vMax = Math.max(...sa.map((p) => p.v), ...sb.map((p) => p.v), 1);
+      const scale = Math.min(r.time_a_s, r.time_b_s) / 3.4; // de snelste ongeveer 3,4 s in beeld
       const at = (s, t) => { const p = RR.raceAt(sides[s], t * scale); return { x: p.x / d, v: p.v, vn: p.v / vMax }; };
-      return {
-        marks: [d, 'm'],
-        end: { a: r.time_a_s / scale, b: r.time_b_s / scale },
-        at,
-        final: { a: comma(r.time_a_s) + ' s', b: comma(r.time_b_s) + ' s' },
-      };
+      return { marks: [d, 'm'], end: { a: r.time_a_s / scale, b: r.time_b_s / scale }, at, final: { a: `${comma(r.time_a_s)} s`, b: `${comma(r.time_b_s)} s` } };
     }
     if (r.mode === 'topspeed') {
       const top = { a: r.top_speed_kmh_a, b: r.top_speed_kmh_b };
-      const max = niceMax(Math.max(top.a, top.b) * 1.04);
-      const T = { a: 3 * top.a / Math.max(top.a, top.b), b: 3 * top.b / Math.max(top.a, top.b) };
-      const at = (s, t) => { const f = Math.min(t / T[s], 1); const v = top[s] * (1 - (1 - f) ** 3); return { x: v / max, v, vn: f < 1 ? 1 - f : 0 }; };
+      const hi = Math.max(top.a, top.b);
+      const max = niceMax(hi * 1.04);
+      const T = { a: 3 * top.a / hi, b: 3 * top.b / hi };
+      const at = (s, t) => { const f = Math.min(t / T[s], 1); const v = top[s] * (1 - (1 - f) ** 3); return { x: v / max, v, vn: 1 - f }; };
       return { marks: [max, 'km/u'], end: T, at, final: { a: `${top.a} km/u`, b: `${top.b} km/u` } };
     }
-    // Remweg: beide motoren remmen vanaf dezelfde snelheid, de kortste stopt het eerst.
     const dist = { a: r.braking_distance_m_a, b: r.braking_distance_m_b };
-    const max = niceMax(Math.max(dist.a, dist.b) * 1.08);
-    const T = { a: 2.6 * dist.a / Math.max(dist.a, dist.b), b: 2.6 * dist.b / Math.max(dist.a, dist.b) };
-    const at = (s, t) => { const f = Math.min(t / T[s], 1); return { x: (dist[s] * (1 - (1 - f) ** 2)) / max, v: r.speed_kmh * (1 - f), vn: 1 - f }; };
+    const hi = Math.max(dist.a, dist.b);
+    const max = niceMax(hi * 1.08);
+    const T = { a: 2.6 * dist.a / hi, b: 2.6 * dist.b / hi };
+    const at = (s, t) => { const f = Math.min(t / T[s], 1); return { x: (dist[s] * (1 - (1 - f) ** 2)) / max, v: r.run.speed_kmh * (1 - f), vn: 1 - f }; };
     return { marks: [max, 'm'], end: T, at, final: { a: `${comma(dist.a, 1)} m`, b: `${comma(dist.b, 1)} m` } };
   };
 
@@ -280,8 +382,9 @@
     const p = plan(r);
     setMarks(...p.marks);
     const winner = r.winner.toLowerCase();
-    Object.values(lanes).forEach((l) => l.classList.remove('is-winner', 'is-done', 'is-stop'));
-    panel.classList.toggle('is-brake', r.mode === 'braking');
+    Object.values(lanes).forEach(resetLane);
+    monitor.classList.toggle('is-brake', r.mode === 'braking');
+    monitor.classList.add('is-racing');
     const draw = (t) => ['a', 'b'].forEach((s) => {
       const lane = lanes[s], bike = qs('[data-bike]', lane);
       const done = t >= p.end[s];
@@ -292,7 +395,7 @@
       qs('[data-lane-time]', lane).textContent = done ? p.final[s] : `${Math.round(pos.v)} km/u`;
     });
     const end = Math.max(p.end.a, p.end.b);
-    const finish = () => { draw(end); lanes[winner].classList.add('is-winner'); resolve(); };
+    const finish = () => { draw(end); lanes[winner].classList.add('is-winner'); monitor.classList.remove('is-racing'); resolve(); };
     if (RUST) return finish();
     const t0 = performance.now();
     const tick = (now) => {
@@ -305,39 +408,64 @@
   });
 
   const lightsOn = async () => {
-    const lights = qsa('.lights i', panel);
+    const lights = qsa('.lights i', monitor);
     lights.forEach((l) => l.classList.remove('on'));
     if (RUST) return;
     for (const l of lights) { l.classList.add('on'); await wait(230); }
   };
-  const lightsOff = () => qsa('.lights i', panel).forEach((l) => l.classList.remove('on'));
+  const lightsOff = () => qsa('.lights i', monitor).forEach((l) => l.classList.remove('on'));
 
-  const scrollToRace = () => {
-    const top = panel.getBoundingClientRect().top;
+  const scrollToMonitor = () => {
+    const top = monitor.getBoundingClientRect().top;
     const header = qs('.header')?.offsetHeight || 64;
-    // Alleen scrollen als de baan niet al goed in beeld staat.
-    if (top < header || top > window.innerHeight * 0.45) {
-      window.scrollTo({ top: window.scrollY + top - header - 8, behavior: RUST ? 'auto' : 'smooth' });
+    if (top < header || top + monitor.offsetHeight * 0.6 > window.innerHeight) {
+      window.scrollTo({ top: window.scrollY + top - header - 12, behavior: RUST ? 'auto' : 'smooth' });
     }
   };
 
-  /* ---------- uitslag en aanbod ---------- */
+  /* ---------- uitslag ---------- */
 
-  const verdict = (r) => {
-    const w = r.winner === 'A' ? selected.A : selected.B;
-    const name = esc(w.short_label || w.label);
+  const describe = (r) => {
+    const run = r.run;
+    if (r.mode === 'race') return `${MODE[run.road_type].label}, ${fmtDist(run.distance_m)}, ${COND[run.road_condition]}`;
+    if (r.mode === 'topspeed') return 'Topsnelheid';
+    return `Remweg vanaf ${run.speed_kmh} km/u, ${COND[run.road_condition]}`;
+  };
+
+  const countUp = (el, to, decimals) => {
+    if (RUST) { el.textContent = comma(to, decimals); return; }
+    const t0 = performance.now(), dur = 900;
+    const tick = (now) => {
+      const f = Math.min((now - t0) / dur, 1);
+      el.textContent = comma(to * (1 - (1 - f) ** 3), decimals);
+      if (f < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+
+  const showVerdict = (r) => {
+    const w = r.winner === 'A' ? r.motors.A : r.motors.B;
+    let num, dec, unit, sub;
     if (r.mode === 'race') {
-      const road = { straight: 'het rechte stuk', twisty: 'een kronkelweg' }[r.road_type_ran];
-      const cond = { dry: 'droog', wet: 'vochtig', rain: 'nat' }[r.road_condition_ran];
-      const d = r.distance_ran >= 1000 ? `${comma(r.distance_ran / 1000, r.distance_ran % 1000 ? 1 : 0)} km` : `${r.distance_ran} m`;
-      return [`${name} <span>wint.</span>`, `<b>${comma(r.delta_s)} s</b> sneller over ${d} op ${road}, ${cond} asfalt.`];
+      num = r.delta_s; dec = 2; unit = 's sneller';
+      sub = `${short(r.motors.A)} ${comma(r.time_a_s)} s, ${short(r.motors.B)} ${comma(r.time_b_s)} s`;
+    } else if (r.mode === 'topspeed') {
+      num = Math.abs(r.top_speed_kmh_a - r.top_speed_kmh_b); dec = 0; unit = 'km/u harder';
+      sub = `${short(r.motors.A)} ${r.top_speed_kmh_a} km/u, ${short(r.motors.B)} ${r.top_speed_kmh_b} km/u`;
+    } else {
+      num = Math.abs(r.braking_distance_m_a - r.braking_distance_m_b); dec = 1; unit = 'm eerder stil';
+      sub = `${short(r.motors.A)} ${comma(r.braking_distance_m_a, 1)} m, ${short(r.motors.B)} ${comma(r.braking_distance_m_b, 1)} m`;
     }
-    if (r.mode === 'topspeed') {
-      const diff = Math.abs(r.top_speed_kmh_a - r.top_speed_kmh_b);
-      return [`${name} <span>wint.</span>`, diff ? `<b>${diff} km/u</b> hogere opgegeven topsnelheid.` : 'Allebei dezelfde opgegeven topsnelheid.'];
-    }
-    const diff = Math.abs(r.braking_distance_m_a - r.braking_distance_m_b);
-    return [`${name} <span>wint.</span>`, `Staat <b>${comma(diff, 1)} m</b> eerder stil vanaf ${r.speed_kmh} km/u.`];
+    qs('[data-verdict-label]', root).textContent = `P1 · ${describe(r)}`;
+    qs('[data-verdict-name]', root).textContent = short(w);
+    qs('[data-verdict-unit]', root).textContent = unit;
+    qs('[data-verdict-sub]', root).textContent = sub;
+    verdictBox.hidden = false;
+    qs('[data-empty]', root).hidden = true;
+    if (!RUST) { verdictBox.classList.remove('is-in'); void verdictBox.offsetWidth; }
+    verdictBox.classList.add('is-in');
+    countUp(qs('[data-verdict-num]', root), num, dec);
+    setStatus('Finish');
   };
 
   const strengths = (m, o, won) => [
@@ -354,42 +482,50 @@
       <span class="gbtn__lab" data-lab="idle">Bewaar in garage</span><span class="gbtn__lab" data-lab="busy">Bewaren</span><span class="gbtn__lab" data-lab="done">In je garage</span><span class="gbtn__lab" data-lab="full">Garage vol, bekijk</span>
     </a>`;
 
-  const renderPick = (r) => {
-    const sides = [['a', selected.A, selected.B, r.offer_url_a], ['b', selected.B, selected.A, r.offer_url_b]];
-    const winner = r.winner.toLowerCase();
-    // Winnaar eerst: die kaart is de hoofdactie (één rode knop per sectie).
-    if (winner === 'b') sides.reverse();
-    qs('[data-pick]', root).innerHTML = sides.map(([s, m, o, offer], i) => `
-      <article class="sim-card sim-card--${s}${s === winner ? ' is-p1' : ''}" style="--i:${i}">
-        <p class="sim-card__pos">P${i + 1}</p>
-        <div class="sim-card__body">
-          <p class="sim-card__cat">${esc(m.category_label || '')}${m.a2 ? '<span class="a2">A2</span>' : ''}</p>
-          <h3><a href="${esc(m.url)}">${esc(m.label)}</a></h3>
-          <p class="sim-card__specs"><span><b>${m.power_hp}</b> pk</span><span><b>${m.weight_kg}</b> kg</span><span><b>${comma(m.power_hp / Math.max(m.weight_kg, 1))}</b> pk/kg</span></p>
-          ${(() => { const l = strengths(m, o, s === winner); return l.length ? `<ul class="sim-card__plus">${l.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''; })()}
-        </div>
-        <div class="sim-card__acts">
-          <a class="btn ${s === winner ? 'btn--red' : 'btn--line'}" href="${esc(offer)}" target="_blank" rel="nofollow noopener">Bekijk aanbod op Marktplaats</a>
-          ${garageBtn(m)}
-        </div>
-      </article>`).join('') + (r.compare_url ? `
-      <a class="sim__compare" href="${esc(r.compare_url)}">Volledige vergelijking: specs, nat en droog, en wat de cijfers betekenen <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>` : '');
-  };
-
   const renderShare = (r) => {
-    const box = qs('[data-share]', root);
+    const box = qs('[data-share]', offers);
     box.hidden = !r.share_url;
     if (!r.share_url) return;
-    const w = r.winner === 'A' ? selected.A : selected.B;
-    const line = `${w.short_label || w.label} wint met ${comma(r.delta_s)} s verschil op RevRace`;
+    const w = r.winner === 'A' ? r.motors.A : r.motors.B;
+    const line = `${short(w)} wint met ${comma(r.delta_s)} s verschil op RevRace`;
     qs('[data-share-copy]', box).dataset.url = r.share_url;
     qs('[data-share-social="whatsapp"]', box).href = `https://wa.me/?text=${encodeURIComponent(`${line} ${r.share_url}`)}`;
     qs('[data-share-social="x"]', box).href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(line)}&url=${encodeURIComponent(r.share_url)}`;
     qs('[data-share-social="facebook"]', box).href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(r.share_url)}`;
   };
-  qs('[data-share-copy]', root).addEventListener('click', async (e) => {
+
+  const renderOffers = (r) => {
+    const winner = r.winner.toLowerCase();
+    const sides = [['a', r.motors.A, r.motors.B, r.offer_url_a], ['b', r.motors.B, r.motors.A, r.offer_url_b]];
+    if (winner === 'b') sides.reverse();
+    qs('[data-pick]', offers).innerHTML = sides.map(([s, m, o, offer], i) => {
+      const plus = strengths(m, o, s === winner);
+      return `
+      <article class="pick-card pick-card--${s}${s === winner ? ' is-p1' : ''}" style="--i:${i}">
+        <p class="pick-card__cat"><span class="pick-card__pos">P${i + 1}</span>${esc(m.category_label || '')}${m.a2 ? '<span class="a2">A2</span>' : ''}</p>
+        <h3><a href="${esc(m.url)}">${esc(m.label)}</a></h3>
+        <p class="pick-card__specs"><span><b>${m.power_hp}</b> pk</span><span><b>${m.weight_kg}</b> kg</span><span><b>${comma(m.power_hp / Math.max(m.weight_kg, 1))}</b> pk/kg</span></p>
+        ${plus.length ? `<ul class="pick-card__plus">${plus.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        <div class="pick-card__acts">
+          <a class="btn ${s === winner ? 'btn--red' : 'btn--ghost'}" href="${esc(offer)}" target="_blank" rel="nofollow noopener">Bekijk aanbod op Marktplaats</a>
+          ${garageBtn(m)}
+        </div>
+      </article>`;
+    }).join('');
+    const compare = qs('[data-compare]', offers);
+    compare.hidden = !r.compare_url;
+    compare.href = r.compare_url || '#';
+    renderShare(r);
+    offers.hidden = false;
+    if (!RUST) { offers.classList.remove('is-in'); void offers.offsetWidth; }
+    offers.classList.add('is-in');
+    const chart = qs('[data-chart-wrap]', offers);
+    chart.hidden = r.mode !== 'race';
+    if (chart.open) renderChart(r);
+  };
+  qs('[data-share-copy]', offers).addEventListener('click', async (e) => {
     const btn = e.currentTarget;
-    try { await navigator.clipboard.writeText(btn.dataset.url); btn.textContent = 'Gekopieerd'; } catch (err) { btn.textContent = btn.dataset.url; }
+    try { await navigator.clipboard.writeText(btn.dataset.url); btn.textContent = 'Link gekopieerd'; } catch (err) { btn.textContent = btn.dataset.url; }
     setTimeout(() => { btn.textContent = 'Kopieer link'; }, 2000);
   });
 
@@ -406,15 +542,13 @@
   };
 
   const renderChart = (r) => {
-    const wrap = qs('[data-chart-wrap]', root);
+    if (!r || r.mode !== 'race') return;
+    const wrap = qs('[data-chart-wrap]', offers);
     const sa = r.samples?.a || [], sb = r.samples?.b || [];
-    wrap.hidden = r.mode !== 'race' || (!sa.length && !sb.length);
-    if (wrap.hidden) return;
     const svg = qs('[data-chart-svg]', wrap), readout = qs('[data-chart-readout]', wrap);
-    // viewBox = werkelijke breedte, zodat tekst en lijnen niet meeschalen op brede schermen.
     const W = Math.max(300, Math.round(svg.getBoundingClientRect().width) || 640), H = 220, P = { l: 40, r: 14, t: 12, b: 26 };
     const pw = W - P.l - P.r, ph = H - P.t - P.b;
-    const xMax = r.distance_ran, yMax = niceMax(Math.max(...sa.map((p) => p.v), ...sb.map((p) => p.v), 1));
+    const xMax = r.run.distance_m, yMax = niceMax(Math.max(...sa.map((p) => p.v), ...sb.map((p) => p.v), 1));
     const mx = (x) => P.l + (x / xMax) * pw, my = (v) => P.t + ph - (v / yMax) * ph;
     svg.textContent = '';
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -426,14 +560,13 @@
     }
     for (let i = 0; i <= 5; i++) {
       const v = (xMax / 5) * i;
-      const t = svgEl('text', { x: mx(v), y: H - 6, class: 'chart-axis-label', 'text-anchor': 'middle' }); t.textContent = `${Math.round(v)} m`; svg.appendChild(t);
+      const t = svgEl('text', { x: mx(v), y: H - 6, class: 'chart-axis-label', 'text-anchor': i === 5 ? 'end' : 'middle' }); t.textContent = `${Math.round(v)} m`; svg.appendChild(t);
     }
-    const names = { a: selected.A.short_label || selected.A.label, b: selected.B.short_label || selected.B.label };
+    const names = { a: short(r.motors.A), b: short(r.motors.B) };
     [['a', sa, 'var(--redline)'], ['b', sb, 'var(--midrange)']].forEach(([s, pts, c]) => {
       qs(`[data-legend="${s}"]`, wrap).textContent = names[s];
       if (!pts.length) return;
-      const path = svgEl('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${mx(p.x).toFixed(1)},${my(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, class: 'sim__line-path' });
-      svg.appendChild(path);
+      svg.appendChild(svgEl('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${mx(p.x).toFixed(1)},${my(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: c, 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 1, class: 'simx-line' }));
     });
     const cross = svgEl('line', { x1: P.l, x2: P.l, y1: P.t, y2: H - P.b, class: 'chart-crosshair' });
     svg.appendChild(cross);
@@ -450,38 +583,53 @@
     });
     hit.addEventListener('pointerleave', () => { cross.style.opacity = 0; readout.textContent = def; });
   };
+  qs('[data-chart-wrap]', offers).addEventListener('toggle', (e) => { if (e.target.open) renderChart(shown); });
 
-  const showResult = (r) => {
-    const [title, sub] = verdict(r);
-    qs('[data-result-title]', root).innerHTML = title;
-    qs('[data-result-sub]', root).innerHTML = sub;
-    renderPick(r);
-    renderShare(r);
-    resultBox.hidden = false;
-    renderChart(r); // na het tonen, anders is de breedte 0
-    if (!RUST) { resultBox.classList.remove('is-in'); void resultBox.offsetWidth; }
-    resultBox.classList.add('is-in');
-    setStatus('Finish');
-    // Breng de aanbodkaarten in beeld, maar laat de onderkant van de baan zichtbaar.
-    const pick = qs('[data-pick]', root).getBoundingClientRect();
-    if (pick.bottom > window.innerHeight) {
-      const target = window.scrollY + resultBox.getBoundingClientRect().top - window.innerHeight * 0.22;
-      setTimeout(() => window.scrollTo({ top: target, behavior: RUST ? 'auto' : 'smooth' }), RUST ? 0 : 450);
-    }
+  /* ---------- eerdere races ---------- */
+
+  const renderHistory = () => {
+    const box = qs('[data-history]', root);
+    box.hidden = history.length < 2;
+    qs('[data-history-list]', box).innerHTML = history.map((r, i) => {
+      const w = r.winner === 'A' ? r.motors.A : r.motors.B;
+      const cur = r === shown;
+      return `<li><button type="button" data-h="${i}"${cur ? ' class="is-current" aria-current="true"' : ''}>
+        <span class="h-duel">${esc(short(r.motors.A))} <i>vs</i> ${esc(short(r.motors.B))}</span>
+        <span class="h-meta">${esc(describe(r))} · P1 ${esc(short(w))}</span></button></li>`;
+    }).join('');
+    qsa('[data-h]', box).forEach((b) => b.addEventListener('click', () => reopen(history[Number(b.dataset.h)])));
+  };
+
+  // Een eerdere uitslag terug in beeld, zonder nieuwe simulatie (telt niet mee voor de limiet).
+  const reopen = async (r) => {
+    if (busy || !r) return;
+    shown = r;
+    selected.A = r.motors.A; selected.B = r.motors.B;
+    ['A', 'B'].forEach(paintSide);
+    clearStale();
+    busy = true; syncRun();
+    verdictBox.hidden = true;
+    renderHistory();
+    scrollToMonitor();
+    await playRace(r);
+    busy = false;
+    showVerdict(r);
+    renderOffers(r);
+    syncRun();
   };
 
   /* ---------- starten ---------- */
 
   const payload = () => {
-    const kg = (n) => { const v = Number(qs(`[name="${n}"]`, root)?.value || 0); return v > 0 && v <= 180 ? Math.round(v) : 0; };
+    const raw = Number(qs('[name="rider_kg"]', root)?.value || 0);
+    const kg = raw > 0 && raw <= 180 ? Math.round(raw) : 0;
     const body = {
       motor_a_id: selected.A.id,
       motor_b_id: selected.B.id,
       road_type: options.road_type,
       road_condition: options.road_condition,
-      // Eén rijder op beide motoren: zo vergelijk je de motoren, niet de rijders.
-      rider_a_kg: kg('rider_kg'),
-      rider_b_kg: kg('rider_kg'),
+      rider_a_kg: kg,
+      rider_b_kg: kg,
     };
     if (options.road_type === 'straight' || options.road_type === 'twisty') body.distance_m = options.distance_m;
     if (options.road_type === 'braking') body.speed_kmh = options.speed_kmh;
@@ -489,23 +637,21 @@
   };
 
   const start = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (runBtn.disabled) return;
     if (selected.A.id === selected.B.id) { message('Kies twee verschillende motoren.'); return; }
     if (options.road_type === 'topspeed') {
       const missing = [selected.A, selected.B].find((m) => !m.top_speed_kmh);
-      if (missing) { message(`Van de ${missing.label} is geen opgegeven topsnelheid bekend. Kies een andere race.`); return; }
+      if (missing) { message(`Van de ${missing.label} is geen opgegeven topsnelheid bekend. Kies een andere soort race.`); return; }
     }
-    busy = true; syncRun(); message('');
-    scrollToRace();
-    resultBox.hidden = true;
-    Object.values(lanes).forEach((l) => {
-      l.classList.remove('is-winner', 'is-done');
-      const bike = qs('[data-bike]', l); bike.style.setProperty('--p', 0); bike.style.setProperty('--v', 0);
-      qs('[data-lane-time]', l).innerHTML = '&nbsp;';
-    });
+    busy = true; message(''); clearStale(); syncRun();
+    verdictBox.hidden = true;
+    qs('[data-empty]', root).hidden = true;
+    if (mobile()) scrollToMonitor();
+    Object.values(lanes).forEach(resetLane);
     setStatus('Motoren op de grid');
     const body = payload();
+    const motors = { A: selected.A, B: selected.B };
     const request = fetch(cfg.routes.simulate, {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
@@ -520,44 +666,60 @@
       busy = false;
       renderLimit(res.data.limit);
       message(res.data.message || 'De simulatie kon niet starten.');
-      // De melding staat boven de baan; zet hem ook in de statusregel, die is in beeld.
-      setStatus(esc(res.data.message || 'De simulatie kon niet starten.'));
+      setStatus('Niet gestart');
+      if (shown) verdictBox.hidden = false;
       syncRun();
       return;
     }
-    if (!RUST) await wait(260 + Math.random() * 380); // de echte lights out heeft ook een willekeurige pauze
+    if (!RUST) await wait(240 + Math.random() * 420); // net als echt: een korte, willekeurige pauze
     lightsOff();
     setStatus('Lights out');
-    last = Object.assign(res.data.result, {
-      distance_ran: body.distance_m, road_type_ran: body.road_type, road_condition_ran: body.road_condition,
-    });
-    options.distance_m_ran = body.distance_m;
+    const r = Object.assign(res.data.result, { run: body, motors });
+    shown = r;
+    history.unshift(r);
+    if (history.length > 6) history.pop();
     renderLimit(res.data.limit);
-    await playRace(last);
-    showResult(last);
+    await playRace(r);
     busy = false;
-    runLabel.textContent = 'Nieuwe race';
+    showVerdict(r);
+    renderOffers(r);
+    renderHistory();
     syncRun();
   };
   form.addEventListener('submit', start);
 
   qs('[data-replay]', root).addEventListener('click', async () => {
-    if (!last || busy) return;
+    if (!shown || busy) return;
     busy = true; syncRun();
-    options.distance_m_ran = last.distance_ran;
+    verdictBox.hidden = true;
     await lightsOn();
     if (!RUST) await wait(300);
     lightsOff();
     setStatus('Lights out');
-    await playRace(last);
-    setStatus('Finish');
-    busy = false; syncRun();
+    await playRace(shown);
+    busy = false;
+    showVerdict(shown);
+    syncRun();
   });
+
+  qs('[data-to-offers]', root).addEventListener('click', (e) => {
+    e.preventDefault();
+    offers.scrollIntoView({ behavior: RUST ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  qsa('[data-duel]', root).forEach((b) => b.addEventListener('click', () => {
+    const duel = cfg.duels?.[Number(b.dataset.duel)];
+    if (!duel || busy) return;
+    pickMotor('A', duel.a);
+    pickMotor('B', duel.b);
+    start();
+  }));
 
   /* ---------- begin ---------- */
 
+  syncRange();
   syncOptions();
   renderLimit(cfg.limit);
-  ['A', 'B'].forEach((s) => { if (cfg.preselect?.[s]) pickMotor(s, cfg.preselect[s]); });
-  if (!selected.A) setStatus('Kies twee motoren');
+  ['A', 'B'].forEach((s) => { if (cfg.preselect?.[s]) { selected[s] = cfg.preselect[s]; paintSide(s); } });
+  afterPick();
 })();

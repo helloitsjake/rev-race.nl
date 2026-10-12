@@ -6,129 +6,184 @@
 @php
     $arrow = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>';
     $riderKg = auth()->user()?->weight_kg ?: ($preselectKg ?? null);
+    $filter = function (string $key, string $label, array $opts, string $active) {
+        $buttons = collect($opts)->map(fn ($text, $value) => '<button type="button" data-value="'.e($value).'" aria-pressed="'.($value == $active ? 'true' : 'false').'">'.e($text).'</button>')->implode('');
+
+        return '<div class="filter filter--full" role="group" aria-label="'.e($label).'" data-option="'.$key.'"><div class="filter__base">'.$buttons.'</div><div class="filter__pill" aria-hidden="true"></div></div>';
+    };
 @endphp
 
 @section('content')
     {{--
-        Simulatie 2.0 (12-10-2026). De keuze is één zin, net als de rijstijlkiezer op de home, en
-        de baan staat er direct onder: na "Start de race" gaan de lichten aan en uit en rijden de
-        motoren de race op de echte simulatiedata. Direct na de finish de keuzekaarten met aanbod.
-        Signature-moment: lights out plus de race. De embed gebruikt nog partials/simulation-panel.
+        Simulatie, redesign 12-10-2026 (derde versie). Links de configurator met alle opties
+        zichtbaar (veer-filters, afstandsschuif), rechts het racescherm dat meeblijft. Een nieuwe
+        race is één keuze aanpassen en opnieuw starten. Signature-moment: lights out plus de race.
+        Na de finish lichte keuzekaarten met aanbod. De embed gebruikt nog partials/simulation-panel.
     --}}
-    <div class="sim" data-sim>
-        <div class="wrap sim__head">
-            <p class="turn"><b>T0</b> Startlijn</p>
-            <h1>Welke motor is sneller? <span>Laat ze racen.</span></h1>
+    <header class="wrap simx-head">
+        <p class="turn"><b>T0</b> Startlijn</p>
+        <div class="simx-head__row">
+            <h1>Welke motor is <span>sneller?</span></h1>
+            <p>Kies twee motoren, zet de race neer en RevRace rekent hem door op vermogen, gewicht, luchtweerstand en grip.</p>
         </div>
+    </header>
 
-        {{-- Eén cockpit: de motoren kies je op hun eigen rijstrook, de instellingen staan naast de startknop. --}}
-        <form class="grid-panel sim__race" data-sim-form data-race-panel novalidate aria-labelledby="race-status">
-            <div class="wrap">
-                <div class="grid-head">
+    <div class="wrap simx" data-sim>
+        <form class="simx-panel" id="sim-form" data-sim-form novalidate>
+            <fieldset class="simx-group">
+                <legend>Motoren</legend>
+                @foreach(['A' => 'Bijv. Honda CB650R', 'B' => 'Bijv. Yamaha MT-07'] as $side => $placeholder)
+                    @php($s = strtolower($side))
+                    <div class="mfield mfield--{{ $s }}" data-pickfield="{{ $side }}">
+                        <label class="mfield__label" for="motor-{{ $s }}">Motor {{ $side }}</label>
+                        <div class="mfield__box">
+                            <svg class="mfield__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13.2 13.2 17 17"/></svg>
+                            <input class="mfield__input" id="motor-{{ $s }}" data-motor-input="{{ $side }}" autocomplete="off" spellcheck="false" placeholder="{{ $placeholder }}" role="combobox" aria-expanded="false" aria-controls="sug-{{ $s }}" aria-autocomplete="list">
+                            <button type="button" class="mfield__clear" data-clear="{{ $side }}" aria-label="Motor {{ $side }} wissen" hidden><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l8 8M14 6l-8 8"/></svg></button>
+                        </div>
+                        <p class="mfield__specs" data-specs="{{ $side }}" aria-live="polite"></p>
+                        <div class="mfield__list" id="sug-{{ $s }}" role="listbox" data-suggestions="{{ $side }}" hidden></div>
+                    </div>
+                    @if($side === 'A')
+                        <button type="button" class="simx-swap" data-swap aria-label="Motor A en B omwisselen" title="Omwisselen">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v14M3.5 6.5 7 3l3.5 3.5M13 17V3M16.5 13.5 13 17l-3.5-3.5"/></svg>
+                        </button>
+                    @endif
+                @endforeach
+            </fieldset>
+
+            <fieldset class="simx-group">
+                <legend>Soort race</legend>
+                {!! $filter('road_type', 'Soort race', ['straight' => 'Rechte lijn', 'twisty' => 'Bochten', 'topspeed' => 'Topsnelheid', 'braking' => 'Remweg'], 'straight') !!}
+                <p class="simx-hint" data-mode-hint>Wie is het eerst over de streep, vanuit stilstand.</p>
+            </fieldset>
+
+            <fieldset class="simx-group" data-when="condition">
+                <legend>Wegdek</legend>
+                {!! $filter('road_condition', 'Wegdek', ['dry' => 'Droog', 'wet' => 'Vochtig', 'rain' => 'Nat'], 'dry') !!}
+            </fieldset>
+
+            <fieldset class="simx-group" data-when="distance">
+                <legend>Afstand <output class="simx-out" data-distance-out>500 m</output></legend>
+                <div class="range">
+                    <input type="range" min="0" max="6" step="1" value="3" data-distance aria-label="Afstand" aria-valuetext="500 meter">
+                    <div class="range__ticks" aria-hidden="true"><span>100</span><span>250</span><span>402</span><span>500</span><span>805</span><span>1 km</span><span>2 km</span></div>
+                </div>
+            </fieldset>
+
+            <fieldset class="simx-group" data-when="speed" hidden>
+                <legend>Remmen vanaf</legend>
+                {!! $filter('speed_kmh', 'Beginsnelheid', ['50' => '50 km/u', '100' => '100', '130' => '130', '160' => '160'], '100') !!}
+            </fieldset>
+
+            <fieldset class="simx-group simx-group--rider">
+                <legend>Rijdersgewicht <span>(optioneel)</span></legend>
+                <label class="kg"><input type="number" inputmode="numeric" min="0" max="180" name="rider_kg" value="{{ $riderKg }}" placeholder="75" aria-label="Rijdersgewicht in kg"><span>kg</span></label>
+                <p class="simx-hint">Geldt voor beide motoren, zodat je de motoren vergelijkt.</p>
+            </fieldset>
+
+            @foreach(['A', 'B'] as $side)
+                <div class="simx-manual" data-manual-wrap="{{ $side }}" hidden>
+                    <p class="simx-manual__title">Motor {{ $side }} zelf invullen</p>
+                    @include('partials.manual-motor-form', ['side' => $side])
+                </div>
+            @endforeach
+        </form>
+
+        <div class="simx-stage" data-stage>
+            <section class="monitor" data-race-panel aria-labelledby="race-status">
+                <div class="monitor__head">
                     <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
                     <p class="status" id="race-status" data-status aria-live="polite">Kies twee motoren</p>
                 </div>
 
-                <div class="track sim__track">
-                    @foreach(['a' => 'Bijv. Honda CB650R 2023', 'b' => 'Bijv. Yamaha MT-07 2024'] as $side => $placeholder)
-                        @php($S = strtoupper($side))
+                <div class="track simx-track" aria-hidden="true">
+                    @foreach(['a', 'b'] as $side)
                         <div class="lane lane--{{ $side }} is-empty" data-lane="{{ $side }}">
-                            <div class="pickfield pickfield--{{ $side }}" data-pickfield="{{ $S }}">
-                                <label class="sr-only" for="motor-{{ $side }}">Motor {{ $S }}</label>
-                                <input class="pickfield__input" id="motor-{{ $side }}" data-motor-input="{{ $S }}" autocomplete="off" spellcheck="false" placeholder="Kies motor {{ $S }}" role="combobox" aria-expanded="false" aria-controls="sug-{{ $side }}" aria-autocomplete="list">
-                                <div class="pickfield__list" id="sug-{{ $side }}" role="listbox" data-suggestions="{{ $S }}" hidden></div>
-                            </div>
-                            <span class="lane__rail" aria-hidden="true"><i class="lane__bike" data-bike>@include('partials.bike-icon', ['category' => null])</i></span>
-                            <span class="lane__time" data-lane-time aria-hidden="true">&nbsp;</span>
+                            <span class="lane__name" data-lane-name>Motor {{ strtoupper($side) }}</span>
+                            <span class="lane__time" data-lane-time>&nbsp;</span>
+                            <span class="lane__rail"><i class="lane__bike" data-bike>@include('partials.bike-icon', ['category' => null])</i></span>
                         </div>
                     @endforeach
-                    <div class="lane lane--marks" aria-hidden="true"><span></span><span class="track__marks" data-marks><span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500 m</span></span><span></span></div>
+                    <div class="track__marks" data-marks><span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500 m</span></div>
                 </div>
 
-                <div class="sim__go">
-                    <div class="sim__opts">
-                        <label class="chip"><span class="sr-only">Soort race</span>
-                            <select data-option="road_type">
-                                <option value="straight" selected>Rechte lijn</option>
-                                <option value="twisty">Kronkelweg</option>
-                                <option value="topspeed">Topsnelheid</option>
-                                <option value="braking">Remweg</option>
-                            </select>
-                        </label>
-                        <label class="chip" data-when="condition"><span class="sr-only">Wegdek</span>
-                            <select data-option="road_condition">
-                                <option value="dry" selected>Droog</option>
-                                <option value="wet">Vochtig</option>
-                                <option value="rain">Nat</option>
-                            </select>
-                        </label>
-                        <label class="chip" data-when="distance"><span class="sr-only">Afstand</span>
-                            <select data-option="distance_m">
-                                <option value="100">100 m</option>
-                                <option value="250">250 m</option>
-                                <option value="402">402 m</option>
-                                <option value="500" selected>500 m</option>
-                                <option value="805">805 m</option>
-                                <option value="1000">1 km</option>
-                                <option value="2000">2 km</option>
-                            </select>
-                        </label>
-                        <label class="chip" data-when="speed" hidden><span class="sr-only">Beginsnelheid</span>
-                            <select data-option="speed_kmh">
-                                <option value="50">Vanaf 50 km/u</option>
-                                <option value="100" selected>Vanaf 100 km/u</option>
-                                <option value="130">Vanaf 130 km/u</option>
-                                <option value="160">Vanaf 160 km/u</option>
-                            </select>
-                        </label>
-                        <label class="chip chip--kg">Rijder <input type="number" inputmode="numeric" min="0" max="180" name="rider_kg" value="{{ $riderKg }}" placeholder="0" aria-label="Gewicht rijder in kg"> kg</label>
-                    </div>
-                    <p class="sim__limit" data-limit aria-live="polite"></p>
-                    <button class="btn btn--red sim__start" type="submit" data-run disabled>
-                        <span data-run-label>Start de race</span>{!! $arrow !!}
+                <div class="monitor__go">
+                    <button class="btn btn--red simx-start" type="submit" form="sim-form" data-run disabled>
+                        <span data-run-label>Kies twee motoren</span>{!! $arrow !!}
                     </button>
+                    <div class="simx-limit" data-limit-box>
+                        <span class="simx-limit__bar"><i data-limit-fill></i></span>
+                        <span data-limit aria-live="polite"></span>
+                    </div>
+                    <p class="simx-msg" data-message role="alert" hidden></p>
                 </div>
-                <p class="sim__msg" data-message role="alert" hidden></p>
 
-                @foreach(['A', 'B'] as $side)
-                    <div class="sim__manual" data-manual-wrap="{{ $side }}" hidden>
-                        <p class="sim__manual-title">Motor {{ $side }} zelf invullen</p>
-                        @include('partials.manual-motor-form', ['side' => $side])
-                    </div>
-                @endforeach
+                {{-- Lege staat: met één klik een complete race. --}}
+                <div class="monitor__empty" data-empty>
+                    @if(count($duels))
+                        <p class="monitor__label">Of start met een populair duel</p>
+                        <div class="duels">
+                            @foreach($duels as $i => $duel)
+                                <button type="button" class="duel" data-duel="{{ $i }}">
+                                    <span class="duel__a">{{ $duel['a']['short_label'] }}</span>
+                                    <span class="duel__vs">vs</span>
+                                    <span class="duel__b">{{ $duel['b']['short_label'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
 
-                <div class="sim__result" data-result hidden>
-                    <div class="sim__verdict">
-                        <h2 data-result-title></h2>
-                        <p data-result-sub></p>
-                        <button type="button" class="race__replay" data-replay>Kijk de race terug</button>
+                <div class="verdict" data-verdict hidden>
+                    <p class="verdict__label" data-verdict-label></p>
+                    <p class="verdict__name" data-verdict-name></p>
+                    <p class="verdict__delta"><b data-verdict-num>0</b> <span data-verdict-unit></span></p>
+                    <p class="verdict__sub" data-verdict-sub></p>
+                    <div class="verdict__acts">
+                        <a class="btn btn--red" href="#aanbod" data-to-offers>Bekijk aanbod{!! $arrow !!}</a>
+                        <button type="button" class="btn btn--paper" data-replay>Kijk opnieuw</button>
                     </div>
-                    <div class="sim__pick" data-pick></div>
-                    <div class="sim__after">
-                        <div class="sim__share" data-share hidden>
-                            <span>Deel de uitslag</span>
-                            <button type="button" data-share-copy>Kopieer link</button>
-                            <a data-share-social="whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
-                            <a data-share-social="x" href="#" target="_blank" rel="noopener">X</a>
-                            <a data-share-social="facebook" href="#" target="_blank" rel="noopener">Facebook</a>
-                        </div>
-                        <a class="sim__how" href="{{ route('how-it-works') }}">Zo rekent RevRace</a>
-                    </div>
-                    <div class="sim__chart" data-chart-wrap hidden>
-                        <div class="chart-head">
-                            <span class="field-label" style="margin-bottom:0">Snelheid over de afstand</span>
-                            <div class="chart-legend">
-                                <span class="legend-item"><span class="legend-key" style="background:var(--redline)"></span><span data-legend="a">Motor A</span></span>
-                                <span class="legend-item"><span class="legend-key" style="background:var(--midrange)"></span><span data-legend="b">Motor B</span></span>
-                            </div>
-                        </div>
-                        <svg data-chart-svg viewBox="0 0 640 200" role="img" aria-label="Snelheidsverloop over de afstand voor beide motoren"></svg>
-                        <p class="sim__readout" data-chart-readout aria-live="polite">Beweeg over de grafiek voor de snelheid per punt.</p>
-                    </div>
+                </div>
+                <p class="monitor__stale" data-stale hidden>Instellingen aangepast. Start opnieuw voor een nieuwe uitslag.</p>
+            </section>
+
+            <div class="simx-history" data-history hidden>
+                <p class="simx-history__title">Je races</p>
+                <ol data-history-list></ol>
+            </div>
+        </div>
+    </div>
+
+    <section class="wrap simx-offers" id="aanbod" data-offers hidden aria-labelledby="offers-title">
+        <div class="simx-offers__head">
+            <h2 id="offers-title">Welke past bij jou?</h2>
+            <a class="simx-compare" data-compare href="#">Volledige vergelijking{!! $arrow !!}</a>
+        </div>
+        <div class="pick" data-pick></div>
+        <p class="pick__note">Aanbod opent in een nieuw tabblad. RevRace verkoopt zelf geen motoren.</p>
+
+        <div class="simx-extra">
+            <div class="simx-share" data-share hidden>
+                <p>Deel deze uitslag</p>
+                <div>
+                    <button type="button" class="btn btn--ghost" data-share-copy>Kopieer link</button>
+                    <a class="btn btn--ghost" data-share-social="whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+                    <a class="btn btn--ghost" data-share-social="x" href="#" target="_blank" rel="noopener">X</a>
+                    <a class="btn btn--ghost" data-share-social="facebook" href="#" target="_blank" rel="noopener">Facebook</a>
                 </div>
             </div>
-        </form>
-    </div>
+            <details class="simx-chart" data-chart-wrap hidden>
+                <summary>Snelheid over de afstand</summary>
+                <div class="chart-legend">
+                    <span class="legend-item"><span class="legend-key" style="background:var(--redline)"></span><span data-legend="a">Motor A</span></span>
+                    <span class="legend-item"><span class="legend-key" style="background:var(--midrange)"></span><span data-legend="b">Motor B</span></span>
+                </div>
+                <svg data-chart-svg viewBox="0 0 640 220" role="img" aria-label="Snelheidsverloop over de afstand voor beide motoren"></svg>
+                <p class="simx-readout" data-chart-readout aria-live="polite">Beweeg over de grafiek voor de snelheid per punt.</p>
+            </details>
+        </div>
+    </section>
 
     <section class="chapter chapter--tight sim-notes">
         <div class="wrap sim-notes__grid">
@@ -161,6 +216,7 @@
             },
             limit: @json($limit),
             preselect: { A: @json($preselectA), B: @json($preselectB) },
+            duels: @json($duels),
         };
     </script>
     <script src="{{ asset('js/simulator.js') }}?v={{ filemtime(public_path('js/simulator.js')) }}"></script>
