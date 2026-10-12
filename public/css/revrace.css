@@ -1252,6 +1252,17 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
   .simx-track .lane__bike { width: 56px; height: 32px; left: calc(4px + var(--p) * (100% - 66px)); }
   .simx-head p { font-size: 15px; }
 }
+/* Mobiele startbalk: alleen onder 960px, alleen als de echte startknop niet in beeld is. */
+.simx-dock { display: none; }
+@media (max-width: 960px) {
+  .simx-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: flex; align-items: center; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--stone); border-top: 1px solid var(--stone-line); box-shadow: 0 -12px 32px -18px rgba(20,21,24,.35); animation: simx-dock-in .28s var(--ease-out, ease-out); }
+  .simx-dock[hidden] { display: none; }
+  .simx-dock__match { flex: 1 1 auto; min-width: 0; font: 500 12px/1.3 var(--font-mono); color: var(--ink-60); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .simx-dock__btn { flex: 0 0 auto; min-height: 50px; }
+  body.has-simx-dock { padding-bottom: 76px; }
+}
+@keyframes simx-dock-in { from { transform: translateY(100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
+  .simx-dock { animation: none; }
   .simx *, .simx *::before, .simx-offers * { animation: none !important; transition-duration: .01ms !important; }
 }

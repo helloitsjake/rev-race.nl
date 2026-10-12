@@ -52,7 +52,33 @@
     runBtn.disabled = busy || !ready || Boolean(cfg.limit?.blocked);
     runLabel.textContent = busy ? 'Race loopt' : !selected.A ? 'Kies motor A' : !selected.B ? 'Kies motor B' : shown ? 'Race opnieuw' : 'Start de race';
     root.classList.toggle('is-ready', Boolean(ready) && !busy);
+    syncDock();
   };
+
+  /* ---------- mobiele startbalk ---------- */
+
+  const dock = qs('[data-dock]');
+  const goBox = qs('.monitor__go', root);
+  let goVisible = false;
+  let typing = false;
+  const syncDock = () => {
+    if (!dock) return;
+    const ready = selected.A && selected.B;
+    const show = mobile() && ready && !busy && !goVisible && !typing && !cfg.limit?.blocked;
+    if (show) {
+      qs('[data-dock-match]', dock).textContent = `${short(selected.A)} vs ${short(selected.B)}`;
+      qs('[data-dock-label]', dock).textContent = shown ? 'Race opnieuw' : 'Start de race';
+    }
+    dock.hidden = !show;
+    document.body.classList.toggle('has-simx-dock', show);
+  };
+  if (dock && goBox && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([en]) => { goVisible = en.isIntersecting; syncDock(); }).observe(goBox);
+  }
+  // Toetsenbord open: de balk zou boven het toetsenbord over de suggesties vallen.
+  form.addEventListener('focusin', (e) => { if (e.target.matches('input[type="text"], input[type="search"], input[type="number"]')) { typing = true; syncDock(); } });
+  form.addEventListener('focusout', () => { typing = false; setTimeout(syncDock, 120); });
+  window.matchMedia('(max-width: 960px)').addEventListener('change', syncDock);
 
   const renderLimit = (limit) => {
     if (!limit) return;

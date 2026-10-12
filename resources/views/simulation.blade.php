@@ -200,6 +200,15 @@
         </div>
     </section>
 
+    {{-- Mobiel: vaste startbalk in de duimzone zodra beide motoren gekozen zijn. Verdwijnt als de
+         startknop van het racescherm zelf in beeld is. --}}
+    <div class="simx-dock" data-dock hidden>
+        <span class="simx-dock__match" data-dock-match></span>
+        <button class="btn btn--red simx-dock__btn" type="submit" form="sim-form" data-dock-run>
+            <span data-dock-label>Start de race</span>{!! $arrow !!}
+        </button>
+    </div>
+
     <template data-bike-icon="sport">@include('partials.bike-icon', ['category' => 'sport'])</template>
     <template data-bike-icon="other">@include('partials.bike-icon', ['category' => null])</template>
 @endsection
