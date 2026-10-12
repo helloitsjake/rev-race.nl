@@ -143,7 +143,9 @@ class SimulationService
         $totalMass = $motor->weight_kg + $extraMass;
         $brakingDecel = 12.5 * $condition['mu_b'];
         $maxForce = $condition['mu_t'] * $totalMass * $gravity;
-        $cornerSkillFactor = $motor->weight_kg > 220 ? 1.07 : ($motor->weight_kg < 205 ? 1.01 : 1.04);
+        // Bochtsnelheid: de bandengrip bepaalt de basis, een lichtere motor stuurt sneller in en houdt
+        // meer reserve. Lichter is dus iets sneller door de bocht, zwaarder iets langzamer.
+        $cornerSkillFactor = max(0.95, min(1.06, 1 + (215 - $motor->weight_kg) / 600));
 
         $pattern = [
             ['type' => 'straight', 'distance' => 120],
