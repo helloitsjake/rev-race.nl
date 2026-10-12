@@ -190,7 +190,7 @@
                 @foreach(['a' => $motorA, 'b' => $motorB] as $side => $motor)
                     <div class="lane lane--{{ $side }}" data-lane="{{ $side }}">
                         <span class="lane__name">{{ $motor->shortLabel() }}</span>
-                        <span class="lane__rail"><i class="lane__bike"></i></span>
+                        <span class="lane__rail"><i class="lane__bike">@include('partials.bike-icon', ['category' => $motor->category])</i></span>
                         <span class="lane__time" data-lane-time>&nbsp;</span>
                     </div>
                 @endforeach
