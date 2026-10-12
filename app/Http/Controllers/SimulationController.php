@@ -126,6 +126,8 @@ class SimulationController extends Controller
         $result['motor_b'] = $motorB->label();
         $result['offer_url_a'] = route('outbound', [$motorA, 'marktplaats']).'?van=simulatie';
         $result['offer_url_b'] = route('outbound', [$motorB, 'marktplaats']).'?van=simulatie';
+        $result['shops_a'] = OutboundController::shopLinks($motorA, 'simulatie');
+        $result['shops_b'] = OutboundController::shopLinks($motorB, 'simulatie');
         $result['compare_url'] = route('compare.show', ComparisonController::canonicalSlug($motorA, $motorB));
 
         if ($result['mode'] === 'race') {

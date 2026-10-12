@@ -244,8 +244,8 @@
                                 @foreach($strengths as $plus)<li>{{ $plus }}</li>@endforeach
                             </ul>
                         @endif
+                        @include('partials.shop-links', ['motor' => $motor, 'source' => 'vergelijk'])
                         <div class="pick-card__acts">
-                            <a class="btn btn--primary" href="{{ route('outbound', [$motor, 'marktplaats']) }}?van=vergelijk" rel="nofollow noopener" target="_blank">Bekijk aanbod op Marktplaats</a>
                             @include('partials.garage-button', ['motorIds' => [$motor->id]])
                         </div>
                     </article>

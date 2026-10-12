@@ -522,9 +522,18 @@
 
   const renderOffers = (r) => {
     const winner = r.winner.toLowerCase();
-    const sides = [['a', r.motors.A, r.motors.B, r.offer_url_a], ['b', r.motors.B, r.motors.A, r.offer_url_b]];
+    const sides = [['a', r.motors.A, r.motors.B, r.shops_a || []], ['b', r.motors.B, r.motors.A, r.shops_b || []]];
     if (winner === 'b') sides.reverse();
-    qs('[data-pick]', offers).innerHTML = sides.map(([s, m, o, offer], i) => {
+    const shopRow = (m, shops) => (shops.length ? `
+        <div class="shops">
+          <p class="shops__label">Zoek aanbod op</p>
+          <div class="shops__row">${shops.map((x) => `
+            <a class="shop shop--${esc(x.key)}" href="${esc(x.url)}" target="_blank" rel="nofollow noopener" aria-label="Zoek ${esc(short(m))} op ${esc(x.label)}">
+              <img src="${esc(x.logo)}" alt="" width="22" height="22"><span>${esc(x.label)}</span>
+            </a>`).join('')}
+          </div>
+        </div>` : '');
+    qs('[data-pick]', offers).innerHTML = sides.map(([s, m, o, shops], i) => {
       const plus = strengths(m, o, s === winner);
       return `
       <article class="pick-card pick-card--${s}${s === winner ? ' is-p1' : ''}" style="--i:${i}">
@@ -532,8 +541,8 @@
         <h3><a href="${esc(m.url)}">${esc(m.label)}</a></h3>
         <p class="pick-card__specs"><span><b>${m.power_hp}</b> pk</span><span><b>${m.weight_kg}</b> kg</span><span><b>${comma(m.power_hp / Math.max(m.weight_kg, 1))}</b> pk/kg</span></p>
         ${plus.length ? `<ul class="pick-card__plus">${plus.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${shopRow(m, shops)}
         <div class="pick-card__acts">
-          <a class="btn ${s === winner ? 'btn--red' : 'btn--ghost'}" href="${esc(offer)}" target="_blank" rel="nofollow noopener">Bekijk aanbod op Marktplaats</a>
           ${garageBtn(m)}
         </div>
       </article>`;

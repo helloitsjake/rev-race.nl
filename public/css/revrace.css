@@ -926,6 +926,22 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 .pick-card__plus li { font-size: 13px; line-height: 1; padding: 7px 10px; border-radius: 999px; background: var(--stone-dim); }
 .pick-card__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: auto; padding-top: 8px; }
 .pick__note { margin-top: 14px; font-size: 13px; color: var(--ink-60); }
+/* Aanbod zoeken: drie winkels met logo, gelijkwaardig naast elkaar (12-10-2026). */
+.shops { margin-top: auto; padding-top: 8px; }
+.shops__label { font: 400 12px/1 var(--font-mono); letter-spacing: .02em; color: var(--ink-60); margin-bottom: 10px; }
+.shops__row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.shop { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 8px 10px; border: 1px solid var(--stone-line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); font: 600 14px/1.1 var(--font-body); text-decoration: none; transition: border-color var(--dur), transform var(--dur) var(--ease-out), box-shadow var(--dur); }
+.shop img { width: 22px; height: 22px; flex: none; border-radius: 50%; }
+.shop span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 10px 20px -14px rgba(20,21,24,.45); }
+.shop:active { transform: scale(.98); }
+.shop:focus-visible { outline: 2px solid var(--redline); outline-offset: 2px; }
+.is-p1 .shop { border-color: color-mix(in srgb, var(--redline) 35%, var(--stone-line)); }
+.shops + .pick-card__acts { margin-top: 4px; padding-top: 4px; }
+@media (max-width: 440px) {
+  .shop { flex-direction: column; gap: 6px; min-height: 64px; font-size: 12.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .shop:hover { transform: none; } }
 @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } .pick-card__acts .btn { width: 100%; } }
 
 .spec__row:has(.is-best) .spec__value:not(.is-best) { font-weight: 400; color: var(--ink-60); }
