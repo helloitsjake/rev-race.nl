@@ -19,50 +19,72 @@
 @section('content')
     @php
         $arrow = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>';
-        // Twee soorten inhoud, twee vormen: eigen gidsen als kaarten, crawlernieuws als compacte lijst.
+        $icon = fn ($name, $size = 24) => '<svg viewBox="0 0 24 24" width="'.$size.'" height="'.$size.'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.(config('kennis.icons.'.$name) ?? config('kennis.icons.artikel')).'</svg>';
+        $stages = config('kennis.stages');
+        // Eigen artikelen (briefings) en crawlernieuws krijgen elk hun eigen vorm.
         [$news, $guides] = $articles->partition(fn ($a) => $a->category === \App\Models\Article::NEWS_CATEGORY);
-        $feature = $guides->first();
-        $newsVisible = 10;
+        $briefings = $guides->map(function ($a) use ($stages) {
+            $meta = config('kennis.articles.'.$a->slug, []);
+            $stage = $meta['stage'] ?? config('kennis.fallback_stage.'.$a->category, 'eerste-motor');
+
+            return (object) [
+                'article' => $a,
+                'stage' => isset($stages[$stage]) ? $stage : array_key_first($stages),
+                'icon' => $meta['icon'] ?? null,
+                'figure' => $meta['figure'] ?? null,
+                'figure_label' => $meta['figure_label'] ?? null,
+                'minutes' => max(1, (int) ceil(str_word_count(strip_tags($a->body)) / 220)),
+            ];
+        })->sortBy(fn ($b) => array_search($b->stage, array_keys($stages)))->values();
+        $perStage = $briefings->countBy('stage');
+        $newsVisible = 8;
     @endphp
-    <div class="wrap" style="padding-block:clamp(28px,4vw,56px) clamp(24px,3vw,36px)">
+
+    <div class="wrap kb-hero">
         <p class="turn"><b>T3</b> Kennisbank</p>
-        <h1 style="max-width:15ch">Alles over motorrijden, uitgelegd</h1>
-        <p class="lede" style="margin-top:20px">Van je eerste motor tot verdieping voor ervaren rijders, en het laatste nieuws over nieuwe modellen. Geschreven door Jake en Rory Andreas.</p>
-        @if($guides->isNotEmpty() && $news->isNotEmpty())
-            <nav class="kb-jump" aria-label="Onderdelen">
-                <a href="#gidsen"><b>{{ $guides->count() }}</b> gidsen</a>
-                <a href="#nieuws"><b>{{ $news->count() }}</b> nieuwe modellen</a>
-            </nav>
-        @endif
+        <h1>Van rijbewijs tot circuit, uitgelegd</h1>
+        <p class="lede">Kort en helder, onderbouwd met officiële bronnen. Geschreven door Jake en Rory Andreas, zelf rijders op de weg en op het circuit.</p>
     </div>
 
-    @if($articles->isEmpty())
-        <section class="chapter" style="padding-top:0"><div class="wrap"><p class="lede">Binnenkort verschijnen hier de eerste artikelen.</p></div></section>
-    @endif
-
-    @if($guides->isNotEmpty())
-        <section class="chapter kb-section" id="gidsen" style="padding-top:0">
+    @if($briefings->isNotEmpty())
+        <section class="chapter kb-section" id="briefing" style="padding-top:0">
             <div class="wrap">
-                <div class="kb-section__head">
-                    <h2>Gidsen</h2>
-                    <p>Zelf geschreven en onderbouwd met officiële bronnen, zoals het CBR en de Rijksoverheid.</p>
+                <div class="stagebar" data-stagebar>
+                    <p class="stagebar__q" id="stage-q">Waar sta jij?</p>
+                    <div class="stagebar__track" role="group" aria-labelledby="stage-q" style="--n: {{ count($stages) }}">
+                        <span class="stagebar__rail" aria-hidden="true"><i data-stage-fill></i></span>
+                        @foreach($stages as $key => $stage)
+                            <button type="button" class="stage" data-stage="{{ $key }}" aria-pressed="false" style="--i: {{ $loop->index }}">
+                                <span class="stage__dot" aria-hidden="true"></span>
+                                <span class="stage__icon">{!! $icon($stage['icon']) !!}</span>
+                                <span class="stage__num">0{{ $loop->iteration }}</span>
+                                <span class="stage__label">{{ $stage['label'] }}</span>
+                                <span class="stage__sub">{{ $stage['sub'] }}</span>
+                                <span class="stage__count">{{ $perStage[$key] ?? 0 }} {{ ($perStage[$key] ?? 0) === 1 ? 'briefing' : 'briefings' }}</span>
+                            </button>
+                        @endforeach
+                    </div>
                 </div>
-                <div class="kb-guides">
-                    <a class="feature kb-guides__feature" href="{{ route('kennis.show', $feature) }}" data-reveal>
-                        <svg class="feature__line" viewBox="0 0 400 260" fill="none" aria-hidden="true"><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#141518" stroke-width="2"/><path d="M10 230 C 120 230, 150 40, 250 50 S 360 200, 395 120" stroke="#E4431E" stroke-width="2" stroke-dasharray="4 10"/><circle cx="250" cy="50" r="7" fill="#E4431E"/></svg>
-                        <span class="kicker">{{ $feature->category }}</span>
-                        <div>
-                            <h3>{{ $feature->title }}</h3>
-                            @if($feature->excerpt)<p>{{ $feature->excerpt }}</p>@endif
-                            <span class="kb-card__link">Lees de gids</span>
-                        </div>
-                    </a>
-                    @foreach($guides->skip(1) as $guide)
-                        <a class="kb-card" href="{{ route('kennis.show', $guide) }}">
-                            <span class="kb-card__stage">{{ $guide->category }}</span>
-                            <h3>{{ $guide->title }}</h3>
-                            @if($guide->excerpt)<p>{{ Str::limit($guide->excerpt, 120) }}</p>@endif
-                            <span class="kb-card__link">Lees de gids</span>
+
+                <div class="kb-section__head">
+                    <h2>Briefing</h2>
+                    <p data-stage-note>Alles wat je wilt weten voor je de weg op gaat. Kies hierboven je fase, of lees alles.</p>
+                    <button type="button" class="kb-reset" data-stage-reset hidden>Toon alles</button>
+                </div>
+
+                <div class="briefings" data-briefings>
+                    @foreach($briefings as $b)
+                        <a class="briefing" href="{{ route('kennis.show', $b->article) }}" data-stage-item="{{ $b->stage }}">
+                            <span class="briefing__top">
+                                <span class="briefing__icon">{!! $icon($b->icon ?? $stages[$b->stage]['icon'], 22) !!}</span>
+                                <span class="briefing__stage">{{ $stages[$b->stage]['label'] }}</span>
+                                <span class="briefing__time">{{ $b->minutes }} min</span>
+                            </span>
+                            @if($b->figure)
+                                <span class="briefing__fig"><b>{{ $b->figure }}</b><span>{{ $b->figure_label }}</span></span>
+                            @endif
+                            <h3 class="briefing__title">{{ $b->article->title }}</h3>
+                            <span class="briefing__go">Lees de briefing {!! $arrow !!}</span>
                         </a>
                     @endforeach
                 </div>
@@ -71,18 +93,18 @@
     @endif
 
     @if($news->isNotEmpty())
-        <section class="chapter kb-section" id="nieuws" style="padding-top:{{ $guides->isNotEmpty() ? 'clamp(24px,4vw,48px)' : '0' }}">
+        <section class="chapter chapter--dark kb-news" id="nieuws">
             <div class="wrap">
-                <div class="kb-section__head">
-                    <h2>Nieuwe modellen</h2>
-                    <p>Bijgehouden uit internationale motornieuwsbronnen en in het Nederlands herschreven. De bron staat onder elk bericht.</p>
+                <div class="kb-section__head kb-section__head--dark">
+                    <h2><span class="live-dot" aria-hidden="true"></span>Net binnen</h2>
+                    <p>Nieuwe modellen, bijgehouden uit internationale motornieuwsbronnen en in het Nederlands herschreven. De bron staat onder elk bericht.</p>
                 </div>
-                <ol class="news-list{{ $news->count() > $newsVisible ? ' is-collapsed' : '' }}" data-news>
+                <ol class="newsboard{{ $news->count() > $newsVisible ? ' is-collapsed' : '' }}" data-news>
                     @foreach($news->values() as $i => $item)
                         <li @if($i >= $newsVisible) data-more @endif>
                             <a href="{{ route('kennis.show', $item) }}">
                                 <time datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j M') }}</time>
-                                <span class="news-list__title"><span>{{ $item->title }}</span></span>
+                                <span class="newsboard__title">{{ $item->title }}</span>
                                 {!! $arrow !!}
                             </a>
                         </li>
@@ -93,6 +115,10 @@
                 @endif
             </div>
         </section>
+    @endif
+
+    @if($articles->isEmpty())
+        <section class="chapter" style="padding-top:0"><div class="wrap"><p class="lede">Binnenkort verschijnen hier de eerste artikelen.</p></div></section>
     @endif
 
     <div class="finish on-dark">
@@ -106,9 +132,33 @@
     </div>
 
     <script>
-        document.querySelector('[data-news-more]')?.addEventListener('click', (e) => {
-            document.querySelector('[data-news]').classList.remove('is-collapsed');
-            e.currentTarget.remove();
-        });
+        (() => {
+            const bar = document.querySelector('[data-stagebar]');
+            if (bar) {
+                const btns = [...bar.querySelectorAll('[data-stage]')];
+                const items = [...document.querySelectorAll('[data-stage-item]')];
+                const fill = bar.querySelector('[data-stage-fill]');
+                const reset = document.querySelector('[data-stage-reset]');
+                const note = document.querySelector('[data-stage-note]');
+                const noteAll = note.textContent;
+                const set = (key) => {
+                    const idx = btns.findIndex((b) => b.dataset.stage === key);
+                    btns.forEach((b, i) => {
+                        b.setAttribute('aria-pressed', String(b.dataset.stage === key));
+                        b.classList.toggle('is-passed', idx >= 0 && i < idx);
+                    });
+                    fill.style.setProperty('--p', idx < 0 ? 0 : idx / (btns.length - 1));
+                    items.forEach((el) => { el.hidden = Boolean(key) && el.dataset.stageItem !== key; });
+                    reset.hidden = !key;
+                    note.textContent = key ? `${btns[idx].querySelector('.stage__label').textContent}. ${btns[idx].querySelector('.stage__sub').textContent}.` : noteAll;
+                };
+                btns.forEach((b) => b.addEventListener('click', () => set(b.getAttribute('aria-pressed') === 'true' ? null : b.dataset.stage)));
+                reset.addEventListener('click', () => set(null));
+            }
+            document.querySelector('[data-news-more]')?.addEventListener('click', (e) => {
+                document.querySelector('[data-news]').classList.remove('is-collapsed');
+                e.currentTarget.remove();
+            });
+        })();
     </script>
 @endsection

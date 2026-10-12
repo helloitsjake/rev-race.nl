@@ -728,40 +728,92 @@ a.t-row:hover { background: var(--asphalt-raise); }
 .kb-list a:hover svg { transform: translateX(4px); }
 @media (max-width: 560px) { .kb-list a { grid-template-columns: 1fr 24px; } .kb-list .kicker { grid-column: 1 / -1; } }
 
-/* kennis-overzicht, opnieuw opgebouwd 12-10-2026: gidsen als kaarten, nieuws als lijst */
-.kb-jump { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 24px; font: 400 13px/1 var(--font-mono); }
-.kb-jump a { color: var(--ink-60); padding-bottom: 4px; border-bottom: 1px solid var(--stone-line); transition: color var(--dur), border-color var(--dur); }
-.kb-jump a b { color: var(--ink); font-weight: 400; }
-.kb-jump a:hover { color: var(--ink); border-color: var(--ink); }
+/* kennis-overzicht, 12-10-2026: fasekeuze, briefings met kerngetal, nieuws als tijdscherm.
+   Alleen tekst en iconen, geen beeld. Signature: de rode lijn die naar je fase loopt. */
+.kb-hero { padding-block: clamp(28px, 4vw, 56px) clamp(24px, 3vw, 40px); }
+.kb-hero h1 { max-width: 14ch; }
+.kb-hero .lede { margin-top: 20px; }
 .kb-section { scroll-margin-top: 80px; }
-.kb-section__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 32px; flex-wrap: wrap; margin-bottom: clamp(20px, 3vw, 32px); padding-top: 20px; border-top: 1px solid var(--stone-line); }
-.kb-section__head h2 { font-size: clamp(1.5rem, 2.6vw, 2.125rem); }
-.kb-section__head p { max-width: 52ch; color: var(--ink-60); font-size: 15px; }
-.kb-guides { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
-.kb-guides__feature { grid-column: span 2; grid-row: span 2; min-height: 0; }
-.kb-guides .kb-card h3 { font-size: 20px; line-height: 1.25; }
-.kb-guides .kb-card { min-height: 220px; }
-@media (max-width: 900px) {
-  .kb-guides { grid-template-columns: 1fr 1fr; }
-  .kb-guides__feature { grid-row: auto; min-height: 340px; }
+
+.stagebar { margin-bottom: clamp(40px, 5vw, 64px); }
+.stagebar__q { font: 400 13px/1 var(--font-mono); color: var(--ink-60); margin-bottom: 16px; }
+.stagebar__track { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 12px; padding-top: 22px; }
+.stagebar__rail { position: absolute; left: 12px; right: calc((100% - 12px * (var(--n) - 1)) / var(--n) - 12px); top: 5px; height: 2px; background: var(--stone-line); }
+.stagebar__rail i { position: absolute; inset: 0; background: var(--redline); transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform 600ms var(--ease-out); }
+.stage { position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-areas: "icon num" "label label" "sub sub" "count count"; align-items: center; gap: 4px 10px; padding: 18px 18px 16px; text-align: left; border: 1px solid var(--stone-line); border-radius: var(--radius); background: var(--stone); color: var(--ink); cursor: pointer; transition: border-color var(--dur), background var(--dur), transform var(--dur) var(--ease-out), box-shadow var(--dur); }
+.stage__dot { position: absolute; left: 12px; top: -22px; width: 12px; height: 12px; border-radius: 50%; background: var(--stone); border: 2px solid var(--stone-line); transition: background var(--dur), border-color var(--dur), transform var(--dur) var(--ease-out); }
+.stage__icon { grid-area: icon; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--stone-dim); color: var(--ink); transition: background var(--dur), color var(--dur); }
+.stage__num { grid-area: num; justify-self: end; font: 400 12px/1 var(--font-mono); color: var(--ink-40); }
+.stage__label { grid-area: label; margin-top: 12px; font: 700 18px/1.2 var(--font-display); letter-spacing: -.01em; }
+.stage__sub { grid-area: sub; font-size: 14px; color: var(--ink-60); }
+.stage__count { grid-area: count; margin-top: 10px; font: 400 12px/1 var(--font-mono); color: var(--ink-60); }
+.stage:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 14px 28px -20px rgba(20,21,24,.5); }
+.stage:hover .stage__icon { background: var(--ink); color: var(--paper); }
+.stage:active { transform: scale(.98); }
+.stage:focus-visible { outline: 2px solid var(--redline); outline-offset: 3px; }
+.stage[aria-pressed="true"] { border-color: var(--ink); background: #fff; box-shadow: inset 0 3px 0 var(--redline); }
+.stage[aria-pressed="true"] .stage__icon { background: var(--redline-deep); color: #FFF7F3; }
+.stage[aria-pressed="true"] .stage__dot { background: var(--redline); border-color: var(--redline); transform: scale(1.35); }
+.stage.is-passed .stage__dot { background: var(--redline); border-color: var(--redline); }
+
+.kb-section__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 32px; flex-wrap: wrap; margin-bottom: clamp(20px, 3vw, 28px); }
+.kb-section__head h2 { font-size: clamp(1.5rem, 2.6vw, 2.125rem); display: inline-flex; align-items: center; gap: 12px; }
+.kb-section__head p { flex: 1 1 320px; max-width: 56ch; color: var(--ink-60); font-size: 15px; }
+.kb-section__head--dark p { color: var(--paper-60); }
+.kb-reset { font: 600 14px var(--font-body); color: var(--ink); text-decoration: underline; text-decoration-color: var(--redline); text-underline-offset: 4px; text-decoration-thickness: 2px; background: none; border: 0; padding: 0; cursor: pointer; }
+.kb-reset[hidden] { display: none; }
+
+.briefings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.briefing { display: flex; flex-direction: column; gap: 16px; padding: 22px 22px 20px; border: 1px solid var(--stone-line); border-radius: var(--radius); background: var(--stone); color: var(--ink); transition: border-color var(--dur), transform var(--dur) var(--ease-out), box-shadow var(--dur); animation: kb-in 360ms var(--ease-out) both; }
+.briefing[hidden] { display: none; }
+.briefing__top { display: flex; align-items: center; gap: 10px; }
+.briefing__icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; background: var(--stone-dim); color: var(--ink); transition: background var(--dur), color var(--dur); }
+.briefing__stage { font: 400 12px/1 var(--font-mono); color: var(--ink-60); }
+.briefing__time { margin-left: auto; font: 400 12px/1 var(--font-mono); color: var(--ink-40); }
+.briefing__fig { display: grid; gap: 6px; padding-top: 4px; }
+.briefing__fig b { font: 800 clamp(26px, 2.6vw, 34px)/1.05 var(--font-display); letter-spacing: -.02em; color: var(--ink); transition: color var(--dur); }
+.briefing:hover .briefing__fig b { color: var(--redline-deep); }
+.briefing__fig span { font-size: 13px; color: var(--ink-60); }
+.briefing__title { font: 600 19px/1.3 var(--font-display); letter-spacing: -.01em; }
+.briefing__go { margin-top: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.briefing__go svg { width: 16px; height: 16px; transition: transform var(--dur) var(--ease-out); }
+.briefing:hover { border-color: var(--ink); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+.briefing:hover .briefing__icon { background: var(--ink); color: var(--paper); }
+.briefing:hover .briefing__go svg { transform: translateX(4px); }
+@keyframes kb-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.kb-news { padding-block: clamp(56px, 7vw, 96px) clamp(24px, 3vw, 40px); }
+.live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--redline); box-shadow: 0 0 0 0 rgba(228,67,30,.6); animation: kb-pulse 2.2s ease-out infinite; }
+@keyframes kb-pulse { 0% { box-shadow: 0 0 0 0 rgba(228,67,30,.55); } 70%, 100% { box-shadow: 0 0 0 10px rgba(228,67,30,0); } }
+.newsboard { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--asphalt-line); }
+.newsboard.is-collapsed [data-more] { display: none; }
+.newsboard a { display: grid; grid-template-columns: 72px minmax(0, 1fr) 20px; gap: 16px; align-items: center; padding: 16px 12px; border-bottom: 1px solid var(--asphalt-line); color: var(--paper); transition: background var(--dur); }
+.newsboard time { font: 400 13px/1 var(--font-mono); color: var(--paper-60); white-space: nowrap; }
+.newsboard__title { font: 600 16px/1.35 var(--font-display); }
+.newsboard svg { width: 18px; height: 18px; color: var(--paper-60); transition: transform var(--dur) var(--ease-out), color var(--dur); }
+.newsboard a:hover { background: var(--asphalt-raise); }
+.newsboard a:hover svg { transform: translateX(4px); color: var(--paper); }
+.news-more { margin-top: 24px; }
+
+@media (max-width: 960px) {
+  .stagebar__track { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; }
+  .stagebar__rail, .stage__dot { display: none; }
+  .briefings { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
-  .kb-guides { grid-template-columns: 1fr; }
-  .kb-guides__feature { grid-column: auto; min-height: 0; padding-top: 96px; }
-  .kb-guides__feature .feature__line { top: 16px; height: 72px; width: 60%; }
-  .kb-guides .kb-card { min-height: 0; }
+  .stagebar__track { gap: 8px; }
+  .stage { padding: 14px; grid-template-areas: "icon num" "label label" "count count"; }
+  .stage__sub { display: none; }
+  .stage__label { font-size: 16px; margin-top: 8px; }
+  .stage__icon { width: 34px; height: 34px; }
+  .briefings { grid-template-columns: 1fr; }
+  .newsboard a { grid-template-columns: 1fr 18px; gap: 6px 12px; padding: 14px 4px; }
+  .newsboard time { grid-column: 1 / -1; }
 }
-.news-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(24px, 4vw, 56px); list-style: none; padding: 0; margin: 0; }
-.news-list.is-collapsed [data-more] { display: none; }
-.news-list a { display: grid; grid-template-columns: 56px minmax(0, 1fr) 20px; gap: 14px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--stone-line); color: var(--ink); }
-.news-list time { font: 400 13px/1 var(--font-mono); color: var(--ink-60); white-space: nowrap; }
-.news-list__title { font: 600 16px/1.35 var(--font-display); }
-.news-list__title span { background: linear-gradient(var(--ink), var(--ink)) 0 100% / 0 1.5px no-repeat; transition: background-size var(--dur) var(--ease-out); }
-.news-list a:hover .news-list__title span { background-size: 100% 1.5px; }
-.news-list svg { width: 18px; height: 18px; align-self: center; color: var(--ink-40); transition: transform var(--dur) var(--ease-out), color var(--dur); }
-.news-list a:hover svg { transform: translateX(4px); color: var(--ink); }
-.news-more { margin-top: 24px; }
-@media (max-width: 760px) { .news-list { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  .briefing, .live-dot { animation: none; }
+  .stagebar__rail i { transition: none; }
+}
 
 /* rijders (Jake en Rory) */
 .riders { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3vw, 40px); align-items: start; }
