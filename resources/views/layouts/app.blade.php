@@ -46,7 +46,7 @@
     <div class="consent-banner__inner wrap">
         <div class="consent-banner__text">
             <p class="consent-banner__title">Cookies op RevRace</p>
-            <p>Functionele cookies zijn altijd nodig (inloggen, beveiliging) en staan aan. Voor het meten van bezoekersaantallen gebruiken we optioneel Google Tag Manager en Ahrefs Web Analytics, pas na jouw toestemming. Lees meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
+            <p>Bezoekers meten we met Google Tag Manager en Ahrefs Web Analytics, alleen als jij dat toestaat. Functionele cookies (inloggen, beveiliging) staan altijd aan. Meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
         </div>
         <div class="consent-banner__actions">
             <button type="button" class="btn btn--ghost" data-consent-action="reject">Alleen noodzakelijk</button>
@@ -90,7 +90,7 @@
                         </form>
                     @else
                         <a class="nav__login" href="{{ route('login') }}">Inloggen</a>
-                        <a class="btn btn--primary" href="{{ route('register') }}">Account aanmaken</a>
+                        <a class="btn btn--primary" href="{{ route('register') }}">Start je garage</a>
                     @endauth
                 </div>
             </div>

@@ -189,8 +189,7 @@
 
     <section class="chapter" id="specificaties">
         <div class="wrap">
-            <span class="eyebrow">Specificaties</span>
-            <h2>Naast elkaar</h2>
+            <h2>Specificaties: {{ $motorA->shortLabel() }} vs {{ $motorB->shortLabel() }}</h2>
             <div class="spec">
                 <div class="spec__row spec__row--head">
                     <div class="spec__label">Motor</div>
@@ -240,9 +239,8 @@
 
     <section class="chapter chapter--tight" id="simulatie">
         <div class="wrap">
-            <span class="eyebrow">Simulatie</span>
-            <h2>500 meter, drie wegcondities</h2>
-            <p class="lede" style="margin-bottom: 2em">Dezelfde twee motoren, dezelfde afstand — alleen de wegconditie verandert. Let op wat er gebeurt met de winnaar zodra de tractie daalt.</p>
+            <h2>Race over 500 meter, in drie wegcondities</h2>
+            <p class="lede" style="margin-bottom: 2em">Dezelfde twee motoren, dezelfde afstand, alleen de wegconditie verandert. Let op wat er gebeurt met de winnaar zodra de tractie daalt.</p>
 
             @foreach($results as $key => $data)
                 @php
@@ -253,7 +251,7 @@
                     $widthA = $result['time_a_s'] > 0 ? round(($fastestTime / $result['time_a_s']) * 100, 1) : 0;
                     $widthB = $result['time_b_s'] > 0 ? round(($fastestTime / $result['time_b_s']) * 100, 1) : 0;
                 @endphp
-                <h3 style="margin-bottom: 1em">{{ $data['label'] }} asfalt &mdash; {{ $winner->label() }} wint</h3>
+                <h3 style="margin-bottom: 1em">{{ $data['label'] }} asfalt: {{ $winner->label() }} wint</h3>
                 <div class="panel" style="margin-bottom: clamp(28px, 4vw, 44px)">
                     <div class="panel__head">
                         <span>Sprint 500m</span>
@@ -285,14 +283,13 @@
 
     @include('partials.faq', [
         'faq' => $faq,
-        'eyebrow' => 'Veelgestelde vragen',
-        'heading' => $motorA->shortLabel() . ' of ' . $motorB->shortLabel() . '?',
+        'eyebrow' => null,
+        'heading' => 'Veelgestelde vragen: ' . $motorA->shortLabel() . ' of ' . $motorB->shortLabel() . '?',
     ])
 
     @if($related->isNotEmpty())
         <section class="chapter" id="verder">
             <div class="wrap">
-                <span class="eyebrow">Verder kijken</span>
                 <h2>Vergelijk {{ $motorA->label() }} ook met</h2>
                 <div class="match-grid">
                     @foreach($related as $item)

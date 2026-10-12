@@ -35,9 +35,9 @@
         <div class="wrap">
             <p class="eyebrow">Zelf ontdekken</p>
             <h2>Wil je zelf ontdekken welke motor bij jou past?</h2>
-            <p class="lede" style="margin-inline:auto">Maak een gratis account voor je eigen garage, rijdersprofiel en simulaties &mdash; of start direct met een eerste vergelijking.</p>
+            <p class="lede" style="margin-inline:auto">Maak een gratis account voor je eigen garage, rijdersprofiel en simulaties, of start direct met een eerste vergelijking.</p>
             <div class="hero__ctas" style="justify-content:center; margin-top:2rem;">
-                <a class="btn btn--primary" href="{{ route('register') }}">Account aanmaken</a>
+                <a class="btn btn--primary" href="{{ route('register') }}">Start je eigen garage</a>
                 <a class="btn btn--ghost" href="{{ route('simulation.index') }}">Start een simulatie</a>
             </div>
         </div>

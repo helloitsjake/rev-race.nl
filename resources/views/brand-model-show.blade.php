@@ -251,7 +251,7 @@
         <div class="wrap cta-line">
             <p class="eyebrow">Twijfel je?</p>
             <h2>Race de {{ $motor->model }} tegen een andere motor.</h2>
-            <p class="lede">Op droog, vochtig en nat asfalt &mdash; zelfde twee motoren, soms een andere winnaar.</p>
+            <p class="lede">Op droog, vochtig en nat asfalt: zelfde twee motoren, soms een andere winnaar.</p>
             <a class="btn btn--primary" href="{{ route('simulation.index') }}">Start simulatie</a>
         </div>
     </section>

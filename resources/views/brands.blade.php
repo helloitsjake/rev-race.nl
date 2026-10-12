@@ -21,7 +21,7 @@
         <div class="wrap">
             <span class="eyebrow">Merken</span>
             <h1>Alle motormerken</h1>
-            <p class="lede">{{ $brands->count() }} merken, {{ $brands->sum('count') }} motoren in totaal &mdash; kies een merk voor alle modellen en vergelijkingen.</p>
+            <p class="lede">{{ $brands->count() }} merken, {{ $brands->sum('count') }} motoren in totaal. Kies een merk voor alle modellen en vergelijkingen.</p>
         </div>
     </header>
 
@@ -44,7 +44,7 @@
         <div class="wrap cta-line">
             <p class="eyebrow">Twijfel je?</p>
             <h2>Race twee modellen tegen elkaar op droog, vochtig en nat asfalt.</h2>
-            <p class="lede">Dezelfde twee motoren, soms een andere winnaar &mdash; grip verandert de uitslag volledig.</p>
+            <p class="lede">Dezelfde twee motoren, soms een andere winnaar: grip verandert de uitslag volledig.</p>
             <a class="btn btn--primary" href="{{ route('simulation.index') }}">Start een simulatie</a>
         </div>
     </section>

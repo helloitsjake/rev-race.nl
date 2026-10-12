@@ -60,7 +60,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button class="btn btn--primary" type="submit" style="width:100%">Account aanmaken</button>
+                <button class="btn btn--primary" type="submit" style="width:100%">Maak mijn garage aan</button>
                 <p class="auth-foot">Heb je al een account? <a href="{{ route('login') }}">Inloggen</a></p>
             </form>
         </div>

@@ -7,7 +7,7 @@
     <summary>Over deze uitslag</summary>
     <div class="report-disclosure__body">
         <p>
-            Dit is een datagedreven indicatie op basis van een fysicasimulatie, geen gemeten testresultaat. Vermogen, gewicht en cilinderinhoud komen uit de fabrieksspecificaties. Luchtweerstand (drag coefficient en frontaal oppervlak) is bij elk model een schatting &mdash; fabrikanten publiceren dat zelf niet &mdash; wat het resultaat een indicatie maakt, geen exacte meting.
+            Dit is een datagedreven indicatie op basis van een fysicasimulatie, geen gemeten testresultaat. Vermogen, gewicht en cilinderinhoud komen uit de fabrieksspecificaties. Luchtweerstand (drag coefficient en frontaal oppervlak) is bij elk model een schatting, want fabrikanten publiceren dat zelf niet. Dat maakt het resultaat een indicatie maakt, geen exacte meting.
         </p>
         @if($needsReview)
             <p>

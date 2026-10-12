@@ -131,6 +131,7 @@ Je krijgt een Engelstalig nieuwsbericht over een nieuw motormodel en je moet dit
 boeiend, feitelijk correct artikel in het Nederlands van 200-300 woorden, of korter als de bron weinig
 informatie bevat. Gebruik alleen feiten uit de aangeleverde tekst en verzin geen specificaties, prijzen of data.
 Houd de toon professioneel, enthousiast en passend bij motorrijders.
+Gebruik nooit een gedachtestreepje (— of –) als leesteken: kies een komma, dubbele punt of nieuwe zin.
 Geef een pakkende titel, een korte samenvatting (excerpt) en de body in Markdown-formaat.
 Geef je antwoord uitsluitend in JSON-formaat met de volgende keys: title, excerpt, body.";
 
@@ -174,10 +175,19 @@ Geef je antwoord uitsluitend in JSON-formaat met de volgende keys: title, excerp
         }
 
         return [
-            'title' => $data['title'],
-            'excerpt' => $data['excerpt'] ?? Str::limit(strip_tags($data['body']), 150),
-            'body' => $data['body']."\n\nBron: ".$link,
+            'title' => $this->stripDashes($data['title']),
+            'excerpt' => $this->stripDashes($data['excerpt'] ?? Str::limit(strip_tags($data['body']), 150)),
+            'body' => $this->stripDashes($data['body'])."\n\nBron: ".$link,
         ];
+    }
+
+    /**
+     * Het model negeert de promptregel soms. Een gedachtestreepje tussen spaties wordt een
+     * komma; een streepje tussen cijfers (bijv. 2025–2026) blijft staan.
+     */
+    public function stripDashes(string $text): string
+    {
+        return preg_replace('/\s+[—–]\s+/u', ', ', $text);
     }
 
     /**

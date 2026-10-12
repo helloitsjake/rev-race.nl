@@ -36,7 +36,7 @@
             <span class="eyebrow">Databestand &middot; {{ $year }}</span>
             <h1>Staat van de Nederlandse motorrijder</h1>
             @if($hasEnoughData)
-                <p class="lede">In {{ $year }} zijn er op RevRace {{ number_format($totalSimulations, 0, ',', '.') }} motorvergelijkingen gedraaid. Dit zijn de patronen daarin, rechtstreeks uit de eigen simulatiedata &mdash; geen enquête, geen schatting.</p>
+                <p class="lede">In {{ $year }} zijn er op RevRace {{ number_format($totalSimulations, 0, ',', '.') }} motorvergelijkingen gedraaid. Dit zijn de patronen daarin, rechtstreeks uit de eigen simulatiedata, geen enquête, geen schatting.</p>
             @else
                 <p class="lede">Dit rapport wordt gevuld met echte simulatiedata van RevRace-bezoekers. Er zijn nog niet genoeg simulaties gedraaid om een betrouwbaar beeld te geven, kom later terug.</p>
             @endif

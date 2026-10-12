@@ -655,8 +655,18 @@ select.field { appearance: none; }
 .sectors em { font: 400 12px var(--font-mono); font-style: normal; }
 .sectors b { font: 800 26px/1 var(--font-display); color: var(--paper); font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) {
-  .startgrid { grid-template-columns: 1fr; padding-bottom: 0; }
+  .startgrid { grid-template-columns: 1fr; padding-bottom: 0; gap: 12px; margin-top: 20px; }
   .startgrid .slot { transform: translateX(calc(var(--row, 0) * 18px)); width: calc(100% - 36px); }
+  /* Mobiel: positie naast de motor in plaats van erboven, zodat drie vakken samen in beeld
+     passen. P1 staat er direct; alleen P2 en P3 rijden na de lichten binnen (12-10-2026). */
+  .startgrid:not(.startgrid--six) .slot { display: grid; grid-template-columns: 3ch 1fr; align-items: center; gap: 12px; padding: 12px 14px; }
+  .startgrid:not(.startgrid--six) .slot::before, .startgrid:not(.startgrid--six) .slot::after { border-top-width: 2px; height: 70%; }
+  .startgrid:not(.startgrid--six) .slot::before { border-left-width: 2px; }
+  .startgrid:not(.startgrid--six) .slot::after { border-right-width: 2px; }
+  .startgrid:not(.startgrid--six) .slot__pos { font-size: 32px; }
+  .startgrid:not(.startgrid--six) .slot__car { margin-top: 0; }
+  .startgrid:not(.startgrid--six) .slot__specs { margin-top: 4px; font-size: 13px; }
+  .js .slot:first-child .slot__car { opacity: 1; transform: none; }
 }
 @media (max-width: 640px) { .startgrid--six { grid-template-columns: 1fr; } .startgrid--six .slot { transform: none; width: auto; } }
 
@@ -843,6 +853,13 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 .footer__link-btn { background: none; border: 0; padding: 0; font: inherit; }
 .footer small { font: 400 12px var(--font-mono); }
 
+/* ---------- wizard: afronding ---------- */
+.wiz-finish { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 28px; padding: 20px 22px; border: 1px solid var(--asphalt-line); border-radius: var(--radius-lg); }
+.wiz-finish__title { font: 700 18px/1.25 var(--font-display); }
+.wiz-finish p:not(.wiz-finish__title) { margin-top: 4px; font-size: 15px; color: var(--paper-60); max-width: 52ch; }
+.wiz-finish__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.wiz-finish__link { font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---------- cookiebanner ---------- */
 .consent-banner { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 80; max-width: 1180px; margin: 0 auto; background: var(--asphalt); color: var(--paper); border-radius: var(--radius-lg); box-shadow: 0 24px 60px -20px rgba(20,21,24,.6); }
 .consent-banner__inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 20px 24px; }
@@ -853,7 +870,17 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 .consent-banner__actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .consent-banner .btn--ghost { border-color: var(--asphalt-line); color: var(--paper); }
 .consent-banner .btn--ghost:hover { border-color: var(--paper-60); background: var(--asphalt-raise); }
-@media (max-width: 640px) { .consent-banner__actions { width: 100%; } .consent-banner__actions .btn { flex: 1; } }
+/* Mobiel: de banner mag niet het halve scherm (en de startgrid) afdekken. Titel weg, tekst en
+   knoppen compacter, knoppen naast elkaar. */
+@media (max-width: 640px) {
+  .consent-banner { left: 8px; right: 8px; bottom: 8px; }
+  .consent-banner__inner { gap: 12px; padding: 14px 16px; }
+  .consent-banner__text { flex-basis: 100%; }
+  .consent-banner__title { display: none; }
+  .consent-banner__text p:not(.consent-banner__title) { font-size: 13px; line-height: 1.45; }
+  .consent-banner__actions { width: 100%; flex-wrap: nowrap; gap: 8px; }
+  .consent-banner__actions .btn { flex: 1; min-height: 44px; padding-inline: 10px; font-size: 14px; }
+}
 
 /* ---------- scroll-reveal (interactielaag) ---------- */
 .js [data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out); transition-delay: var(--d, 0ms); }

@@ -180,6 +180,25 @@
                         @endforeach
                     </div>
 
+                    {{-- Afronding (peak-end): na de startopstelling één duidelijke volgende stap. --}}
+                    @if($topMatches->count() >= 2)
+                        @php([$p1, $p2] = [$topMatches[0], $topMatches[1]])
+                        <div class="wiz-finish">
+                            <div>
+                                <p class="wiz-finish__title">Twijfel je tussen P1 en P2?</p>
+                                <p>Laat de {{ $p1->shortLabel() }} en de {{ $p2->shortLabel() }} tegen elkaar racen, op droog en nat asfalt.</p>
+                            </div>
+                            <div class="wiz-finish__acts">
+                                <a class="btn btn--primary" href="{{ route('compare.show', $p1->slug().'-vs-'.$p2->slug()) }}">Laat ze racen {!! $arrow !!}</a>
+                                @guest
+                                    <a class="wiz-finish__link" href="{{ route('register') }}">Bewaar ze in een gratis garage</a>
+                                @else
+                                    <a class="wiz-finish__link" href="{{ route('garage.index') }}">Zet ze in je garage</a>
+                                @endguest
+                            </div>
+                        </div>
+                    @endif
+
                     @if($moreMatches->isNotEmpty())
                         <details class="more-list">
                             <summary>Bekijk alle {{ $topMatches->count() + $moreMatches->count() }} matches</summary>

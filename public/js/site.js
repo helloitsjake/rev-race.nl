@@ -224,7 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
       });
 
-      grid.querySelectorAll('.slot__car').length ? lightsOut(picker, { slow: true }) : render();
+      // Op mobiel staat de grid onder de vouw: start de lichten pas als hij in beeld komt,
+      // anders is het signature-moment al voorbij voordat iemand er is.
+      const start = () => (grid.querySelectorAll('.slot__car').length ? lightsOut(picker, { slow: true }) : render());
+      if (window.innerWidth <= 760 && 'IntersectionObserver' in window) {
+        const seen = new IntersectionObserver((es) => {
+          if (!es.some((e) => e.isIntersecting)) return;
+          seen.disconnect(); start();
+        }, { threshold: 0.35 });
+        seen.observe(grid);
+      } else start();
     });
 
     // Inhoudsopgave volgt de sectie die in beeld is.

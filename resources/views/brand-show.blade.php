@@ -82,7 +82,7 @@
         <div class="wrap cta-line">
             <p class="eyebrow">Twijfel je?</p>
             <h2>Twijfel je tussen twee modellen? Race ze tegen elkaar.</h2>
-            <p class="lede">Op droog, vochtig en nat asfalt &mdash; dezelfde twee motoren, soms een andere winnaar.</p>
+            <p class="lede">Op droog, vochtig en nat asfalt: dezelfde twee motoren, soms een andere winnaar.</p>
             <a class="btn btn--primary" href="{{ route('simulation.index') }}">Start simulatie</a>
         </div>
     </section>

@@ -42,7 +42,7 @@
                 <p class="eyebrow">De A2-regel</p>
                 <h2>Twee harde grenzen, niet de cilinderinhoud</h2>
                 <p>De Europese A2-norm kijkt niet naar cc&rsquo;s, maar naar twee simpele grenzen: maximaal 35 kW vermogen, en een verhouding van vermogen tot gewicht van niet meer dan 0,20 kW per kilo. Een motor met een groot blok maar veel gewicht kan dus alsnog A2-geschikt zijn.</p>
-                <p>RevRace rekent dit voor elk model in de database automatisch uit &mdash; inclusief de {{ $motors->count() }} modellen hieronder, gegroepeerd per segment.</p>
+                <p>RevRace rekent dit voor elk model in de database automatisch uit, inclusief de {{ $motors->count() }} modellen hieronder, gegroepeerd per segment.</p>
             </div>
         </div>
     </section>

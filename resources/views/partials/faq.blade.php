@@ -11,7 +11,10 @@
 @if($faq->isNotEmpty())
     <section class="chapter chapter--tight" id="faq">
         <div class="wrap">
-            <span class="eyebrow">{{ $eyebrow ?? 'Veelgestelde vragen' }}</span>
+            {{-- eyebrow => null laat het label weg, als de kop zelf al zegt wat het is --}}
+            @if(! array_key_exists('eyebrow', get_defined_vars()) || $eyebrow)
+                <span class="eyebrow">{{ $eyebrow ?? 'Veelgestelde vragen' }}</span>
+            @endif
             @isset($heading)
                 <h2>{{ $heading }}</h2>
             @endisset

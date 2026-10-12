@@ -162,4 +162,12 @@ XML;
         $this->assertTrue($service->looksEnglish(self::ENGLISH_BODY));
         $this->assertFalse($service->looksEnglish(self::DUTCH_BODY));
     }
+
+    public function test_gedachtestreepjes_worden_vervangen_maar_jaartallen_blijven(): void
+    {
+        $service = app(NewsCrawlService::class);
+
+        $this->assertSame('Sneller, maar ook zwaarder.', $service->stripDashes('Sneller — maar ook zwaarder.'));
+        $this->assertSame('Modeljaren 2025–2026', $service->stripDashes('Modeljaren 2025–2026'));
+    }
 }
