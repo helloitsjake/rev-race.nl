@@ -189,7 +189,7 @@
                                 <p>Laat de {{ $p1->shortLabel() }} en de {{ $p2->shortLabel() }} tegen elkaar racen, op droog en nat asfalt.</p>
                             </div>
                             <div class="wiz-finish__acts">
-                                <a class="btn btn--primary" href="{{ route('compare.show', $p1->slug().'-vs-'.$p2->slug()) }}">Laat ze racen {!! $arrow !!}</a>
+                                <a class="btn btn--primary" href="{{ route('compare.show', \App\Http\Controllers\ComparisonController::canonicalSlug($p1, $p2)) }}">Laat ze racen {!! $arrow !!}</a>
                                 @guest
                                     <a class="wiz-finish__link" href="{{ route('register') }}">Bewaar ze in een gratis garage</a>
                                 @else
