@@ -16,14 +16,15 @@ class SimulationController extends Controller
 {
     public function index(Request $request, SimulationLimitService $limits): View
     {
-        $preselect = Motor::query()->find($request->query('motor_a'));
+        $preselectA = Motor::query()->find($request->query('motor_a'));
+        $preselectB = Motor::query()->find($request->query('motor_b'));
         $preselectKg = $request->query('gewicht');
         $preselectKg = is_numeric($preselectKg) && $preselectKg > 0 && $preselectKg < 250 ? (int) $preselectKg : null;
 
         return view('simulation', [
-            'motors' => Motor::query()->orderBy('brand')->orderBy('model')->get(),
             'limit' => $limits->status($request->user(), $request->ip()),
-            'preselect' => $preselect,
+            'preselectA' => $preselectA ? MotorController::serialize($preselectA) : null,
+            'preselectB' => $preselectB && $preselectB->isNot($preselectA) ? MotorController::serialize($preselectB) : null,
             'preselectKg' => $preselectKg,
         ]);
     }
@@ -77,6 +78,7 @@ class SimulationController extends Controller
         $result['motor_b'] = $motorB->label();
         $result['offer_url_a'] = route('outbound', [$motorA, 'marktplaats']).'?van=simulatie';
         $result['offer_url_b'] = route('outbound', [$motorB, 'marktplaats']).'?van=simulatie';
+        $result['compare_url'] = route('compare.show', ComparisonController::canonicalSlug($motorA, $motorB));
 
         if ($result['mode'] === 'race') {
             $share = SimulationResult::query()->create([

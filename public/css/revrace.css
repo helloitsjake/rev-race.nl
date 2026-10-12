@@ -1006,3 +1006,149 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 .chapter--dark .spec__value--a, .panel .spec__value--a { color: var(--redline); }
 .chapter--dark .spec__value--b, .panel .spec__value--b,
 .chapter--dark .motor-card--b .motor-card__label, .panel .motor-card--b .motor-card__label { color: var(--midrange); }
+
+/* ---------- simulatie 2.0 (12-10-2026) ----------
+   Keuze als zin (zoals de rijstijlkiezer op de home), direct daaronder de baan. Signature-moment:
+   lights out plus de race. Motor A = redline, B = midrange, net als op de vergelijkpagina. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.sim__head { padding-top: clamp(16px, 2vw, 28px); padding-bottom: clamp(22px, 2.6vw, 32px); }
+.sim__head h1 { margin-top: 14px; font-size: clamp(2.25rem, 4.3vw, 4rem); line-height: 1; }
+.sim__head h1 span { color: var(--redline); }
+.sim__form { margin-top: clamp(14px, 2vw, 24px); }
+.sim__line + .sim__line { margin-top: 6px; }
+.sim__line [hidden] { display: none; }
+
+.pickfield { position: relative; flex: 0 1 clamp(16rem, 28vw, 24rem); min-width: 0; }
+.pickfield__input { width: 100%; min-height: 52px; padding: 4px 8px 4px 26px; border: 0; border-bottom: 2px solid var(--stone-line); border-radius: 0; background: transparent; font: inherit; line-height: 1.3; color: var(--ink); text-overflow: ellipsis; transition: border-color var(--dur-fast); }
+.pickfield__input::placeholder { color: var(--ink-40); }
+.pickfield__input:hover { border-bottom-color: var(--ink-40); }
+.pickfield__input:focus { outline: 0; border-bottom-color: var(--ink); }
+.pickfield__input:focus-visible { box-shadow: 0 3px 0 -1px var(--redline); }
+.pickfield::before { content: ""; position: absolute; left: 4px; top: 50%; width: 11px; height: 11px; margin-top: -5px; border-radius: 50%; border: 2px solid var(--c); transition: background-color var(--dur-fast); }
+.pickfield.is-set::before { background: var(--c); }
+.pickfield.is-set .pickfield__input { border-bottom-color: var(--ink); }
+.pickfield--a { --c: var(--redline); }
+.pickfield--b { --c: var(--midrange); }
+.pickfield.is-loading .pickfield__input { border-bottom-color: transparent; background: linear-gradient(90deg, var(--redline) 0 30%, transparent 0) 0 100% / 300% 2px no-repeat; animation: pick-load 1s linear infinite; }
+@keyframes pick-load { from { background-position: 150% 100%; } to { background-position: -50% 100%; } }
+.pickfield__list { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: max(100%, 22rem); max-height: 320px; overflow-y: auto; padding: 6px; background: var(--stone); border: 1px solid var(--stone-line); border-radius: var(--radius); box-shadow: var(--shadow-lift); font: 400 15px/1.3 var(--font-body); }
+.pickfield__opt { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; width: 100%; padding: 10px 12px; border: 0; border-radius: var(--radius-sm); background: transparent; text-align: left; color: var(--ink); transition: background-color var(--dur-fast); }
+.pickfield__opt small { flex: none; font-size: 13px; color: var(--ink-60); font-variant-numeric: tabular-nums; }
+.pickfield__opt:hover, .pickfield__opt:focus-visible { outline: 0; background: var(--stone-dim); }
+.pickfield__opt--ai { margin-top: 4px; border-top: 1px solid var(--stone-line); border-radius: 0 0 var(--radius-sm) var(--radius-sm); color: var(--redline-deep); font-weight: 600; }
+
+.sim__sel { display: inline-flex; align-items: center; gap: 12px; }
+.sim__sel select { appearance: none; min-height: 48px; padding: 0 40px 0 18px; border: 1px solid var(--stone-line); border-radius: 999px; background: var(--stone-dim) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23141518' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E") right 14px center / 16px no-repeat; font: 500 15px var(--font-body); color: var(--ink); cursor: pointer; transition: border-color var(--dur-fast); }
+.sim__sel select:hover { border-color: var(--ink-40); }
+.sim__sel select:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.sim__go { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin-top: clamp(16px, 2vw, 22px); }
+.sim__start { min-height: 56px; padding: 0 28px; font-size: 16px; }
+.sim__riders { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--ink-60); }
+.sim__riders label { display: inline-flex; align-items: center; gap: 8px; }
+.sim__riders input { width: 4.2em; min-height: 36px; padding: 0 8px; border: 1px solid var(--stone-line); border-radius: var(--radius-sm); background: var(--stone); font: 500 15px var(--font-body); color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.sim__riders input::-webkit-inner-spin-button, .sim__riders input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.sim__riders input:focus { outline: 0; border-color: var(--ink); }
+.sim__limit { margin-left: auto; font: 400 13px var(--font-mono); color: var(--ink-60); }
+.sim__limit b { font-weight: 400; color: var(--ink); }
+.sim__msg { margin-top: 14px; font-size: 15px; color: var(--redline-deep); }
+.sim__manual { max-width: 760px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--stone-line); }
+.sim__manual-title { font: 600 18px var(--font-display); }
+.sim__manual [data-manual-form] { margin-top: 0 !important; border-top: 0 !important; }
+
+/* de baan */
+.sim__race { margin-top: 0; }
+.sim__race > .wrap { padding-top: clamp(24px, 3vw, 36px); }
+.sim__track { margin-top: clamp(18px, 2.4vw, 26px); gap: 14px; }
+.sim__track .lane { grid-template-columns: minmax(0, 15rem) 1fr 7rem; }
+.sim__track .lane__name { font-size: 17px; }
+.sim__track .lane__rail { height: 58px; }
+.sim__track .lane__bike { width: 66px; height: 38px; bottom: 6px; left: calc(6px + var(--p) * (100% - 80px)); }
+.sim__track .lane__time { font-size: 15px; }
+.sim__track .lane.is-empty .lane__name { color: var(--paper-60); }
+.sim__track .lane.is-empty .lane__bike { opacity: .28; }
+.sim__track .lane.is-empty .lane__name::before { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
+.lane__bike.is-rolling { animation: bike-roll 520ms var(--ease-out); }
+@keyframes bike-roll { from { transform: translateX(-24px); opacity: 0; } }
+.sim__race.is-brake .lane__rail::after { opacity: 0; }
+.sim__race.is-brake .lane.is-winner .lane__rail::after { opacity: 0; }
+
+/* uitslag */
+.sim__result { margin-top: clamp(24px, 3vw, 36px); padding-top: clamp(22px, 3vw, 32px); border-top: 1px solid var(--asphalt-line); }
+.sim__verdict { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px 24px; }
+.sim__verdict h2 { grid-column: 1; color: var(--paper); font-size: clamp(2rem, 4.2vw, 3.5rem); line-height: 1; }
+.sim__verdict h2 span { color: var(--redline); }
+.sim__verdict p { grid-column: 1; color: var(--paper-60); font-size: 17px; }
+.sim__verdict p b { color: var(--paper); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sim__verdict .race__replay { grid-column: 2; grid-row: 1 / 3; align-self: end; margin: 0; }
+.sim__pick { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.6vw, 20px); margin-top: clamp(22px, 3vw, 32px); }
+.sim-card { display: grid; grid-template-columns: auto 1fr; grid-template-rows: 1fr auto; gap: 14px 20px; padding: clamp(18px, 2.2vw, 26px); border: 1px solid var(--asphalt-line); border-radius: var(--radius-lg); background: var(--asphalt-raise); transition: border-color var(--dur); }
+.sim-card:hover { border-color: #4A4D54; }
+.sim-card--a { --c: var(--redline); }
+.sim-card--b { --c: var(--midrange); }
+.sim-card__pos { grid-row: 1 / 3; font: 800 clamp(40px, 4.4vw, 60px)/.9 var(--font-display); letter-spacing: -.02em; color: var(--asphalt-line); -webkit-text-stroke: 1px #4A4D54; }
+.sim-card.is-p1 .sim-card__pos { color: var(--redline); -webkit-text-stroke: 0; }
+.sim-card__cat { font: 400 12px var(--font-mono); color: var(--paper-60); }
+.sim-card h3 { margin-top: 6px; font-size: clamp(1.25rem, 1.9vw, 1.5rem); color: var(--paper); }
+.sim-card h3::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; vertical-align: 3px; background: var(--c); }
+.sim-card h3 a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size var(--dur) var(--ease-out); }
+.sim-card h3 a:hover { background-size: 100% 1px; }
+.sim-card__specs { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 8px; font-size: 15px; color: var(--paper-60); font-variant-numeric: tabular-nums; }
+.sim-card__specs b { color: var(--paper); font-weight: 600; }
+.sim-card__plus { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.sim-card__plus li { font-size: 13px; line-height: 1; padding: 7px 10px; border-radius: 999px; background: var(--asphalt); color: var(--paper); }
+.sim-card__acts { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.sim-card .gbtn { color: var(--paper); }
+.sim-card .gbtn[data-state="done"] { color: var(--telemetry); }
+.sim__compare { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 4px 4px; border-top: 1px solid var(--asphalt-line); font: 600 16px var(--font-body); color: var(--paper); }
+.sim__compare svg { width: 20px; height: 20px; flex: none; transition: transform var(--dur) var(--ease-out); }
+.sim__compare:hover svg { transform: translateX(4px); }
+.sim__compare:hover { color: var(--paper); text-decoration: underline; text-underline-offset: 4px; }
+.sim__after { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-top: 22px; font-size: 14px; color: var(--paper-60); }
+.sim__share[hidden], .sim__chart[hidden], .sim__result[hidden] { display: none; }
+.sim__share { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.sim__share > span { margin-right: 6px; font: 400 12px var(--font-mono); }
+.sim__share button, .sim__share a { min-height: 36px; padding: 0 12px; border: 1px solid var(--asphalt-line); border-radius: 999px; background: transparent; font: 500 14px var(--font-body); color: var(--paper); display: inline-flex; align-items: center; transition: border-color var(--dur-fast), background-color var(--dur-fast); }
+.sim__share button:hover, .sim__share a:hover { border-color: var(--paper-60); background: var(--asphalt-raise); }
+.sim__how { color: var(--paper-60); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--asphalt-line); transition: color var(--dur-fast); }
+.sim__how:hover { color: var(--paper); }
+.sim__chart { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--asphalt-line); }
+.sim__chart .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+.sim__chart svg { display: block; width: 100%; height: auto; }
+.sim__readout { margin-top: 6px; font-size: 13px; color: var(--paper-60); }
+/* binnenkomst van de uitslag: oordeel, dan de kaarten gestaffeld */
+.js .sim__result.is-in .sim__verdict { animation: sim-up 420ms var(--ease-out) both; }
+.js .sim__result.is-in .sim-card { animation: sim-up 480ms var(--ease-out) both; animation-delay: calc(140ms + var(--i, 0) * 90ms); }
+.js .sim__result.is-in .sim__compare, .js .sim__result.is-in .sim__after { animation: sim-up 420ms var(--ease-out) 340ms both; }
+.js .sim__result.is-in .sim__line-path { stroke-dasharray: 1; animation: sim-draw 1.1s var(--ease-out) 400ms both; }
+@keyframes sim-up { from { opacity: 0; transform: translateY(14px); } }
+@keyframes sim-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* onder de baan */
+.sim-notes__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 72px); }
+.sim-notes h2 { font-size: clamp(1.5rem, 2.4vw, 2rem); }
+.sim-notes p { margin-top: 12px; max-width: 58ch; color: var(--ink-60); }
+.sim-notes p:last-child { margin-top: 18px; }
+
+@media (max-width: 900px) {
+  .sim__pick { grid-template-columns: 1fr; }
+  .sim-notes__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .pickfield { flex-basis: 100%; }
+  .sim__limit { margin-left: 0; flex-basis: 100%; }
+  .sim__start { flex: 1 1 100%; }
+  .sim__track .lane { grid-template-columns: 1fr auto; }
+  .sim__track .lane__rail { grid-column: 1 / -1; grid-row: 2; height: 50px; }
+  .sim__track .lane__bike { width: 56px; height: 32px; left: calc(4px + var(--p) * (100% - 66px)); }
+  .sim__track .lane--marks > span:not(.track__marks) { display: none; }
+  .sim__track .lane--marks .track__marks { grid-column: 1 / -1; }
+  .sim__verdict { grid-template-columns: 1fr; }
+  .sim__verdict .race__replay { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 8px; }
+  .sim-card { grid-template-columns: auto 1fr; }
+  .sim-card__acts { grid-column: 1 / -1; }
+  .sim-card__acts .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lane__bike.is-rolling, .js .sim__result.is-in *, .pickfield.is-loading .pickfield__input { animation: none !important; }
+}

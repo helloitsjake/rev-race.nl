@@ -6,6 +6,7 @@ use App\Models\Motor;
 use App\Services\MotorLookupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class MotorController extends Controller
@@ -15,7 +16,7 @@ class MotorController extends Controller
         $query = (string) $request->query('q', '');
 
         return response()->json([
-            'motors' => $motors->search($query)->map(fn ($motor) => $this->serialize($motor))->values(),
+            'motors' => $motors->search($query)->map(fn ($motor) => self::serialize($motor))->values(),
         ]);
     }
 
@@ -31,7 +32,7 @@ class MotorController extends Controller
             return response()->json(['message' => $exception->getMessage()], 404);
         }
 
-        return response()->json(['motor' => $this->serialize($motor)]);
+        return response()->json(['motor' => self::serialize($motor)]);
     }
 
     public function storeManual(Request $request): JsonResponse
@@ -63,14 +64,23 @@ class MotorController extends Controller
             ],
         );
 
-        return response()->json(['motor' => $this->serialize($motor)]);
+        return response()->json(['motor' => self::serialize($motor)]);
     }
 
-    private function serialize($motor): array
+    /**
+     * Ook gebruikt door de simulatiepagina voor een voorgekozen motor, zodat de JS één vorm kent.
+     * category, a2 en url voeden de motoricoon en de keuzekaarten na de race (12-10-2026).
+     */
+    public static function serialize(Motor $motor): array
     {
         return [
             'id' => $motor->id,
             'label' => $motor->label(),
+            'short_label' => $motor->shortLabel(),
+            'category' => $motor->category,
+            'category_label' => $motor->categoryLabel(),
+            'a2' => $motor->isA2Eligible(),
+            'url' => route('brands.model', [Str::slug($motor->brand), $motor->slug()]),
             'brand' => $motor->brand,
             'model' => $motor->model,
             'year' => $motor->year,

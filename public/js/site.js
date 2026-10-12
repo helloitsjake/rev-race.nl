@@ -146,7 +146,24 @@ document.addEventListener('DOMContentLoaded', () => {
       cars.forEach((c, i) => setTimeout(() => live() && c.classList.add('is-in'), i * 85));
     }, lights.length * step + (slow ? 320 : 120));
   };
-  window.RevRace = { lightsOut };
+
+  // Veer-filter: de pil veert naar de gekozen knop. Ook gebruikt door de simulatiepagina.
+  const bindFilter = (f, onPick) => {
+    const base = f.querySelector('.filter__base'), pill = f.querySelector('.filter__pill');
+    pill.innerHTML = [...base.children].map((b) => `<span>${b.textContent}</span>`).join('');
+    const veer = new Rekveer(FILTER, (v) => { pill.style.setProperty('--l', v.p[0] + 'px'); pill.style.setProperty('--r', v.p[1] + 'px'); });
+    const edges = (b) => [b.offsetLeft - 4, b.offsetLeft - 4 + b.offsetWidth];
+    const init = () => veer.zet(...edges(base.querySelector('[aria-pressed="true"]')));
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(init);
+    window.addEventListener('resize', init);
+    base.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+      if (b.getAttribute('aria-pressed') === 'true') return;
+      base.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      veer.naar(...edges(b));
+      onPick(b.dataset.value);
+    }));
+    return { reset: init };
+  };
 
   document.addEventListener('DOMContentLoaded', () => {
     // Header krijgt een achtergrond zodra er gescrold is.
@@ -207,22 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lightsOut(picker, { slow: false });
       };
 
-      picker.querySelectorAll('.filter').forEach((f) => {
-        const base = f.querySelector('.filter__base'), pill = f.querySelector('.filter__pill');
-        pill.innerHTML = [...base.children].map((b) => `<span>${b.textContent}</span>`).join('');
-        const veer = new Rekveer(FILTER, (v) => { pill.style.setProperty('--l', v.p[0] + 'px'); pill.style.setProperty('--r', v.p[1] + 'px'); });
-        const edges = (b) => [b.offsetLeft - 4, b.offsetLeft - 4 + b.offsetWidth];
-        const init = () => veer.zet(...edges(base.querySelector('[aria-pressed="true"]')));
-        (document.fonts ? document.fonts.ready : Promise.resolve()).then(init);
-        window.addEventListener('resize', init);
-        base.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
-          if (b.getAttribute('aria-pressed') === 'true') return;
-          base.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-          veer.naar(...edges(b));
-          state[f.dataset.key] = b.dataset.value;
-          render();
-        }));
-      });
+      picker.querySelectorAll('.filter').forEach((f) => bindFilter(f, (value) => {
+        state[f.dataset.key] = value;
+        render();
+      }));
 
       // Op mobiel staat de grid onder de vouw: start de lichten pas als hij in beeld komt,
       // anders is het signature-moment al voorbij voordat iemand er is.
@@ -263,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // Race over 500 meter op de vergelijkpagina (signature-moment). De samples (x in m, v in
   // km/u) worden omgerekend naar positie in de tijd en geschaald naar de echte eindtijd.
-  const raceTrace = (side) => {
+  const raceTrace = (side, distance = 500) => {
     const pts = [{ t: 0, x: 0, v: 0 }];
     side.s.forEach((p) => {
       const last = pts[pts.length - 1];
@@ -272,9 +277,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const vAvg = Math.max((p.v + last.v) / 2 / 3.6, 0.5);
       pts.push({ t: last.t + dx / vAvg, x: p.x, v: p.v });
     });
-    // Het laatste sample ligt net voor de streep; trek de lijn door tot 500 m.
+    // Het laatste sample ligt net voor de streep; trek de lijn door tot de finish.
     const last = pts[pts.length - 1];
-    if (last.x < 500) pts.push({ t: last.t + (500 - last.x) / Math.max(last.v / 3.6, 0.5), x: 500, v: last.v });
+    if (last.x < distance) pts.push({ t: last.t + (distance - last.x) / Math.max(last.v / 3.6, 0.5), x: distance, v: last.v });
     const k = pts.length > 1 ? side.t / pts[pts.length - 1].t : 1;
     pts.forEach((p) => { p.t *= k; });
     return pts;
@@ -291,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return { x: end.x, v: end.v };
   };
   const fmtS = (n) => n.toFixed(2).replace('.', ',') + ' s';
+  window.RevRace = { lightsOut, bindFilter, raceTrace, raceAt, RUST };
 
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-race]').forEach((race) => {
@@ -367,8 +373,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
       return m ? decodeURIComponent(m[1]) : null;
     };
-    document.querySelectorAll('[data-garage]').forEach((btn) => btn.addEventListener('click', async (ev) => {
+    // Gedelegeerd, zodat ook knoppen werken die later in de pagina komen (simulatie-uitslag).
+    document.addEventListener('click', async (ev) => {
+      const btn = ev.target.closest('[data-garage]');
+      if (!btn) return;
       if (btn.dataset.state === 'done') return;
+      if (btn.dataset.state === 'busy') { ev.preventDefault(); return; }
       if (btn.dataset.state === 'full') { ev.preventDefault(); window.location = '/garage'; return; }
       const token = xsrf();
       if (!token) return; // gast: de link zelf gaat naar registreren met ?bewaar=
@@ -393,6 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         window.location = btn.href;
       }
-    }));
+    });
   });
 })();
