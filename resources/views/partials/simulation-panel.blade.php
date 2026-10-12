@@ -146,8 +146,8 @@
 
                 <div class="share-row" data-share-row>
                     <a class="btn btn--ghost" data-share-copy href="#">Deel uitslag</a>
-                    <a class="btn btn--ghost" data-search-online="A" href="#" target="_blank" rel="noopener">Motor A online zoeken</a>
-                    <a class="btn btn--ghost" data-search-online="B" href="#" target="_blank" rel="noopener">Motor B online zoeken</a>
+                    <a class="btn btn--ghost" data-search-online="A" href="#" target="_blank" rel="nofollow noopener">Aanbod motor A</a>
+                    <a class="btn btn--ghost" data-search-online="B" href="#" target="_blank" rel="nofollow noopener">Aanbod motor B</a>
                 </div>
                 <div class="share-row" data-share-row>
                     <a class="btn btn--ghost" data-share-social="whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>

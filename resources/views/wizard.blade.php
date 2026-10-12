@@ -63,7 +63,7 @@
         $voorkeurKort = ['bochten' => ['Bochten en leunhoek', 'Wendbaar, licht, sportief'], 'snelheid' => ['Snel op het rechte stuk', 'Vermogen en acceleratie'], 'relax' => ['Rijden voor het plezier', 'Comfortabel, geen haast']];
         $ervaringKort = ['beginner' => ['Net rijbewijs of A2', 'Alleen motoren tot 35 kW'], 'ervaren' => ['Vol rijbewijs', 'Alle motoren']];
         $simUrl = fn ($motor) => route('simulation.index', array_filter(['motor_a' => $motor->id, 'gewicht' => $gewicht]));
-        $googleUrl = fn ($motor) => 'https://www.google.com/search?q='.urlencode($motor->label());
+        $offerUrl = fn ($motor) => route('outbound', [$motor, 'marktplaats']).'?van=wizard';
     @endphp
 
     <div class="wrap" style="padding-block:clamp(28px,4vw,56px) clamp(28px,4vw,44px)">
@@ -174,7 +174,7 @@
                                     <div class="slot__name">{{ $motor->label() }}@if($motor->isA2Eligible())<span class="a2">A2</span>@endif</div>
                                     <div class="slot__seg">{{ $motor->categoryLabel() }}</div>
                                     <div class="slot__specs"><span><b>{{ $motor->power_hp }}</b> pk</span><span><b>{{ $motor->weight_kg }}</b> kg</span><span><b>{{ number_format($motor->powerToWeight(), 2, ',', '') }}</b> pk/kg</span></div>
-                                    <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $googleUrl($motor) }}" target="_blank" rel="noopener">Zoek deze motor</a></div>
+                                    <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $offerUrl($motor) }}" target="_blank" rel="nofollow noopener">Bekijk aanbod</a></div>
                                 </div>
                             </div>
                         @endforeach
@@ -190,11 +190,7 @@
                             </div>
                             <div class="wiz-finish__acts">
                                 <a class="btn btn--primary" href="{{ route('compare.show', \App\Http\Controllers\ComparisonController::canonicalSlug($p1, $p2)) }}">Laat ze racen {!! $arrow !!}</a>
-                                @guest
-                                    <a class="wiz-finish__link" href="{{ route('register') }}">Bewaar ze in een gratis garage</a>
-                                @else
-                                    <a class="wiz-finish__link" href="{{ route('garage.index') }}">Zet ze in je garage</a>
-                                @endguest
+                                @include('partials.garage-button', ['motorIds' => [$p1->id, $p2->id], 'label' => 'Bewaar ze in je garage'])
                             </div>
                         </div>
                     @endif
@@ -227,7 +223,7 @@
                                     <div class="slot__car is-in">
                                         <div class="slot__name">{{ $motor->label() }}</div>
                                         <div class="slot__seg">{{ $motor->categoryLabel() }}</div>
-                                        <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $googleUrl($motor) }}" target="_blank" rel="noopener">Zoek deze motor</a></div>
+                                        <div class="slot__acts"><a href="{{ $simUrl($motor) }}">Simuleer</a><a href="{{ $offerUrl($motor) }}" target="_blank" rel="nofollow noopener">Bekijk aanbod</a></div>
                                     </div>
                                 </div>
                             @endforeach

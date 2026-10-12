@@ -4,6 +4,7 @@ Disallow: /api/
 Disallow: /garage
 Disallow: /profiel
 Disallow: /mollie/
+Disallow: /naar/
 
 # Shared hosting met beperkte PHP-FPM-pool: de Ahrefs-crawlers op max 1 request
 # per seconde houden, anders lopen de workers vol en timeouten alle requests
@@ -15,6 +16,7 @@ Disallow: /api/
 Disallow: /garage
 Disallow: /profiel
 Disallow: /mollie/
+Disallow: /naar/
 Crawl-delay: 1
 
 User-agent: AhrefsSiteAudit
@@ -23,6 +25,7 @@ Disallow: /api/
 Disallow: /garage
 Disallow: /profiel
 Disallow: /mollie/
+Disallow: /naar/
 Crawl-delay: 1
 
 Sitemap: https://www.rev-race.nl/sitemap.xml

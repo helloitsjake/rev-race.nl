@@ -341,9 +341,9 @@ function bindSocialShare(winnerName, shareLine, shareUrl) {
 
 function bindSearchOnline(result) {
   const searchA = qs('[data-search-online="A"]');
-  if (searchA) searchA.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
+  if (searchA) searchA.href = result.offer_url_a || `https://www.google.com/search?q=${encodeURIComponent(result.motor_a)}`;
   const searchB = qs('[data-search-online="B"]');
-  if (searchB) searchB.href = `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
+  if (searchB) searchB.href = result.offer_url_b || `https://www.google.com/search?q=${encodeURIComponent(result.motor_b)}`;
 }
 
 function renderRaceResult(result) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GarageMotor;
 use App\Models\Motor;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,26 +37,48 @@ class GarageController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'motor_id' => ['required', 'integer', 'exists:motors,id'],
             'nickname' => ['nullable', 'string', 'max:80'],
         ]);
 
-        $user = $request->user();
+        $state = self::add($request->user(), (int) $data['motor_id'], $data['nickname'] ?? null);
+
+        // De garageknop op vergelijk- en wizardpagina's post met fetch en wil alleen de status.
+        if ($request->wantsJson()) {
+            return response()->json(['state' => $state, 'garage' => route('garage.index')]);
+        }
+
+        return $state === 'full'
+            ? back()->withErrors(['motor_id' => 'De gratis garage heeft maximaal 2 motoren.'])
+            : back()->with('status', 'Motor toegevoegd aan je garage.');
+    }
+
+    /**
+     * @return 'added'|'exists'|'full'
+     */
+    public static function add(User $user, int $motorId, ?string $nickname = null): string
+    {
+        if ($user->garageMotors()->where('motor_id', $motorId)->exists()) {
+            return 'exists';
+        }
+
         $count = $user->garageMotors()->count();
 
         if ($count >= 2 && ! $user->isPremium()) {
-            return back()->withErrors(['motor_id' => 'De gratis garage heeft maximaal 2 motoren.']);
+            return 'full';
         }
 
-        GarageMotor::query()->firstOrCreate(
-            ['user_id' => $user->id, 'motor_id' => $data['motor_id']],
-            ['nickname' => $data['nickname'] ?? null, 'sort_order' => $count],
-        );
+        GarageMotor::query()->create([
+            'user_id' => $user->id,
+            'motor_id' => $motorId,
+            'nickname' => $nickname,
+            'sort_order' => $count,
+        ]);
 
-        return back()->with('status', 'Motor toegevoegd aan je garage.');
+        return 'added';
     }
 
     public function destroy(Request $request, GarageMotor $garageMotor): RedirectResponse

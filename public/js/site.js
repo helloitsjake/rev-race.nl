@@ -261,4 +261,138 @@ document.addEventListener('DOMContentLoaded', () => {
       wiz.addEventListener('input', progress); wiz.addEventListener('change', progress); progress();
     }
   });
+  // Race over 500 meter op de vergelijkpagina (signature-moment). De samples (x in m, v in
+  // km/u) worden omgerekend naar positie in de tijd en geschaald naar de echte eindtijd.
+  const raceTrace = (side) => {
+    const pts = [{ t: 0, x: 0, v: 0 }];
+    side.s.forEach((p) => {
+      const last = pts[pts.length - 1];
+      const dx = p.x - last.x;
+      if (dx <= 0) return;
+      const vAvg = Math.max((p.v + last.v) / 2 / 3.6, 0.5);
+      pts.push({ t: last.t + dx / vAvg, x: p.x, v: p.v });
+    });
+    // Het laatste sample ligt net voor de streep; trek de lijn door tot 500 m.
+    const last = pts[pts.length - 1];
+    if (last.x < 500) pts.push({ t: last.t + (500 - last.x) / Math.max(last.v / 3.6, 0.5), x: 500, v: last.v });
+    const k = pts.length > 1 ? side.t / pts[pts.length - 1].t : 1;
+    pts.forEach((p) => { p.t *= k; });
+    return pts;
+  };
+  const raceAt = (pts, t) => {
+    if (t <= 0) return { x: 0, v: 0 };
+    for (let i = 1; i < pts.length; i++) {
+      if (pts[i].t >= t) {
+        const f = (t - pts[i - 1].t) / ((pts[i].t - pts[i - 1].t) || 1);
+        return { x: pts[i - 1].x + f * (pts[i].x - pts[i - 1].x), v: pts[i - 1].v + f * (pts[i].v - pts[i - 1].v) };
+      }
+    }
+    const end = pts[pts.length - 1];
+    return { x: end.x, v: end.v };
+  };
+  const fmtS = (n) => n.toFixed(2).replace('.', ',') + ' s';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-race]').forEach((race) => {
+      const data = JSON.parse(race.querySelector('[data-race-json]').textContent);
+      const lanes = { a: race.querySelector('[data-lane="a"]'), b: race.querySelector('[data-lane="b"]') };
+      const tabs = [...race.querySelectorAll('[data-race-tab]')];
+      const replay = race.querySelector('[data-race-replay]');
+      let key = tabs[0]?.dataset.raceTab, frame = 0, started = false;
+
+      const draw = (sides, t, vMax) => ['a', 'b'].forEach((s) => {
+        const pos = raceAt(sides[s], t), lane = lanes[s], bike = lane.querySelector('.lane__bike');
+        const done = t >= data[key][s].t;
+        bike.style.setProperty('--p', (pos.x / 500).toFixed(4));
+        bike.style.setProperty('--v', done ? 0 : (pos.v / vMax).toFixed(3));
+        lane.classList.toggle('is-done', done);
+        lane.querySelector('[data-lane-time]').textContent = done ? fmtS(data[key][s].t) : Math.round(pos.v) + ' km/u';
+      });
+
+      const run = () => {
+        cancelAnimationFrame(frame);
+        const race = data[key];
+        const sides = { a: raceTrace(race.a), b: raceTrace(race.b) };
+        const vMax = Math.max(...race.a.s.map((p) => p.v), ...race.b.s.map((p) => p.v), 1);
+        const end = Math.max(race.a.t, race.b.t);
+        const winner = race.winner.toLowerCase();
+        Object.entries(lanes).forEach(([s, l]) => l.classList.remove('is-winner', 'is-done'));
+        replay.hidden = true;
+        const finish = () => {
+          draw(sides, end, vMax);
+          lanes[winner].classList.add('is-winner');
+          replay.hidden = false;
+        };
+        if (RUST) return finish();
+        // De snelste doet er ongeveer 3,2 seconde over: lang genoeg om te volgen, kort genoeg
+        // om niet te wachten. Het verschil tussen beide blijft op schaal.
+        const speed = Math.min(race.a.t, race.b.t) / 3.2;
+        const t0 = performance.now();
+        const tick = (now) => {
+          const t = ((now - t0) / 1000) * speed;
+          if (t >= end) return finish();
+          draw(sides, t, vMax);
+          frame = requestAnimationFrame(tick);
+        };
+        frame = requestAnimationFrame(tick);
+      };
+
+      tabs.forEach((tab) => tab.addEventListener('click', () => {
+        key = tab.dataset.raceTab;
+        tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+        race.querySelectorAll('[role="tabpanel"]').forEach((p) => { p.hidden = p.id !== 'race-' + key; });
+        run();
+      }));
+      replay.addEventListener('click', run);
+
+      // Pas starten als de baan echt in beeld is, anders is de race voorbij voor iemand kijkt.
+      const seen = new IntersectionObserver((es) => {
+        if (started || !es.some((e) => e.isIntersecting)) return;
+        started = true; seen.disconnect(); run();
+      }, { threshold: 0.5 });
+      seen.observe(race.querySelector('.track'));
+    });
+
+    // Aanbodbalk: zichtbaar zodra de keuzekaarten boven uit beeld zijn gescrold.
+    const bar = document.querySelector('[data-buybar]'), pick = document.querySelector('[data-pick]');
+    if (bar && pick) {
+      bar.hidden = false;
+      new IntersectionObserver(([e]) => {
+        bar.classList.toggle('is-in', !e.isIntersecting && e.boundingClientRect.top < 0);
+      }).observe(pick);
+    }
+
+    // Garageknop: werkt op publiek gecachte pagina's. Ingelogd = XSRF-cookie aanwezig.
+    const xsrf = () => {
+      const m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+    document.querySelectorAll('[data-garage]').forEach((btn) => btn.addEventListener('click', async (ev) => {
+      if (btn.dataset.state === 'done') return;
+      if (btn.dataset.state === 'full') { ev.preventDefault(); window.location = '/garage'; return; }
+      const token = xsrf();
+      if (!token) return; // gast: de link zelf gaat naar registreren met ?bewaar=
+      ev.preventDefault();
+      btn.dataset.state = 'busy';
+      const minimum = new Promise((r) => setTimeout(r, RUST ? 0 : 650));
+      let state = 'added';
+      try {
+        for (const id of btn.dataset.garage.split(',')) {
+          const res = await fetch('/garage', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': token },
+            body: JSON.stringify({ motor_id: Number(id) }),
+          });
+          if (res.status === 401 || res.status === 419) { window.location = btn.href; return; }
+          if (!res.ok) throw new Error(String(res.status));
+          state = (await res.json()).state;
+          if (state === 'full') break;
+        }
+        await minimum;
+        btn.dataset.state = state === 'full' ? 'full' : 'done';
+      } catch (e) {
+        window.location = btn.href;
+      }
+    }));
+  });
 })();

@@ -49,6 +49,10 @@ Route::post('/contact', [ContactController::class, 'store'])
     ->name('contact.store');
 Route::get('/embed', [PageController::class, 'embed'])->name('embed');
 Route::get('/s/{code}', [SimulationController::class, 'showShared'])->name('share.show');
+// Uitgaande links naar aanbodsites, met klikteller. Niet cachen: elke klik moet de app raken.
+Route::get('/naar/{motor}/{destination}', [\App\Http\Controllers\OutboundController::class, 'go'])
+    ->middleware('throttle:60,1')
+    ->name('outbound');
 Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('compare.show');
 Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('toplijst.show');
 Route::get('/merken', [BrandController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('brands.index');

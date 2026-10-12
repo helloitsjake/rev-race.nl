@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Motor;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,13 +13,17 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function loginForm(): View
+    public function loginForm(Request $request): View
     {
+        $this->rememberPendingGarageMotor($request);
+
         return view('auth.login');
     }
 
-    public function registerForm(): View
+    public function registerForm(Request $request): View
     {
+        $this->rememberPendingGarageMotor($request);
+
         return view('auth.register');
     }
 
@@ -36,6 +41,10 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        if ($redirect = $this->savePendingGarageMotor($request)) {
+            return $redirect;
+        }
 
         return redirect()->intended(route('simulation.index'));
     }
@@ -65,6 +74,10 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        if ($redirect = $this->savePendingGarageMotor($request)) {
+            return $redirect;
+        }
+
         return redirect()->route('profile.edit')->with('status', 'Account aangemaakt. Vul je rijdersprofiel verder aan.');
     }
 
@@ -75,5 +88,34 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    /**
+     * Een gast die op "Bewaar in garage" klikt, komt hier met ?bewaar=<motor-id>. Die motor
+     * onthouden we tot na het inloggen of registreren, zodat de klik niet verloren gaat.
+     */
+    private function rememberPendingGarageMotor(Request $request): void
+    {
+        $id = (int) $request->query('bewaar');
+
+        if ($id > 0 && Motor::query()->whereKey($id)->exists()) {
+            $request->session()->put('garage.pending', $id);
+        }
+    }
+
+    private function savePendingGarageMotor(Request $request): ?RedirectResponse
+    {
+        $id = $request->session()->pull('garage.pending');
+
+        if (! $id) {
+            return null;
+        }
+
+        $state = GarageController::add($request->user(), (int) $id);
+
+        return redirect()->route('garage.index')->with('status', match ($state) {
+            'full' => 'Je garage zit vol (2 motoren). Haal er eerst een weg.',
+            default => 'Motor staat in je garage.',
+        });
     }
 }

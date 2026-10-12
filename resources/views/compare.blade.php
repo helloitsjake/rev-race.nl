@@ -143,7 +143,25 @@
 @endpush
 
 @section('content')
-    <header class="chapter chapter--tight">
+    @php
+        // Data voor de raceweergave: per wegconditie de tijden en de snelheidssamples uit
+        // dezelfde gecachte simulatie als de tekst. De JS rekent de samples om naar positie
+        // in de tijd; de server-HTML hieronder toont de uitslag ook zonder JS.
+        $raceData = collect($results)->map(fn ($data) => [
+            'label' => $data['label'],
+            'winner' => $data['result']['winner'],
+            'a' => ['t' => $data['result']['time_a_s'], 's' => $data['result']['samples']['a'] ?? []],
+            'b' => ['t' => $data['result']['time_b_s'], 's' => $data['result']['samples']['b'] ?? []],
+        ]);
+        $winsFor = fn (string $side) => collect($results)
+            ->filter(fn ($data) => $data['result']['winner'] === $side)
+            ->map(fn ($data) => $data['label'])
+            ->values();
+        $modelUrl = fn ($motor) => route('brands.model', [\Illuminate\Support\Str::slug($motor->brand), $motor->slug()]);
+        $better = fn ($a, $b, bool $higher = true) => $a == $b ? null : (($higher ? $a > $b : $a < $b) ? 'a' : 'b');
+    @endphp
+
+    <header class="chapter chapter--tight compare-head">
         <div class="wrap">
             <nav class="crumb" aria-label="Broodkruimel">
                 <a href="{{ route('home') }}">Home</a> <span class="sep">&rarr;</span>
@@ -151,12 +169,151 @@
                 {{ $motorA->label() }} vs {{ $motorB->label() }}
             </nav>
             <h1>{{ $motorA->label() }} vs {{ $motorB->label() }}</h1>
-            <p class="lede">Op droog asfalt wint de {{ $dryWinner->label() }}. Bekijk hieronder hoe dat verandert per wegconditie.</p>
+            <p class="lede">Op droog asfalt wint de {{ $dryWinner->label() }}@if($dryWinner->isNot($rainWinner)), op nat asfalt de {{ $rainWinner->label() }}@endif. Kijk de race terug en zie wat er te koop is.</p>
         </div>
     </header>
 
-    <section class="chapter chapter--tight">
+    {{-- Signature-moment van deze pagina: de race over 500 meter, op echte simulatiedata. --}}
+    <section class="race" id="uitslag" aria-labelledby="race-title" data-race>
+        <script type="application/json" data-race-json>{!! json_encode($raceData) !!}</script>
         <div class="wrap">
+            <div class="race__head">
+                <h2 id="race-title">Race over 500 meter</h2>
+                <div class="race__tabs" role="tablist" aria-label="Wegconditie">
+                    @foreach($results as $key => $data)
+                        <button type="button" role="tab" id="tab-{{ $key }}" aria-controls="race-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" data-race-tab="{{ $key }}">{{ $data['label'] }}</button>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="track" aria-hidden="true">
+                @foreach(['a' => $motorA, 'b' => $motorB] as $side => $motor)
+                    <div class="lane lane--{{ $side }}" data-lane="{{ $side }}">
+                        <span class="lane__name">{{ $motor->shortLabel() }}</span>
+                        <span class="lane__rail"><i class="lane__bike"></i></span>
+                        <span class="lane__time" data-lane-time>&nbsp;</span>
+                    </div>
+                @endforeach
+                <div class="lane lane--marks"><span></span><span class="track__marks"><span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500 m</span></span><span></span></div>
+            </div>
+
+            @foreach($results as $key => $data)
+                @php
+                    $result = $data['result'];
+                    $winner = $result['winner'] === 'A' ? $motorA : $motorB;
+                @endphp
+                <div class="race__result" id="race-{{ $key }}" role="tabpanel" aria-labelledby="tab-{{ $key }}" @unless($loop->first) hidden @endunless>
+                    <h3>{{ $data['label'] }} asfalt: {{ $winner->label() }} wint</h3>
+                    <p>
+                        {{ $motorA->shortLabel() }} <b>{{ number_format($result['time_a_s'], 2, ',', '.') }} s</b>,
+                        {{ $motorB->shortLabel() }} <b>{{ number_format($result['time_b_s'], 2, ',', '.') }} s</b>.
+                        Verschil {{ number_format($result['delta_s'], 2, ',', '.') }} s.
+                        @if($key !== 'dry' && $winner->isNot($dryWinner))
+                            Op droog asfalt lag de {{ $dryWinner->shortLabel() }} nog voor.
+                        @endif
+                    </p>
+                </div>
+            @endforeach
+            <button type="button" class="race__replay" data-race-replay hidden>Opnieuw starten</button>
+        </div>
+    </section>
+
+    {{-- Conversie: direct na de uitslag de keuze, met de weg naar het aanbod. --}}
+    <section class="chapter chapter--tight" id="kiezen" aria-labelledby="pick-title">
+        <div class="wrap">
+            <h2 id="pick-title" class="pick__title">Welke past bij jou?</h2>
+            <div class="pick" data-pick>
+                @foreach(['a' => $motorA, 'b' => $motorB] as $side => $motor)
+                    <article class="pick-card pick-card--{{ $side }}">
+                        <p class="pick-card__cat">{{ $motor->categoryLabel() }}@if($motor->isA2Eligible())<span class="a2">A2</span>@endif</p>
+                        <h3><a href="{{ $modelUrl($motor) }}">{{ $motor->label() }}</a></h3>
+                        <p class="pick-card__specs"><span><b>{{ $motor->power_hp }}</b> pk</span><span><b>{{ $motor->weight_kg }}</b> kg</span><span><b>{{ number_format($motor->powerToWeight(), 2, ',', '') }}</b> pk/kg</span></p>
+                        @php
+                            $wins = $winsFor(strtoupper($side));
+                            $other = $side === 'a' ? $motorB : $motorA;
+                            $strengths = array_values(array_filter([
+                                $wins->count() === 3 ? 'Wint op elk wegdek' : ($wins->isNotEmpty() ? 'Wint op '.Str::lower($wins->implode(' en ')).' asfalt' : null),
+                                $motor->power_hp > $other->power_hp ? ($motor->power_hp - $other->power_hp).' pk meer' : null,
+                                $motor->torque_nm > $other->torque_nm ? ($motor->torque_nm - $other->torque_nm).' Nm meer koppel' : null,
+                                $motor->weight_kg < $other->weight_kg ? ($other->weight_kg - $motor->weight_kg).' kg lichter' : null,
+                                $motor->isA2Eligible() && ! $other->isA2Eligible() ? 'Mag met A2-rijbewijs' : null,
+                            ]));
+                        @endphp
+                        @if($strengths)
+                            <ul class="pick-card__plus">
+                                @foreach($strengths as $plus)<li>{{ $plus }}</li>@endforeach
+                            </ul>
+                        @endif
+                        <div class="pick-card__acts">
+                            <a class="btn btn--primary" href="{{ route('outbound', [$motor, 'marktplaats']) }}?van=vergelijk" rel="nofollow noopener" target="_blank">Bekijk aanbod op Marktplaats</a>
+                            @include('partials.garage-button', ['motorIds' => [$motor->id]])
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+            <p class="pick__note">Aanbod opent in een nieuw tabblad. RevRace verkoopt zelf geen motoren.</p>
+        </div>
+    </section>
+
+    <section class="chapter chapter--tight" id="specificaties">
+        <div class="wrap">
+            <h2>Specificaties: {{ $motorA->shortLabel() }} vs {{ $motorB->shortLabel() }}</h2>
+            <div class="spec">
+                <div class="spec__row spec__row--head">
+                    <div class="spec__label">Motor</div>
+                    <div class="spec__value spec__value--a">{{ $motorA->label() }}</div>
+                    <div class="spec__value spec__value--b">{{ $motorB->label() }}</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Vermogen</div>
+                    @php($w = $better($motorA->power_hp, $motorB->power_hp))
+                    <div class="spec__value @if($w === 'a') is-best @endif">{{ $motorA->power_hp }} pk</div>
+                    <div class="spec__value @if($w === 'b') is-best @endif">{{ $motorB->power_hp }} pk</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Koppel</div>
+                    @php($w = $better($motorA->torque_nm, $motorB->torque_nm))
+                    <div class="spec__value @if($w === 'a') is-best @endif">{{ $motorA->torque_nm }} Nm</div>
+                    <div class="spec__value @if($w === 'b') is-best @endif">{{ $motorB->torque_nm }} Nm</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Gewicht</div>
+                    @php($w = $better($motorA->weight_kg, $motorB->weight_kg, false))
+                    <div class="spec__value @if($w === 'a') is-best @endif">{{ $motorA->weight_kg }} kg</div>
+                    <div class="spec__value @if($w === 'b') is-best @endif">{{ $motorB->weight_kg }} kg</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Pk per kg</div>
+                    @php($w = $better(round($motorA->powerToWeight(), 2), round($motorB->powerToWeight(), 2)))
+                    <div class="spec__value @if($w === 'a') is-best @endif">{{ number_format($motorA->powerToWeight(), 2, ',', '.') }}</div>
+                    <div class="spec__value @if($w === 'b') is-best @endif">{{ number_format($motorB->powerToWeight(), 2, ',', '.') }}</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Motortype</div>
+                    <div class="spec__value">{{ $motorA->engine_type }}</div>
+                    <div class="spec__value">{{ $motorB->engine_type }}</div>
+                </div>
+                <div class="spec__row">
+                    <div class="spec__label">Cilinderinhoud</div>
+                    <div class="spec__value">{{ $motorA->displacement_cc }} cc</div>
+                    <div class="spec__value">{{ $motorB->displacement_cc }} cc</div>
+                </div>
+                @if($motorA->top_speed_kmh && $motorB->top_speed_kmh)
+                    <div class="spec__row">
+                        <div class="spec__label">Topsnelheid</div>
+                        @php($w = $better($motorA->top_speed_kmh, $motorB->top_speed_kmh))
+                        <div class="spec__value @if($w === 'a') is-best @endif">{{ $motorA->top_speed_kmh }} km/h</div>
+                        <div class="spec__value @if($w === 'b') is-best @endif">{{ $motorB->top_speed_kmh }} km/h</div>
+                    </div>
+                @endif
+            </div>
+            <p class="spec__legend">Vet = de betere waarde van de twee.</p>
+        </div>
+    </section>
+
+    <section class="chapter chapter--tight" id="analyse">
+        <div class="wrap">
+            <h2>Wat de cijfers betekenen</h2>
             <div class="panel panel--text">
                 <p style="margin-bottom: 1.2em">
                     Wie is er nou sneller, de <b>{{ $motorA->label() }}</b> of de <b>{{ $motorB->label() }}</b>? Op papier heeft de
@@ -182,101 +339,8 @@
                     @endif
                     Twijfel je zelf tussen deze twee? Vul je eigen rijdersgewicht en wegconditie in en race ze tegen elkaar.
                 </p>
-                <a class="btn btn--primary" href="{{ route('simulation.index') }}">Zelf simuleren</a>
+                <a class="btn btn--primary" href="{{ route('simulation.index', ['motor_a' => $motorA->id]) }}">Simuleer met je eigen gewicht</a>
             </div>
-        </div>
-    </section>
-
-    <section class="chapter" id="specificaties">
-        <div class="wrap">
-            <h2>Specificaties: {{ $motorA->shortLabel() }} vs {{ $motorB->shortLabel() }}</h2>
-            <div class="spec">
-                <div class="spec__row spec__row--head">
-                    <div class="spec__label">Motor</div>
-                    <div class="spec__value spec__value--a">{{ $motorA->label() }}</div>
-                    <div class="spec__value spec__value--b">{{ $motorB->label() }}</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Vermogen</div>
-                    <div class="spec__value">{{ $motorA->power_hp }} pk</div>
-                    <div class="spec__value">{{ $motorB->power_hp }} pk</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Koppel</div>
-                    <div class="spec__value">{{ $motorA->torque_nm }} Nm</div>
-                    <div class="spec__value">{{ $motorB->torque_nm }} Nm</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Gewicht</div>
-                    <div class="spec__value">{{ $motorA->weight_kg }} kg</div>
-                    <div class="spec__value">{{ $motorB->weight_kg }} kg</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Pk per kg</div>
-                    <div class="spec__value">{{ number_format($motorA->powerToWeight(), 2, ',', '.') }}</div>
-                    <div class="spec__value">{{ number_format($motorB->powerToWeight(), 2, ',', '.') }}</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Motortype</div>
-                    <div class="spec__value">{{ $motorA->engine_type }}</div>
-                    <div class="spec__value">{{ $motorB->engine_type }}</div>
-                </div>
-                <div class="spec__row">
-                    <div class="spec__label">Cilinderinhoud</div>
-                    <div class="spec__value">{{ $motorA->displacement_cc }} cc</div>
-                    <div class="spec__value">{{ $motorB->displacement_cc }} cc</div>
-                </div>
-                @if($motorA->top_speed_kmh && $motorB->top_speed_kmh)
-                    <div class="spec__row">
-                        <div class="spec__label">Topsnelheid</div>
-                        <div class="spec__value">{{ $motorA->top_speed_kmh }} km/h</div>
-                        <div class="spec__value">{{ $motorB->top_speed_kmh }} km/h</div>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </section>
-
-    <section class="chapter chapter--tight" id="simulatie">
-        <div class="wrap">
-            <h2>Race over 500 meter, in drie wegcondities</h2>
-            <p class="lede" style="margin-bottom: 2em">Dezelfde twee motoren, dezelfde afstand, alleen de wegconditie verandert. Let op wat er gebeurt met de winnaar zodra de tractie daalt.</p>
-
-            @foreach($results as $key => $data)
-                @php
-                    $result = $data['result'];
-                    $winner = $result['winner'] === 'A' ? $motorA : $motorB;
-                    $mu = $muDisplay[$key] ?? null;
-                    $fastestTime = min($result['time_a_s'], $result['time_b_s']);
-                    $widthA = $result['time_a_s'] > 0 ? round(($fastestTime / $result['time_a_s']) * 100, 1) : 0;
-                    $widthB = $result['time_b_s'] > 0 ? round(($fastestTime / $result['time_b_s']) * 100, 1) : 0;
-                @endphp
-                <h3 style="margin-bottom: 1em">{{ $data['label'] }} asfalt: {{ $winner->label() }} wint</h3>
-                <div class="panel" style="margin-bottom: clamp(28px, 4vw, 44px)">
-                    <div class="panel__head">
-                        <span>Sprint 500m</span>
-                        @if($mu)
-                            <span class="mu">tractie {{ number_format($mu['t'], 2, ',', '.') }} &middot; rem {{ number_format($mu['b'], 2, ',', '.') }} &middot; bocht {{ number_format($mu['c'], 2, ',', '.') }}</span>
-                        @endif
-                    </div>
-                    <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $motorA->label() }}</span><span class="ratio">{{ number_format($motorA->powerToWeight(), 2, ',', '.') }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorA->power_hp }} pk</span><span>{{ $motorA->weight_kg }} kg</span><span>{{ number_format($result['time_a_s'], 2, ',', '.') }}s</span></div>
-                        <div class="bar"><span style="width:{{ $widthA }}%"></span></div>
-                    </div>
-                    <div class="bike-row">
-                        <div class="bike-row__name"><span>{{ $motorB->label() }}</span><span class="ratio">{{ number_format($motorB->powerToWeight(), 2, ',', '.') }} pk/kg</span></div>
-                        <div class="bike-row__meta"><span>{{ $motorB->power_hp }} pk</span><span>{{ $motorB->weight_kg }} kg</span><span>{{ number_format($result['time_b_s'], 2, ',', '.') }}s</span></div>
-                        <div class="bar"><span style="width:{{ $widthB }}%"></span></div>
-                    </div>
-                    @if($key !== 'dry' && $winner->isNot($dryWinner))
-                        <div class="panel__foot">
-                            <p style="color: var(--paper-60); font-size: 0.9375rem">Bij deze wegconditie wint de {{ $winner->label() }} in plaats van de {{ $dryWinner->label() }}, die op droog asfalt voorlag. Verschil: {{ number_format($result['delta_s'], 2, ',', '.') }}s.</p>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-
             @include('partials.simulation-confidence', ['motorA' => $motorA, 'motorB' => $motorB])
         </div>
     </section>
@@ -321,4 +385,14 @@
             </div>
         </div>
     </section>
+
+    {{-- Aanbodbalk: verschijnt zodra de keuzekaarten uit beeld zijn, zodat de stap naar het
+         aanbod nooit meer dan één tik weg is (12-10-2026). --}}
+    <div class="buybar" data-buybar hidden>
+        <div class="buybar__inner wrap">
+            <span class="buybar__label">Te koop</span>
+            <a href="{{ route('outbound', [$motorA, 'marktplaats']) }}?van=vergelijk-balk" rel="nofollow noopener" target="_blank" class="buybar__btn buybar__btn--a">{{ $motorA->shortLabel() }}</a>
+            <a href="{{ route('outbound', [$motorB, 'marktplaats']) }}?van=vergelijk-balk" rel="nofollow noopener" target="_blank" class="buybar__btn buybar__btn--b">{{ $motorB->shortLabel() }}</a>
+        </div>
+    </div>
 @endsection

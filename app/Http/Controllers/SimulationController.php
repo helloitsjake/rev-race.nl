@@ -75,6 +75,8 @@ class SimulationController extends Controller
 
         $result['motor_a'] = $motorA->label();
         $result['motor_b'] = $motorB->label();
+        $result['offer_url_a'] = route('outbound', [$motorA, 'marktplaats']).'?van=simulatie';
+        $result['offer_url_b'] = route('outbound', [$motorB, 'marktplaats']).'?van=simulatie';
 
         if ($result['mode'] === 'race') {
             $share = SimulationResult::query()->create([

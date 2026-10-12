@@ -38,6 +38,15 @@ class AiUsageController extends Controller
             'topUsers' => $this->topUsers(),
             'topRejections' => AiRejectedQuery::query()->orderByDesc('hits')->limit(15)->get(),
             'recent' => AiUsageLog::query()->with('user')->latest('created_at')->limit(50)->get(),
+            // Uitgaande kliks naar aanbodsites: het conversiesignaal van de site.
+            'outboundBySource' => \App\Models\OutboundClick::query()
+                ->where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('coalesce(source, ?) as bron, destination, count(*) as kliks', ['onbekend'])
+                ->groupBy('bron', 'destination')->orderByDesc('kliks')->get(),
+            'outboundTopMotors' => \App\Models\OutboundClick::query()->with('motor')
+                ->where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('motor_id, count(*) as kliks')
+                ->groupBy('motor_id')->orderByDesc('kliks')->limit(15)->get(),
         ]);
     }
 

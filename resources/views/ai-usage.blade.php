@@ -69,6 +69,28 @@
         </div>
     </div>
 
+    <h2>Uitgaande kliks naar aanbod, laatste 30 dagen</h2>
+    <div class="scroll">
+        <table>
+            <tr><th>Vanaf</th><th>Naar</th><th class="num">Kliks</th></tr>
+            @forelse ($outboundBySource as $row)
+                <tr><td>{{ $row->bron }}</td><td>{{ $row->destination }}</td><td class="num">{{ $row->kliks }}</td></tr>
+            @empty
+                <tr><td colspan="3" class="empty">Nog geen uitgaande kliks.</td></tr>
+            @endforelse
+        </table>
+    </div>
+    @if ($outboundTopMotors->isNotEmpty())
+        <div class="scroll">
+            <table>
+                <tr><th>Motor</th><th class="num">Kliks</th></tr>
+                @foreach ($outboundTopMotors as $row)
+                    <tr><td>{{ $row->motor?->label() ?? '—' }}</td><td class="num">{{ $row->kliks }}</td></tr>
+                @endforeach
+            </table>
+        </div>
+    @endif
+
     <h2>Per dag, laatste 30 dagen</h2>
     <div class="scroll">
         <table>

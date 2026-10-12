@@ -854,11 +854,113 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 .footer small { font: 400 12px var(--font-mono); }
 
 /* ---------- wizard: afronding ---------- */
-.wiz-finish { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 28px; padding: 20px 22px; border: 1px solid var(--asphalt-line); border-radius: var(--radius-lg); }
+.wiz-finish { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--asphalt-line); }
 .wiz-finish__title { font: 700 18px/1.25 var(--font-display); }
 .wiz-finish p:not(.wiz-finish__title) { margin-top: 4px; font-size: 15px; color: var(--paper-60); max-width: 52ch; }
 .wiz-finish__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .wiz-finish__link { font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- vergelijking: race, keuze en aanbodbalk (12-10-2026) ----------
+   De race is het signature-moment van de vergelijkpagina. Motor A = redline, B = midrange,
+   gelijk aan de spec-tabel. Daarna komt meteen de keuze met de weg naar het aanbod. */
+.compare-head { padding-bottom: clamp(28px, 4vw, 44px); }
+.race { background: var(--asphalt); color: var(--paper); padding-block: clamp(36px, 5vw, 64px); }
+.race__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 24px; margin-bottom: clamp(24px, 3vw, 36px); }
+.race h2 { color: var(--paper); font-size: clamp(1.75rem, 3vw, 2.5rem); }
+.race__tabs { display: inline-flex; padding: 4px; gap: 4px; border: 1px solid var(--asphalt-line); border-radius: 999px; }
+.race__tabs button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--paper-60); font: 600 14px var(--font-body); transition: background-color var(--dur-fast), color var(--dur-fast); }
+.race__tabs button:hover { color: var(--paper); }
+.race__tabs button[aria-selected="true"] { background: var(--paper); color: var(--asphalt); }
+
+.track { display: grid; gap: 14px; }
+.lane { display: grid; grid-template-columns: minmax(0, 13rem) 1fr 6.5rem; align-items: center; gap: 16px; }
+.lane__name { font: 600 15px/1.25 var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lane__name::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: var(--c); }
+.lane--a { --c: var(--redline); }
+.lane--b { --c: var(--midrange); }
+.lane__rail { position: relative; height: 34px; border-radius: 6px; background: var(--asphalt-raise); }
+.lane__rail::before { content: ""; position: absolute; left: 12px; right: 18px; top: 50%; border-top: 1px dashed var(--asphalt-line); }
+/* finish: geblokte strook aan het eind van de baan */
+.lane__rail::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 10px; border-radius: 0 6px 6px 0; opacity: .55;
+  background: repeating-conic-gradient(var(--paper) 0 25%, transparent 0 50%) 0 0 / 5px 5px; }
+.lane__bike { --p: 0; --v: 0; position: absolute; top: 50%; left: calc(6px + var(--p) * (100% - 30px)); width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--c); z-index: 1; }
+/* staart: lengte volgt de snelheid, zodat je accelereren ziet */
+.lane__bike::before { content: ""; position: absolute; right: 6px; top: 50%; height: 2px; margin-top: -1px; width: calc(var(--v) * 56px); border-radius: 2px; background: linear-gradient(to left, var(--c), transparent); }
+.lane__time { font: 400 14px var(--font-mono); color: var(--paper-60); text-align: right; font-variant-numeric: tabular-nums; }
+.lane.is-done .lane__time { color: var(--paper); }
+.lane.is-winner .lane__time::before { content: "P1 "; color: var(--c); }
+.lane.is-winner .lane__rail::after { opacity: 1; }
+.track__marks { display: flex; justify-content: space-between; padding-inline: 6px 18px; font: 400 11px var(--font-mono); color: var(--paper-60); }
+.race__result { margin-top: clamp(22px, 3vw, 30px); padding-top: 18px; border-top: 1px solid var(--asphalt-line); }
+.race__result h3 { color: var(--paper); font-size: 1.25rem; }
+.race__result p { margin-top: 6px; color: var(--paper-60); max-width: 68ch; }
+.race__result b { color: var(--paper); font-weight: 600; font-variant-numeric: tabular-nums; }
+.race__replay { margin-top: 14px; min-height: 40px; padding: 0 14px; border: 1px solid var(--asphalt-line); border-radius: var(--radius-sm); background: transparent; color: var(--paper); font: 600 14px var(--font-body); transition: border-color var(--dur-fast), background-color var(--dur-fast); }
+.race__replay:hover { border-color: var(--paper-60); background: var(--asphalt-raise); }
+@media (max-width: 640px) {
+  .lane { grid-template-columns: 1fr auto; gap: 6px 12px; }
+  .lane__rail { grid-column: 1 / -1; grid-row: 2; }
+  .lane--marks > span:not(.track__marks) { display: none; }
+  .lane--marks .track__marks { grid-column: 1 / -1; }
+}
+
+.pick__title { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+.pick { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(14px, 2vw, 24px); margin-top: clamp(20px, 3vw, 28px); }
+.pick-card { display: flex; flex-direction: column; gap: 10px; padding: clamp(20px, 2.5vw, 28px); border: 1px solid var(--stone-line); border-radius: var(--radius-lg); background: var(--stone); transition: border-color var(--dur), box-shadow var(--dur); }
+.pick-card:hover { border-color: var(--ink-40); box-shadow: var(--shadow-lift); }
+.pick-card__cat { font: 400 12px var(--font-mono); color: var(--ink-60); }
+.pick-card h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+.pick-card h3 a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size var(--dur) var(--ease-out); }
+.pick-card h3 a:hover { background-size: 100% 1px; }
+.pick-card h3::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; vertical-align: 3px; background: var(--c); }
+.pick-card--a { --c: var(--redline); }
+.pick-card--b { --c: var(--midrange); }
+.pick-card__specs { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 15px; color: var(--ink-60); font-variant-numeric: tabular-nums; }
+.pick-card__specs b { color: var(--ink); font-weight: 600; }
+.pick-card__plus { display: flex; flex-wrap: wrap; gap: 6px; }
+.pick-card__plus li { font-size: 13px; line-height: 1; padding: 7px 10px; border-radius: 999px; background: var(--stone-dim); }
+.pick-card__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: auto; padding-top: 8px; }
+.pick__note { margin-top: 14px; font-size: 13px; color: var(--ink-60); }
+@media (max-width: 760px) { .pick { grid-template-columns: 1fr; } .pick-card__acts .btn { width: 100%; } }
+
+.spec__row:has(.is-best) .spec__value:not(.is-best) { font-weight: 400; color: var(--ink-60); }
+.spec__value.is-best { font-weight: 700; }
+.spec__legend { margin-top: 12px; font-size: 13px; color: var(--ink-60); }
+
+.buybar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; background: var(--asphalt); color: var(--paper); border-top: 1px solid var(--asphalt-line); transform: translateY(100%); transition: transform var(--dur) var(--ease-out); }
+.buybar.is-in { transform: none; }
+.buybar__inner { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
+.buybar__label { font: 400 12px var(--font-mono); color: var(--paper-60); margin-right: auto; }
+.buybar__btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: var(--radius-sm); font: 600 14px var(--font-body); max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid var(--asphalt-line); transition: background-color var(--dur-fast), border-color var(--dur-fast); }
+.buybar__btn::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--c); }
+.buybar__btn--a { --c: var(--redline); }
+.buybar__btn--b { --c: var(--midrange); }
+.buybar__btn:hover { background: var(--asphalt-raise); border-color: var(--paper-60); }
+@media (max-width: 480px) { .buybar__label { display: none; } .buybar__btn { flex: 1; max-width: none; justify-content: center; } }
+
+/* Garageknop: rust, bezig (ring draait), klaar (vinkje tekent zich), vol. De animatie
+   vult de echte request, met een minimale duur zodat hij niet flitst. */
+.gbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font: 600 14px var(--font-body); color: var(--ink); }
+.gbtn:hover .gbtn__lab { text-decoration: underline; text-underline-offset: 3px; }
+.panel .gbtn, .result .gbtn, .chapter--dark .gbtn { color: var(--paper); }
+.gbtn__icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.gbtn__ring { stroke-dasharray: 1 0; transform-origin: 10px 10px; transition: stroke-dasharray var(--dur) var(--ease-out); }
+.gbtn__plus { transition: opacity var(--dur-fast); }
+.gbtn__check { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 360ms var(--ease-out) 80ms; }
+.gbtn__lab { display: none; }
+.gbtn[data-state="idle"] [data-lab="idle"], .gbtn[data-state="busy"] [data-lab="busy"],
+.gbtn[data-state="done"] [data-lab="done"], .gbtn[data-state="full"] [data-lab="full"] { display: inline; }
+.gbtn[data-state="busy"] { pointer-events: none; }
+.gbtn[data-state="busy"] .gbtn__ring { stroke-dasharray: .3 .7; animation: gbtn-spin .8s linear infinite; }
+.gbtn[data-state="busy"] .gbtn__plus, .gbtn[data-state="done"] .gbtn__plus { opacity: 0; }
+.gbtn[data-state="done"] { color: #2A9D61; }
+.result .gbtn[data-state="done"] { color: var(--telemetry); }
+.gbtn[data-state="done"] .gbtn__check { stroke-dashoffset: 0; }
+@keyframes gbtn-spin { to { transform: rotate(1turn); } }
+
+/* Wizard: een vak verschijnt pas samen met de motor, geen lege frames tijdens de lichten. */
+.js .startgrid--six .slot { transition: opacity var(--dur) var(--ease-out); }
+.js .startgrid--six .slot:has(> .slot__car:not(.is-in)) { opacity: 0; }
 
 /* ---------- cookiebanner ---------- */
 .consent-banner { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 80; max-width: 1180px; margin: 0 auto; background: var(--asphalt); color: var(--paper); border-radius: var(--radius-lg); box-shadow: 0 24px 60px -20px rgba(20,21,24,.6); }
@@ -888,7 +990,7 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0ms !important; scroll-behavior: auto !important; }
-  .js [data-reveal], .js .slot__car { opacity: 1; transform: none; }
+  .js [data-reveal], .js .slot__car, .js .startgrid--six .slot { opacity: 1; transform: none; }
   .js .flag { transform: none; }
   .header__progress { display: none; }
 }
