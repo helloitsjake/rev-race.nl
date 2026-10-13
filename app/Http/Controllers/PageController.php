@@ -175,8 +175,8 @@ class PageController extends Controller
 
     public function a2Motoren(): View
     {
-        $motors = Motor::query()
-            ->get()
+        $all = Motor::query()->get();
+        $motors = $all
             ->filter(fn (Motor $motor) => $motor->isA2Eligible())
             ->sortBy([['category', 'asc'], ['brand', 'asc'], ['model', 'asc']])
             ->values();
@@ -186,6 +186,7 @@ class PageController extends Controller
         return view('a2-motoren', [
             'motors' => $motors,
             'byCategory' => $byCategory,
+            'all' => $all,
         ]);
     }
 

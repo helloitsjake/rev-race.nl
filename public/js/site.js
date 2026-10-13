@@ -164,6 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     return { reset: init };
   };
+  // Voor js/overzicht.js (merken, segmenten, A2).
+  window.RR = { bindFilter, RUST };
 
   document.addEventListener('DOMContentLoaded', () => {
     // Header krijgt een achtergrond zodra er gescrold is.
@@ -180,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!e.isIntersecting) return;
       e.target.classList.add('is-in'); io.unobserve(e.target);
     }), { threshold: 0.15 });
-    document.querySelectorAll('[data-reveal], .timing, .finish').forEach((el) => io.observe(el));
+    document.querySelectorAll('[data-reveal], [data-inview], .timing, .finish').forEach((el) => io.observe(el));
 
     // Tellers die oplopen als ze in beeld komen.
     if (!RUST) {

@@ -17,80 +17,105 @@
 </script>
 @endpush
 
+@push('scripts')
+<script src="{{ asset('js/overzicht.js') }}?v={{ filemtime(public_path('js/overzicht.js')) }}" defer></script>
+@endpush
+
 @section('content')
-    <header class="chapter">
+    @php
+        $best = $motors->first();
+        $a2Count = $motors->filter(fn ($m) => $m->isA2Eligible())->count();
+        $lightest = $motors->sortBy('weight_kg')->first();
+        $strongest = $motors->sortByDesc('power_hp')->first();
+        $fmt = fn ($n) => number_format($n, 2, ',', '.');
+    @endphp
+    <header class="chapter chapter--tight seg-hero">
         <div class="wrap">
             <nav class="crumb" aria-label="Broodkruimel">
                 <a href="{{ route('home') }}">Home</a><span class="sep">&rarr;</span>
                 <a href="{{ route('segments.index') }}">Segmenten</a><span class="sep">&rarr;</span>
                 <span>{{ $label }}</span>
             </nav>
-            <span class="eyebrow">Segment</span>
             <h1>Beste {{ $buyingLabel }}</h1>
-            <p class="lede">{{ $description }} {{ $motors->count() }} {{ $motors->count() === 1 ? 'model' : 'modellen' }} in de database, hieronder gesorteerd op vermogen/gewicht.</p>
-            @if($buyingIntro)
-                <p class="lede">{!! str_replace(
-                    ':wizard',
-                    '<a class="accent" href="' . route('wizard.index') . '">wizard</a>',
-                    $buyingIntro
-                ) !!}</p>
-            @endif
+            <div class="seg-hero__body">
+                <div>
+                    <p class="lede">{{ $description }}</p>
+                    @if($buyingIntro)
+                        <p class="seg-hero__intro">{!! str_replace(
+                            ':wizard',
+                            '<a class="accent" href="' . route('wizard.index') . '">wizard</a>',
+                            $buyingIntro
+                        ) !!}</p>
+                    @endif
+                </div>
+                <dl class="seg-facts">
+                    <div><dt>Modellen</dt><dd>{{ $motors->count() }}</dd></div>
+                    <div><dt>Waarvan A2</dt><dd>{{ $a2Count }}</dd></div>
+                    <div><dt>Sterkste</dt><dd>{{ $strongest->power_hp }} <small>pk</small></dd><dd class="seg-facts__who">{{ $strongest->brand }} {{ $strongest->model }}</dd></div>
+                    <div><dt>Lichtste</dt><dd>{{ $lightest->weight_kg }} <small>kg</small></dd><dd class="seg-facts__who">{{ $lightest->brand }} {{ $lightest->model }}</dd></div>
+                </dl>
+            </div>
         </div>
     </header>
 
-    <section class="chapter chapter--tight">
+    <section class="chapter chapter--dark chapter--tight">
         <div class="wrap">
-            <div class="model-list model-list--compact">
-                <div class="model-list__title">Alle {{ Str::lower($label) }}-modellen, gesorteerd op pk/kg</div>
-                <div class="model-row model-row--head">
-                    <span>Model</span><span>PK</span><span>KG</span><span>A2</span>
-                </div>
-                @foreach($motors as $motor)
-                    <div class="model-row">
-                        <div class="model-row__name">{{ $motor->model }} <span>&mdash; {{ $motor->year }}</span></div>
-                        <div class="model-row__num model-row__num--strong">{{ $motor->power_hp }}</div>
-                        <div class="model-row__num">{{ $motor->weight_kg }}</div>
-                        <div class="model-row__tag">{{ $motor->isA2Eligible() ? 'A2' : '' }}</div>
-                    </div>
-                @endforeach
+            <div class="plot-head">
+                <h2>Elke {{ $buyingLabel }} op één veld</h2>
+                <p>Hoe hoger en verder naar links een stip staat, hoe meer vermogen per kilo. De schuine lijnen tonen de pk/kg-verhouding. Snelste op papier: de {{ $best->brand }} {{ $best->model }} met {{ $fmt($best->powerToWeight()) }} pk/kg.</p>
+            </div>
+            @include('partials.spec-plot', ['motors' => $motors, 'iso' => true, 'best' => $best])
+            <div class="plot-legend">
+                <span><i class="is-dot"></i>{{ $label }}</span>
+                @if($a2Count)<span><i class="is-a2"></i>A2-geschikt</span>@endif
+                <span><i class="is-best"></i>Beste pk/kg</span>
             </div>
         </div>
     </section>
 
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            <h2 class="speclist__title">Alle {{ $motors->count() }} {{ Str::lower($label) }}-modellen</h2>
+            @include('partials.spec-list', ['motors' => $motors, 'limit' => 12, 'a2Toggle' => $a2Count > 0])
+        </div>
+    </section>
+
     @if($comparisons->isNotEmpty())
-        <section class="chapter">
+        @php
+            $maxRatio = $motors->max(fn ($m) => $m->powerToWeight());
+            $featuredComparisons = $comparisons->take(6);
+            $restComparisons = $comparisons->slice(6)->values();
+        @endphp
+        <section class="chapter chapter--tight">
             <div class="wrap">
                 <div class="kb-head">
                     <div>
-                        <span class="eyebrow">Vergelijkingen</span>
                         <h2>Populaire {{ Str::lower($label) }}-vergelijkingen</h2>
+                        <p class="lede">Telkens twee buren in de pk/kg-ranglijst: de modellen die in de praktijk tegen elkaar afgewogen worden.</p>
                     </div>
                 </div>
-                @php
-                    $featuredComparisons = $comparisons->take(6);
-                    $restComparisons = $comparisons->slice(6)->values();
-                @endphp
-                <div class="kb-grid">
-                    @foreach($featuredComparisons as $row)
-                        <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
-                            <h3>{{ $row['motorA']->label() }}</h3>
-                            <p>vs {{ $row['motorB']->label() }}</p>
-                            <span class="kb-card__link">Bekijk vergelijking &rarr;</span>
+                <div class="matchups">
+                    @foreach($featuredComparisons as $i => $row)
+                        <a class="matchup" href="{{ route('compare.show', $row['slug']) }}" data-reveal style="--d: {{ $i * 60 }}ms">
+                            @foreach(['motorA' => 'a', 'motorB' => 'b'] as $key => $side)
+                                <span class="matchup__side matchup__side--{{ $side }}">
+                                    <span class="matchup__name">{{ $row[$key]->label() }}</span>
+                                    <span class="matchup__val">{{ $fmt($row[$key]->powerToWeight()) }} pk/kg</span>
+                                    <span class="meter" aria-hidden="true"><i style="--w: {{ round($row[$key]->powerToWeight() / $maxRatio, 3) }}; --d: {{ 200 + $i * 60 }}ms"></i></span>
+                                </span>
+                            @endforeach
+                            <span class="matchup__go">Bekijk de race</span>
                         </a>
                     @endforeach
                 </div>
                 @if($restComparisons->isNotEmpty())
                     <details class="report-disclosure">
                         <summary>Toon alle {{ $comparisons->count() }} {{ Str::lower($label) }}-vergelijkingen</summary>
-                        <div class="kb-grid" style="margin-top: 1.2rem">
+                        <ul class="matchup-list">
                             @foreach($restComparisons as $row)
-                                <a class="kb-card" href="{{ route('compare.show', $row['slug']) }}">
-                                    <h3>{{ $row['motorA']->label() }}</h3>
-                                    <p>vs {{ $row['motorB']->label() }}</p>
-                                    <span class="kb-card__link">Bekijk vergelijking &rarr;</span>
-                                </a>
+                                <li><a href="{{ route('compare.show', $row['slug']) }}">{{ $row['motorA']->label() }} <span>vs</span> {{ $row['motorB']->label() }}</a></li>
                             @endforeach
-                        </div>
+                        </ul>
                     </details>
                 @endif
             </div>
@@ -99,8 +124,8 @@
 
     <section class="chapter chapter--dark chapter--tight">
         <div class="wrap cta-line">
-            <p class="eyebrow">Nog niet zeker?</p>
             <h2>Nog niet zeker of {{ Str::lower($label) }} bij je past?</h2>
+            <p class="lede">De wizard kijkt naar hoe je rijdt en zet de drie motoren neer die daar het beste bij passen.</p>
             <a class="btn btn--primary" href="{{ route('wizard.index') }}">Doe de wizard</a>
         </div>
     </section>

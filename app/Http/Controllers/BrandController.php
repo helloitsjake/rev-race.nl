@@ -11,19 +11,25 @@ class BrandController extends Controller
 {
     public function index(): View
     {
-        $brands = Motor::query()
-            ->select('brand')
-            ->selectRaw('COUNT(*) as motor_count')
-            ->groupBy('brand')
-            ->orderBy('brand')
-            ->get()
-            ->map(fn ($row) => [
-                'brand' => $row->brand,
-                'slug' => Str::slug($row->brand),
-                'count' => $row->motor_count,
-            ]);
+        $motors = Motor::query()->get(['brand', 'category']);
 
-        return view('brands', ['brands' => $brands]);
+        // Per merk ook de verdeling over segmenten, voor het segmentfilter op het overzicht.
+        $brands = $motors->groupBy('brand')
+            ->map(fn ($group, $brand) => [
+                'brand' => $brand,
+                'slug' => Str::slug($brand),
+                'count' => $group->count(),
+                'segments' => $group->whereNotNull('category')->countBy('category')->sortDesc()->all(),
+            ])
+            ->sortKeys()
+            ->values();
+
+        $segments = collect(Motor::CATEGORIES)
+            ->map(fn ($label, $key) => ['key' => $key, 'label' => $label, 'count' => $motors->where('category', $key)->count()])
+            ->filter(fn ($segment) => $segment['count'] > 0)
+            ->values();
+
+        return view('brands', ['brands' => $brands, 'segments' => $segments]);
     }
 
     public function show(string $merk): View
