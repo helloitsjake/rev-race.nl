@@ -50,20 +50,32 @@ class SegmentController extends Controller
 
     public function index(): View
     {
-        $counts = Motor::query()
-            ->whereNotNull('category')
-            ->selectRaw('category, COUNT(*) as motor_count')
-            ->groupBy('category')
-            ->pluck('motor_count', 'category');
+        $motors = Motor::query()->get();
 
-        $segments = collect(Motor::CATEGORIES)->map(fn ($label, $key) => [
-            'key' => $key,
-            'label' => $label,
-            'description' => self::DESCRIPTIONS[$key] ?? null,
-            'count' => $counts[$key] ?? 0,
-        ])->values();
+        // Per segment ook de motoren zelf, voor de minigrafieken (allemaal op dezelfde schaal).
+        $segments = collect(Motor::CATEGORIES)->map(function ($label, $key) use ($motors) {
+            $segmentMotors = $motors->where('category', $key)->values();
+            $best = $segmentMotors->sortByDesc(fn (Motor $motor) => $motor->powerToWeight())->first();
 
-        return view('segments', ['segments' => $segments]);
+            return [
+                'key' => $key,
+                'label' => $label,
+                'buying_label' => self::BUYING_LABEL[$key] ?? Str::lower($label),
+                'description' => self::DESCRIPTIONS[$key] ?? null,
+                'count' => $segmentMotors->count(),
+                'a2' => $segmentMotors->filter(fn (Motor $motor) => $motor->isA2Eligible())->count(),
+                'hp_min' => $segmentMotors->min('power_hp'),
+                'hp_max' => $segmentMotors->max('power_hp'),
+                'kg_avg' => (int) round($segmentMotors->avg('weight_kg') ?? 0),
+                'best' => $best,
+                'motors' => $segmentMotors,
+            ];
+        })->filter(fn ($segment) => $segment['count'] > 0)->values();
+
+        return view('segments', [
+            'segments' => $segments,
+            'motors' => $motors,
+        ]);
     }
 
     public function show(string $categorie): View

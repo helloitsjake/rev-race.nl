@@ -38,16 +38,19 @@
                                 <h2 class="podium__name"><a href="{{ $modelUrl($m) }}">{{ $m->brand }} {{ $m->model }}</a> <small>{{ $m->year }}</small></h2>
                                 <p class="podium__meta">{{ $m->power_hp }} pk &middot; {{ $m->weight_kg }} kg &middot; {{ $fmt($m->powerToWeight()) }} pk/kg</p>
                                 <p class="podium__count"><b data-count="{{ $row['uses'] }}">{{ $row['uses'] }}</b>&times; gesimuleerd</p>
-                                <a class="btn {{ $i === 0 ? 'btn--paper' : 'btn--ghost' }}" href="{{ route('simulation.index', ['motor_a' => $m->id]) }}">Simuleer</a>
+                                <a class="btn btn--primary" href="{{ route('simulation.index', ['motor_a' => $m->id]) }}">Race deze motor <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5"/></svg></a>
                             </div>
                             <div class="podium__step" aria-hidden="true"><span>P{{ $i + 1 }}</span></div>
                         </li>
                     @endforeach
                 </ol>
 
+                @if($partners->isNotEmpty())
+                    @include('partials.partner-spot', ['partner' => $partners->first(), 'source' => 'meest-gezocht'])
+                @endif
+
                 @if($rest->isNotEmpty())
                     <div class="rank-list rank-list--meter" data-inview>
-                        @php $partnerIndex = 0; @endphp
                         @foreach($rest as $j => $row)
                             @php $m = $row['motor']; $pos = $j + 4; @endphp
                             <div class="rank-row" style="--d: {{ $j * 50 }}ms">
@@ -60,20 +63,9 @@
                                     <span class="meter" aria-hidden="true"><i style="--w: {{ round($row['uses'] / $maxUses, 3) }}"></i></span>
                                     <span class="rank-row__count">{{ $row['uses'] }}&times; gesimuleerd</span>
                                 </div>
-                                <a class="btn btn--ghost" href="{{ route('simulation.index', ['motor_a' => $m->id]) }}">Simuleer</a>
+                                <a class="btn btn--primary rank-row__go" href="{{ route('simulation.index', ['motor_a' => $m->id]) }}" aria-label="Race met de {{ $m->label() }}">Race <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5"/></svg></a>
                             </div>
 
-                            @if($partners->isNotEmpty() && ($j + 1) % 4 === 0)
-                                @php $partner = $partners[$partnerIndex % $partners->count()]; $partnerIndex++; @endphp
-                                <div class="partner-banner">
-                                    <span class="partner-banner__tag">Partner</span>
-                                    <div class="partner-banner__body">
-                                        <h3>{{ $partner->name }}</h3>
-                                        <p>{{ $partner->description }}</p>
-                                    </div>
-                                    <a class="btn btn--ghost" href="{{ route('partners.show', $partner) }}">Bekijk partner</a>
-                                </div>
-                            @endif
                         @endforeach
                     </div>
                 @endif

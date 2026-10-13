@@ -116,8 +116,15 @@ class PageController extends Controller
 
     public function about(): View
     {
+        $motors = Motor::query()->get();
+        $jake = $motors->first(fn (Motor $m) => $m->brand === 'Honda' && $m->model === 'CB1300' && (int) $m->year === 2006);
+        $rory = $motors->first(fn (Motor $m) => $m->brand === 'KTM' && $m->model === '1290 Super Duke R' && (int) $m->year === 2021);
+
         return view('about', [
-            'motors' => Motor::query()->get(),
+            'motors' => $motors,
+            'jakeMotor' => $jake,
+            'roryMotor' => $rory,
+            'duelSlug' => $jake && $rory ? ComparisonController::canonicalSlug($jake, $rory) : null,
         ]);
     }
 
@@ -197,6 +204,8 @@ class PageController extends Controller
         return view('partners', [
             'partners' => $partners,
             'categories' => $partners->pluck('category')->unique()->values(),
+            'motorCount' => Motor::query()->count(),
+            'monthSimulations' => SimulationResult::query()->where('created_at', '>=', now()->subDays(30))->count(),
         ]);
     }
 
