@@ -17,6 +17,7 @@
     @endif
     <div class="pspot__body">
         <p class="pspot__tag">Partner &middot; {{ $partner->category }}</p>
+        @if($ridden = config('partners.' . $partner->slug . '.ridden'))<p class="ridden__badge ridden__badge--small">{{ $ridden['short'] }}</p>@endif
         <h3 class="pspot__title">{{ $offer ? $offer['title'] : $partner->name }}</h3>
         <p class="pspot__text">{{ $offer ? $offer['text'] : $partner->description }}</p>
         @if($offer && ! empty($offer['points']))

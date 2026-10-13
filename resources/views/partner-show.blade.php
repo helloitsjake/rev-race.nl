@@ -92,6 +92,26 @@
         </div>
     </header>
 
+    {{-- Eigen ervaring van Jake en Rory (config/partners.php) --}}
+    @php($ridden = config('partners.' . $partner->slug . '.ridden'))
+    @if($ridden)
+        <section class="chapter chapter--tight ridden">
+            <div class="wrap ridden__grid">
+                <div class="ridden__text" data-reveal>
+                    <p class="ridden__badge">{{ $ridden['short'] }}</p>
+                    <h2>{{ $ridden['title'] }}</h2>
+                    <p>{{ $ridden['text'] }}</p>
+                    <a class="crew-card__link" href="{{ route('about') }}">Meer over Jake en Rory</a>
+                </div>
+                <div class="ridden__photos">
+                    @foreach($ridden['photos'] as $photo)
+                        <figure data-reveal style="--d: {{ $loop->index * 90 }}ms"><img src="{{ asset($photo['src']) }}" alt="{{ $photo['alt'] }}" width="{{ $photo['w'] }}" height="{{ $photo['h'] }}" loading="lazy"></figure>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     {{-- T1: locaties als timingbord --}}
     @if(!empty($partner->venues))
         <section class="chapter chapter--dark">

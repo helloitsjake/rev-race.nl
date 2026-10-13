@@ -44,6 +44,7 @@
                     <div class="pshow__body">
                         <p class="pshow__tag">{{ $partner->category }}</p>
                         <h2>{{ $partner->name }}</h2>
+                        @if($ridden = config('partners.' . $partner->slug . '.ridden'))<p class="ridden__badge ridden__badge--small">{{ $ridden['short'] }}</p>@endif
                         <p class="pshow__text">{{ $partner->description }}</p>
                         @if(! empty($partner->facts))
                             <dl class="pshow__facts" data-inview>
