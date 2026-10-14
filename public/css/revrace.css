@@ -902,7 +902,7 @@ a.t-row:hover { background: var(--asphalt-raise); }
 .how h3 { font-size: 24px; font-weight: 800; }
 
 /* artikel */
-.art-head { padding: clamp(28px, 4vw, 56px) 0 clamp(32px, 4vw, 52px); border-bottom: 1px solid var(--stone-line); }
+.art-head { padding-block: clamp(28px, 4vw, 56px) clamp(32px, 4vw, 52px); border-bottom: 1px solid var(--stone-line); }
 .art-head h1 { font-size: clamp(36px, 5.2vw, 76px); line-height: 1.02; max-width: 18ch; margin-top: 20px; }
 .art-head .lede { font-size: clamp(18px, 1.6vw, 21px); max-width: 58ch; margin-top: 22px; }
 .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin-top: 30px; font-size: 14px; color: var(--ink-60); }
@@ -910,7 +910,7 @@ a.t-row:hover { background: var(--asphalt-raise); }
 .faces { display: flex; }
 .faces img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--stone); }
 .faces img + img { margin-left: -10px; }
-.art-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); padding: clamp(40px, 5vw, 72px) 0 clamp(72px, 9vw, 120px); }
+.art-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); padding-block: clamp(40px, 5vw, 72px) clamp(72px, 9vw, 120px); }
 .art-layout--plain { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 960px) { .art-layout { grid-template-columns: 1fr; } .toc { display: none; } }
 .toc { position: sticky; top: 96px; align-self: start; }
