@@ -15,6 +15,13 @@ class ComparisonController extends Controller
     {
         [$slugA, $slugB] = $this->splitSlug($slug);
 
+        if (isset(Motor::RENAMED_SLUGS[$slugA]) || isset(Motor::RENAMED_SLUGS[$slugB])) {
+            $slugA = Motor::RENAMED_SLUGS[$slugA] ?? $slugA;
+            $slugB = Motor::RENAMED_SLUGS[$slugB] ?? $slugB;
+
+            return redirect()->route('compare.show', "{$slugA}-vs-{$slugB}", 301);
+        }
+
         $motors = Motor::query()->get();
         $motorA = $motors->first(fn (Motor $motor) => $motor->slug() === $slugA);
         $motorB = $motors->first(fn (Motor $motor) => $motor->slug() === $slugB);

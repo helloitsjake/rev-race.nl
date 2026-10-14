@@ -104,6 +104,15 @@ class Motor extends Model
         return "{$this->brand} {$model}";
     }
 
+    /**
+     * Oude slug => nieuwe slug, voor motors waarvan merk, model of jaar gecorrigeerd is. De slug
+     * zit in de model- en vergelijk-URL's, dus zonder deze lijst worden geïndexeerde pagina's 404.
+     */
+    public const RENAMED_SLUGS = [
+        // 14-10-2026: stond als "Super Duke 990 (2021)", maar de 990 is tot 2013 gebouwd.
+        'ktm-super-duke-990-2021' => 'ktm-990-super-duke-2007',
+    ];
+
     public function slug(): string
     {
         return Str::slug("{$this->brand} {$this->model} {$this->year}");

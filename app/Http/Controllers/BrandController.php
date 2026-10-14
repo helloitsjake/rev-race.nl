@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Motor;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -51,8 +52,12 @@ class BrandController extends Controller
         ]);
     }
 
-    public function showModel(string $merk, string $model): View
+    public function showModel(string $merk, string $model): View|RedirectResponse
     {
+        if (isset(Motor::RENAMED_SLUGS[$model])) {
+            return redirect()->route('brands.model', [$merk, Motor::RENAMED_SLUGS[$model]], 301);
+        }
+
         $motors = Motor::query()->get();
         $motor = $motors->first(fn (Motor $candidate) => Str::slug($candidate->brand) === $merk && $candidate->slug() === $model);
 

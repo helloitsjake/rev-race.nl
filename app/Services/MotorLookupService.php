@@ -18,11 +18,24 @@ class MotorLookupService
         private readonly OpenAiClient $ai,
     ) {}
 
-    public function search(string $query, int $limit = 8)
+    /**
+     * Spaties, streepjes en punten tellen niet mee, aan beide kanten: "superduke" vindt
+     * "1290 Super Duke R", "mt09" vindt "MT-09" (14-10-2026). Daarvoor moest de bezoeker de
+     * modelnaam exact zo typen als hij in de database stond.
+     *
+     * $loose: vindt de strikte zoektocht niets, dan tonen we de motors die op de meeste
+     * woorden matchen ("ktm superduke 2019" geeft dan de Super Duke R's). Alleen voor
+     * suggesties, niet voor findOrFetch: daar zou een half-match de AI-lookup overslaan.
+     */
+    public function search(string $query, int $limit = 8, bool $loose = false)
     {
-        $normalized = trim($query);
+        $tokens = collect(preg_split('/\s+/', Str::lower(trim($query))) ?: [])
+            ->map(fn (string $token) => self::compact($token))
+            ->filter()
+            ->unique()
+            ->values();
 
-        if ($normalized === '') {
+        if ($tokens->isEmpty()) {
             return Motor::query()
                 ->orderBy('brand')
                 ->orderBy('model')
@@ -30,23 +43,103 @@ class MotorLookupService
                 ->get();
         }
 
-        $tokens = preg_split('/\s+/', Str::lower($normalized)) ?: [];
+        $matchesToken = function ($part, string $token) {
+            $like = "%{$token}%";
+            $part->whereRaw(self::compactSql('brand').' like ?', [$like])
+                ->orWhereRaw(self::compactSql('model').' like ?', [$like])
+                ->orWhere('year', 'like', $like);
+        };
 
-        return Motor::query()
-            ->where(function ($builder) use ($tokens) {
+        $strict = Motor::query()
+            ->where(function ($builder) use ($tokens, $matchesToken) {
                 foreach ($tokens as $token) {
-                    $like = "%{$token}%";
-                    $builder->where(function ($part) use ($like) {
-                        $part->where('brand', 'like', $like)
-                            ->orWhere('model', 'like', $like)
-                            ->orWhere('year', 'like', $like);
-                    });
+                    $builder->where(fn ($part) => $matchesToken($part, $token));
                 }
             })
-            ->orderBy('brand')
-            ->orderBy('model')
-            ->limit($limit)
+            ->limit(60)
             ->get();
+
+        if ($strict->isNotEmpty() || ! $loose) {
+            return $this->rank($strict, $tokens, $query)->take($limit)->values();
+        }
+
+        // Losse woorden van één teken ("r", "s") matchen vrijwel alles, en een bouwjaar dat er
+        // niet in staat zou alle motors van dat jaar opleveren. Het jaar telt hieronder alleen
+        // nog als voorkeur: dichtstbijzijnde bouwjaar eerst.
+        $useful = $tokens->filter(fn (string $token) => strlen($token) >= 2 && ! self::isYear($token));
+
+        if ($useful->isEmpty()) {
+            return collect();
+        }
+
+        $candidates = Motor::query()
+            ->where(function ($builder) use ($useful, $matchesToken) {
+                foreach ($useful as $token) {
+                    $builder->orWhere(fn ($part) => $matchesToken($part, $token));
+                }
+            })
+            ->limit(200)
+            ->get();
+
+        $year = $tokens->first(fn (string $token) => self::isYear($token));
+        $ranked = $this->rank($candidates, $useful, $query, $year ? (int) $year : null);
+        $best = $ranked->isEmpty() ? 0 : $this->hits($ranked->first(), $useful);
+
+        return $ranked
+            ->filter(fn (Motor $motor) => $this->hits($motor, $useful) === $best)
+            ->take($limit)
+            ->values();
+    }
+
+    private static function compact(string $value): string
+    {
+        return preg_replace('/[^a-z0-9]/', '', Str::lower(Str::ascii($value))) ?? '';
+    }
+
+    private static function isYear(string $token): bool
+    {
+        return (bool) preg_match('/^(19|20)\d{2}$/', $token);
+    }
+
+    /** Woorden die helemaal kloppen: "r1" is het model YZF-R1, niet het begin van R 18. */
+    private function wholeWords(Motor $motor, $tokens): int
+    {
+        $words = preg_split('/[^a-z0-9]+/', Str::lower(Str::ascii($motor->brand.' '.$motor->model.' '.$motor->year))) ?: [];
+        $words = array_merge($words, [self::compact($motor->model)]);
+
+        return $tokens->filter(fn (string $token) => in_array($token, $words, true))->count();
+    }
+
+    private static function compactSql(string $column): string
+    {
+        return "replace(replace(replace(replace(lower({$column}), ' ', ''), '-', ''), '.', ''), '/', '')";
+    }
+
+    private function hits(Motor $motor, $tokens): int
+    {
+        $haystack = self::compact($motor->brand).self::compact($motor->model).$motor->year;
+
+        return $tokens->filter(fn (string $token) => str_contains($haystack, $token))->count();
+    }
+
+    /**
+     * Meeste woorden geraakt eerst, dan de meeste hele woorden, dan het gevraagde bouwjaar,
+     * dan de motor waarin de hele zoekterm aaneengesloten voorkomt, dan nieuwste eerst, dan
+     * het kortste model (de basisversie vóór de GT of SP).
+     */
+    private function rank($motors, $tokens, string $query, ?int $year = null)
+    {
+        $whole = self::compact($query);
+
+        return $motors->sortBy([
+            fn (Motor $a, Motor $b) => $this->hits($b, $tokens) <=> $this->hits($a, $tokens),
+            fn (Motor $a, Motor $b) => $this->wholeWords($b, $tokens) <=> $this->wholeWords($a, $tokens),
+            fn (Motor $a, Motor $b) => $year === null ? 0 : abs($a->year - $year) <=> abs($b->year - $year),
+            fn (Motor $a, Motor $b) => str_contains(self::compact($b->brand.$b->model.$b->year), $whole)
+                <=> str_contains(self::compact($a->brand.$a->model.$a->year), $whole),
+            fn (Motor $a, Motor $b) => $b->year <=> $a->year,
+            fn (Motor $a, Motor $b) => strlen($a->model) <=> strlen($b->model),
+        ])->values();
     }
 
     /**

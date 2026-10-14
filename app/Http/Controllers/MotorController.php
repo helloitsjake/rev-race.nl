@@ -16,7 +16,7 @@ class MotorController extends Controller
         $query = (string) $request->query('q', '');
 
         return response()->json([
-            'motors' => $motors->search($query)->map(fn ($motor) => self::serialize($motor))->values(),
+            'motors' => $motors->search($query, loose: true)->map(fn ($motor) => self::serialize($motor))->values(),
         ]);
     }
 
