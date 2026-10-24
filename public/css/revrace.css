@@ -849,6 +849,19 @@ a.t-row:hover { background: var(--asphalt-raise); }
 .finish p { color: var(--paper-60); margin-top: 22px; max-width: 46ch; }
 .finish__row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
 
+/* homepage: alle verticale witruimte 10% compacter dan de rest van de site */
+.page--home { --chapter-pad: clamp(65px, 9vw, 122px); }
+.page--home .sec-head { margin-bottom: clamp(29px, 4.5vw, 50px); }
+.page--home .hero2 { padding-top: clamp(22px, 3.15vw, 43px); }
+.page--home .hero2__row { margin-top: clamp(22px, 2.7vw, 32px); }
+.page--home .grid-panel { margin-top: clamp(25px, 3.15vw, 40px); }
+.page--home .grid-panel > .wrap { padding-block: clamp(25px, 3.6vw, 40px); }
+.page--home .route { padding-block: 27px; }
+.page--home .kb { gap: clamp(29px, 4.5vw, 65px); }
+.page--home .kb-list a { padding-block: 20px; }
+.page--home .riders-text { margin-top: clamp(36px, 4.5vw, 58px); }
+.page--home .finish { padding-block: clamp(72px, 9vw, 115px); }
+
 /* wizard */
 .wiz { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
 @media (max-width: 1000px) { .wiz { grid-template-columns: 1fr; } }

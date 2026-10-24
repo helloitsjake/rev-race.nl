@@ -99,7 +99,7 @@
     </header>
 @endunless
 
-<main class="page">
+<main class="page @yield('pageClass')">
     @if (session('status'))
         <div class="notice">{{ session('status') }}</div>
     @endif

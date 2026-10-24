@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'RevRace - Welke motor past het beste bij jouw rijstijl?')
+@section('pageClass', 'page--home')
 @section('description', 'Ontdek welke motor bij jouw rijstijl past. Advies op basis van vermogen, gewicht en rijervaring, plus een gratis rijsimulatie om motoren te vergelijken.')
 
 @push('head')
