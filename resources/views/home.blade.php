@@ -19,7 +19,7 @@
     <div class="hero2 hero3" data-style-picker>
         <div class="hero3__media" aria-hidden="true">
             <img class="is-on" data-photo="relax" src="{{ asset('images/hero/plezier-1000.webp') }}" srcset="{{ asset('images/hero/plezier-600.webp') }} 600w, {{ asset('images/hero/plezier-1000.webp') }} 1000w, {{ asset('images/hero/plezier-1400.webp') }} 1400w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="1400" height="1867" fetchpriority="high">
-            <img data-photo="snelheid" src="{{ asset('images/hero/recht-1000.webp') }}" srcset="{{ asset('images/hero/recht-600.webp') }} 600w, {{ asset('images/hero/recht-1000.webp') }} 1000w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="1000" height="1333" loading="lazy">
+            <img data-photo="snelheid" src="{{ asset('images/hero/recht-1000.webp') }}" srcset="{{ asset('images/hero/recht-600.webp') }} 600w, {{ asset('images/hero/recht-1000.webp') }} 1000w, {{ asset('images/hero/recht-1400.webp') }} 1400w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="1400" height="1867" loading="lazy">
             <img data-photo="bochten" src="{{ asset('images/hero/bocht-1400.webp') }}" srcset="{{ asset('images/hero/bocht-800.webp') }} 800w, {{ asset('images/hero/bocht-1400.webp') }} 1400w, {{ asset('images/hero/bocht-2000.webp') }} 2000w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="2000" height="1333" loading="lazy">
         </div>
         <script type="application/json">@json($styleAdvice)</script>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <p class="hero3__credit"><span data-for="relax" class="is-on">Jake en zijn Honda CB1300, even stil met uitzicht op zee</span><span data-for="snelheid">Jake bij zijn eerste rijlessen</span><span data-for="bochten">Jake (202) door de bocht op TT Circuit Assen</span></p>
+        <p class="hero3__credit"><span data-for="relax" class="is-on">Jake en zijn Honda CB1300, even stil met uitzicht op zee</span><span data-for="snelheid">De CB1300 van Jake, klaar voor een rit</span><span data-for="bochten">Rory (203) op zijn KTM 1290 Super Duke, TT Circuit Assen</span></p>
         <div class="grid-panel" aria-live="polite">
             <div class="wrap">
                 <div class="grid-head">

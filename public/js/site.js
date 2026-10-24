@@ -238,6 +238,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (f.dataset.key === 'voorkeur') showPhoto(value);
         render();
       }));
+      // ?stijl=bochten|snelheid|relax opent de home op die rijstijl (te delen link).
+      const stijl = new URLSearchParams(location.search).get('stijl');
+      const pick = stijl && picker.querySelector(`[data-key="voorkeur"] button[data-value="${CSS.escape(stijl)}"]`);
+      if (pick) pick.click();
 
       // Op mobiel staat de grid onder de vouw: start de lichten pas als hij in beeld komt,
       // anders is het signature-moment al voorbij voordat iemand er is.
