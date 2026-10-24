@@ -17,6 +17,7 @@
 @endpush
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'kennis', 'caption' => 'Sleutelen aan een koplamp'])
     @php
         $arrow = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>';
         $icon = fn ($name, $size = 24) => '<svg viewBox="0 0 24 24" width="'.$size.'" height="'.$size.'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.(config('kennis.icons.'.$name) ?? config('kennis.icons.artikel')).'</svg>';

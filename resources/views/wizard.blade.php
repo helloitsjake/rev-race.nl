@@ -53,6 +53,7 @@
 @endpush
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'kiezen', 'caption' => 'Jake op zijn Honda CB1300'])
     @php
         $arrow = '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5"/></svg>';
         $voorkeurIcons = [

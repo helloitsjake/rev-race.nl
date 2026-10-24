@@ -21,6 +21,7 @@
 @endpush
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'a2', 'widths' => [800, 1200], 'caption' => 'Jake bij zijn eerste rijlessen'])
     @php
         $segLabels = $byCategory->keys()->mapWithKeys(fn ($c) => [$c => \App\Models\Motor::CATEGORIES[$c] ?? $c])->all();
         $outside = $all->filter(fn ($m) => $m->power_hp > 80 || $m->weight_kg > 300)->count();

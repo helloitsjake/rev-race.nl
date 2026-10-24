@@ -17,6 +17,7 @@
 @endpush
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'segmenten', 'widths' => [800, 1400], 'caption' => 'Een tourer en twee naked bikes naast elkaar'])
     @php
         $W = 400; $H = 220; $P = 14;
         $kgMin = floor($motors->min('weight_kg') / 25) * 25;

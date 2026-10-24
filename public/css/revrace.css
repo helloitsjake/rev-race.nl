@@ -1920,3 +1920,20 @@ footer.site-footer { background: var(--asphalt); color: var(--paper-60); }
 @media (max-width: 860px) { .ridden__grid { grid-template-columns: 1fr; } }
 .pspot .ridden__badge, .pshow .ridden__badge { align-self: flex-start; }
 .chapter--dark .pspot .ridden__badge { color: #1F7A4B; background: rgba(60,196,124,.16); }
+
+/* fotostrook boven de titel op onderliggende pagina's (eigen beeld, loopt over in de pagina) */
+.page-photo { position: relative; margin: 0; height: clamp(150px, 24vw, 340px); overflow: hidden; background: var(--asphalt); }
+.page-photo img { width: 100%; height: 100%; object-fit: cover; }
+.page-photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(20,21,24,.25) 0%, rgba(20,21,24,0) 30%, rgba(242,241,236,0) 60%, var(--stone) 100%); }
+.page-photo figcaption { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 1; text-align: right; font: 400 12px var(--font-mono); color: var(--ink-60); }
+.js .page-photo img { animation: page-photo-in 900ms var(--ease-out) both; }
+@keyframes page-photo-in { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+.page-photo + .chapter--tight, .page-photo + header, .page-photo + .wrap { padding-top: clamp(16px, 2.5vw, 32px); }
+@media (prefers-reduced-motion: reduce) { .js .page-photo img { animation: none; } }
+
+/* over ons: buiten het circuit */
+.offtrack { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: clamp(12px, 2vw, 20px); align-items: end; }
+.offtrack figure { margin: 0; }
+.offtrack img { width: 100%; height: auto; border-radius: var(--radius); display: block; }
+.offtrack figcaption { margin-top: 10px; font-size: 14px; color: var(--ink-60); }
+@media (max-width: 760px) { .offtrack { grid-template-columns: 1fr 1fr; } .offtrack figure:last-child { grid-column: 1 / -1; } }

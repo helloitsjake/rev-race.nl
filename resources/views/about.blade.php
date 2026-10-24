@@ -153,6 +153,21 @@
         </div>
     </section>
 
+    {{-- buiten het circuit --}}
+    <section class="chapter chapter--tight">
+        <div class="wrap">
+            <div class="sec-head" data-reveal>
+                <div><h2>Buiten het circuit rijden we gewoon</h2></div>
+                <p>De meeste kilometers maken we niet op Assen maar op de weg: een rondje op zondag, een rit naar de Rijn, of even stilstaan bij een mooi uitzicht.</p>
+            </div>
+            <div class="offtrack">
+                <figure data-reveal><img src="{{ asset('images/over-ons/buiten-062.webp') }}" alt="Jake naast zijn Honda CB1300, met bomen en zee op de achtergrond" width="900" height="1200" loading="lazy"><figcaption>Jake en zijn CB1300</figcaption></figure>
+                <figure data-reveal style="--d: 80ms"><img src="{{ asset('images/over-ons/buiten-085.webp') }}" alt="Rory leunt lachend op een zwarte Kawasaki" width="900" height="1200" loading="lazy"><figcaption>Rory en zijn Kawasaki</figcaption></figure>
+                <figure data-reveal style="--d: 160ms"><img src="{{ asset('images/over-ons/buiten-454.webp') }}" alt="Uitzicht over de Rijn vanaf het stuur van een motor" width="1200" height="900" loading="lazy"><figcaption>Uitzicht vanaf het stuur, langs de Rijn</figcaption></figure>
+            </div>
+        </div>
+    </section>
+
     {{-- T4: waar we naartoe willen --}}
     <section class="chapter chapter--dark">
         <div class="wrap">
