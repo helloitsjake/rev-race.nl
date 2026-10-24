@@ -862,6 +862,80 @@ a.t-row:hover { background: var(--asphalt-raise); }
 .page--home .riders-text { margin-top: clamp(36px, 4.5vw, 58px); }
 .page--home .finish { padding-block: clamp(72px, 9vw, 115px); }
 
+/* home: hero met eigen foto die meewisselt met de rijstijl en overloopt in de startopstelling */
+
+/* header ligt transparant over de foto zolang er niet gescrold is */
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__logo,
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__links > a,
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__dropdown summary,
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__actions > a:not(.btn) { color: rgba(236,235,230,.82); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__logo { color: var(--paper); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__links > a:hover { color: var(--paper); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__links > a::after { background: var(--paper); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__burger { border-color: rgba(236,235,230,.3); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .nav__burger span { background: var(--paper); }
+.home-photo .header:not(.is-scrolled):not(.is-open) .brand-icon { color: var(--paper); }
+
+.hero3 { position: relative; margin-top: -68px; padding-top: 68px; background: var(--asphalt); color: var(--paper); overflow: hidden; isolation: isolate; }
+.hero3 > .wrap { position: relative; min-height: min(78svh, 760px); display: flex; flex-direction: column; justify-content: flex-end; padding-top: clamp(40px, 8vw, 120px); }
+
+/* fotolaag: drie beelden, het actieve zichtbaar; donker verloop links en naar onderen */
+.hero3__media { position: absolute; inset: 0 0 auto; height: calc(min(78svh, 760px) + 68px + 220px); z-index: -1; }
+.hero3__media img { position: absolute; top: 0; right: 0; bottom: 0; width: 62%; height: 100%; object-fit: cover; object-position: 50% 45%; opacity: 0; transform: scale(1.04); -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%); mask-image: linear-gradient(90deg, transparent 0%, #000 34%); transition: opacity 600ms var(--ease-out), transform 1400ms var(--ease-out); }
+.hero3__media img[data-photo="relax"] { object-position: 40% 60%; }
+.hero3__media img[data-photo="snelheid"] { object-position: 50% 40%; }
+.hero3__media img[data-photo="bochten"] { object-position: 62% 50%; }
+.hero3__media img.is-on { opacity: 1; transform: none; }
+.hero3__media::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(20,21,24,.6) 0%, rgba(20,21,24,.35) 40%, rgba(20,21,24,0) 60%),
+    linear-gradient(180deg, rgba(20,21,24,.75) 0%, rgba(20,21,24,0) 20%, rgba(20,21,24,0) 58%, var(--asphalt) 100%); }
+
+/* eerste binnenkomst: de foto zoomt één keer zacht in */
+.js .hero3__media img.is-on { animation: hero3-in 1800ms var(--ease-out) both; }
+@keyframes hero3-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+.hero3.is-ready .hero3__media img.is-on { animation: none; }
+
+.hero3 .turn { color: rgba(236,235,230,.86); }
+.hero3 .turn b { color: var(--paper); border-color: rgba(236,235,230,.5); }
+.hero3 h1 { color: var(--paper); text-shadow: 0 2px 30px rgba(20,21,24,.35); }
+.hero3__lead { max-width: 46ch; margin-top: clamp(18px, 2vw, 26px); font-size: clamp(16px, 1.4vw, 19px); line-height: 1.55; color: var(--paper); }
+.hero3 .hero2__row { grid-template-columns: 1fr; margin-top: clamp(22px, 2.6vw, 32px); }
+.hero3 .sentence { color: var(--paper); }
+
+/* filters op donker: lichte actieve pil, nooit donker op donker */
+.hero3 .filter { background: rgba(20,21,24,.62); border-color: rgba(236,235,230,.2); }
+.hero3 .filter__base button { color: rgba(236,235,230,.72); }
+.hero3 .filter__base button:hover { color: var(--paper); }
+.hero3 .filter__pill { background: var(--paper); }
+.hero3 .filter__pill span { color: var(--ink); }
+.hero3 .filter__base button:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+
+/* bijschrift: echt beeld, geen stock */
+.hero3__credit { position: relative; display: flex; justify-content: flex-end; margin-top: 18px; padding-inline: var(--edge); font: 400 12px var(--font-mono); color: rgba(236,235,230,.6); }
+.hero3__credit span { display: none; }
+.hero3__credit span.is-on { display: inline; }
+
+/* de startopstelling loopt naadloos door in hetzelfde asfalt */
+.hero3 .grid-panel { margin-top: clamp(16px, 2vw, 24px); background: transparent; }
+.hero3 .grid-panel::before { display: none; }
+.hero3 .grid-panel > .wrap { border-top: 1px solid var(--asphalt-line); }
+
+@media (max-width: 760px) {
+  .hero3 > .wrap { min-height: 0; padding-top: 46svh; }
+  .hero3__media { bottom: auto; height: 78svh; }
+  .hero3__media img { width: 100%; -webkit-mask-image: none; mask-image: none; }
+  .hero3__media img[data-photo="relax"] { object-position: 45% 55%; }
+  .hero3__media img[data-photo="snelheid"] { object-position: 50% 30%; }
+  .hero3__media img[data-photo="bochten"] { object-position: 70% 50%; }
+  .hero3__media::after { background: linear-gradient(180deg, rgba(20,21,24,.75) 0%, rgba(20,21,24,0) 20%, rgba(20,21,24,.15) 36%, rgba(20,21,24,.88) 62%, var(--asphalt) 100%); }
+  .hero3__credit { justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero3__media img, .js .hero3__media img.is-on { animation: none; transition: opacity .01ms; transform: none; }
+}
+
 /* wizard */
 .wiz { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
 @media (max-width: 1000px) { .wiz { grid-template-columns: 1fr; } }

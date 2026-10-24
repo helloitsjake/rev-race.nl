@@ -2,6 +2,7 @@
 
 @section('title', 'RevRace - Welke motor past het beste bij jouw rijstijl?')
 @section('pageClass', 'page--home')
+@section('bodyClass', 'home-photo')
 @section('description', 'Ontdek welke motor bij jouw rijstijl past. Advies op basis van vermogen, gewicht en rijervaring, plus een gratis rijsimulatie om motoren te vergelijken.')
 
 @push('head')
@@ -10,24 +11,30 @@
 
 @php
     $arrow = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>';
-    $start = $styleAdvice['beginner']['bochten'] ?? [];
+    $start = $styleAdvice['beginner']['relax'] ?? [];
 @endphp
 
 @section('content')
-    {{-- T0: rijstijlkiezer met startopstelling (signature-moment: lights out) --}}
-    <div class="hero2" data-style-picker>
+    {{-- T0: rijstijlkiezer met startopstelling (signature-moment: eigen foto die meewisselt met de rijstijl, daarna lights out) --}}
+    <div class="hero2 hero3" data-style-picker>
+        <div class="hero3__media" aria-hidden="true">
+            <img class="is-on" data-photo="relax" src="{{ asset('images/hero/plezier-1000.webp') }}" srcset="{{ asset('images/hero/plezier-600.webp') }} 600w, {{ asset('images/hero/plezier-1000.webp') }} 1000w, {{ asset('images/hero/plezier-1400.webp') }} 1400w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="1400" height="1867" fetchpriority="high">
+            <img data-photo="snelheid" src="{{ asset('images/hero/recht-1000.webp') }}" srcset="{{ asset('images/hero/recht-600.webp') }} 600w, {{ asset('images/hero/recht-1000.webp') }} 1000w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="1000" height="1333" loading="lazy">
+            <img data-photo="bochten" src="{{ asset('images/hero/bocht-1400.webp') }}" srcset="{{ asset('images/hero/bocht-800.webp') }} 800w, {{ asset('images/hero/bocht-1400.webp') }} 1400w, {{ asset('images/hero/bocht-2000.webp') }} 2000w" sizes="(max-width: 760px) 100vw, 62vw" alt="" width="2000" height="1333" loading="lazy">
+        </div>
         <script type="application/json">@json($styleAdvice)</script>
         <div class="wrap">
             <p class="turn"><b>T0</b> Startopstelling</p>
             <h1>Welke motor past het beste bij <span>jouw rijstijl?</span></h1>
+            <p class="hero3__lead">Welkom bij RevRace. Kies hoe je rijdt, dan zetten wij de drie motoren op de grid die daar het beste bij passen: op vermogen, gewicht en wat dat op de weg betekent.</p>
             <div class="hero2__row">
                 <div class="sentence">
                     <span>Ik rij het liefst</span>
                     <div class="filter" role="group" aria-label="Rijstijl" data-key="voorkeur">
                         <div class="filter__base">
-                            <button type="button" data-value="bochten" aria-pressed="true">door bochten</button>
+                            <button type="button" data-value="bochten" aria-pressed="false">door bochten</button>
                             <button type="button" data-value="snelheid" aria-pressed="false">op het rechte stuk</button>
-                            <button type="button" data-value="relax" aria-pressed="false">voor het plezier</button>
+                            <button type="button" data-value="relax" aria-pressed="true">voor het plezier</button>
                         </div>
                         <div class="filter__pill" aria-hidden="true"></div>
                     </div>
@@ -40,10 +47,10 @@
                         <div class="filter__pill" aria-hidden="true"></div>
                     </div>
                 </div>
-                <p class="hero2__aside">Kies hoe je rijdt. RevRace zet de drie motoren neer die daar het beste bij passen, op basis van vermogen, gewicht en wat dat op de weg betekent.</p>
             </div>
         </div>
 
+        <p class="hero3__credit"><span data-for="relax" class="is-on">Jake en zijn Honda CB1300, even stil met uitzicht op zee</span><span data-for="snelheid">Jake bij zijn eerste rijlessen</span><span data-for="bochten">Jake (202) door de bocht op TT Circuit Assen</span></p>
         <div class="grid-panel" aria-live="polite">
             <div class="wrap">
                 <div class="grid-head">
@@ -67,7 +74,7 @@
                         <span><em>S2</em><b data-count="{{ $a2Count }}">{{ $a2Count }}</b> A2-modellen</span>
                         <span><em>S3</em><b data-count="{{ $segmentCount }}">{{ $segmentCount }}</b> segmenten</span>
                     </div>
-                    <a class="btn btn--primary" data-advice-link href="{{ route('wizard.index', ['ervaring' => 'beginner', 'voorkeur' => 'bochten']) }}#advies">Volledig advies op maat {!! $arrow !!}</a>
+                    <a class="btn btn--primary" data-advice-link href="{{ route('wizard.index', ['ervaring' => 'beginner', 'voorkeur' => 'relax']) }}#advies">Volledig advies op maat {!! $arrow !!}</a>
                 </div>
             </div>
         </div>

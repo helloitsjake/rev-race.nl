@@ -41,7 +41,7 @@
     <script>document.documentElement.classList.add('js')</script>
     @stack('head')
 </head>
-<body>
+<body class="@yield('bodyClass')">
 <div id="consent-banner" class="consent-banner" hidden role="region" aria-label="Cookievoorkeuren">
     <div class="consent-banner__inner wrap">
         <div class="consent-banner__text">

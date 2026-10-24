@@ -204,7 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = JSON.parse(picker.querySelector('script[type="application/json"]').textContent);
       const grid = picker.querySelector('[data-startgrid]');
       const link = picker.querySelector('[data-advice-link]');
-      const state = { voorkeur: 'bochten', ervaring: 'beginner' };
+      const pressed = (key) => picker.querySelector(`[data-key="${key}"] [aria-pressed="true"]`)?.dataset.value;
+      const state = { voorkeur: pressed('voorkeur') || 'relax', ervaring: pressed('ervaring') || 'beginner' };
+      // Hero-foto en bijschrift volgen de rijstijl; de eerste foto zoomt bij binnenkomst in.
+      const showPhoto = (key) => {
+        picker.classList.add('is-ready');
+        picker.querySelectorAll('[data-photo]').forEach((img) => img.classList.toggle('is-on', img.dataset.photo === key));
+        picker.querySelectorAll('.hero3__credit [data-for]').forEach((c) => c.classList.toggle('is-on', c.dataset.for === key));
+      };
       const fmt = (n) => n.toFixed(2).replace('.', ',');
       const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -228,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       picker.querySelectorAll('.filter').forEach((f) => bindFilter(f, (value) => {
         state[f.dataset.key] = value;
+        if (f.dataset.key === 'voorkeur') showPhoto(value);
         render();
       }));
 
