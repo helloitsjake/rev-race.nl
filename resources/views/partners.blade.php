@@ -4,6 +4,7 @@
 @section('description', 'Bekijk de RevRace-partners: dealers, verzekeraars, onderhoudsbedrijven en events die zich richten op motorrijders in Nederland.')
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'partners', 'caption' => 'Het veld op TT Circuit Assen, met Jake (202), op een dag van Trackdays4all'])
     @php
         $arrowOut = '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13L13 5M6 5h7v7"/></svg>';
         $arrow = '<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h12M10 4l5 5-5 5"/></svg>';

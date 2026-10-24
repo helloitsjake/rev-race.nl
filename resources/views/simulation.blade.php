@@ -14,6 +14,7 @@
 @endphp
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'vergelijken', 'caption' => 'Motoren naast elkaar bij een tankstop'])
     {{--
         Simulatie, redesign 12-10-2026 (derde versie). Links de configurator met alle opties
         zichtbaar (veer-filters, afstandsschuif), rechts het racescherm dat meeblijft. Een nieuwe

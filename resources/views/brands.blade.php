@@ -21,6 +21,7 @@
 @endpush
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'merken', 'caption' => 'De tank van Jakes Honda CB1300'])
     @php
         $max = $brands->max('count');
         $cats = \App\Models\Motor::CATEGORIES;

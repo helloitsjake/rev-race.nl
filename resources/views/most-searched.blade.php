@@ -4,6 +4,7 @@
 @section('description', 'De populairste motoren op RevRace van de afgelopen 30 dagen, gebaseerd op echte simulaties door bezoekers.')
 
 @section('content')
+    @include('partials.page-photo', ['photo' => 'meest-gezocht', 'widths' => [800, 1200], 'caption' => 'Een stalling vol motoren'])
     <header class="chapter chapter--tight">
         <div class="wrap">
             <h1>Meest gezochte motoren</h1>
