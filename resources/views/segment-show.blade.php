@@ -50,7 +50,7 @@
                 </div>
                 <dl class="seg-facts">
                     <div><dt>Modellen</dt><dd>{{ $motors->count() }}</dd></div>
-                    <div><dt>Waarvan A2</dt><dd>{{ $a2Count }}</dd></div>
+                    <div><dt>Waarvan A2</dt><dd>@if($a2Count >= \App\Http\Controllers\SegmentController::A2_MIN && isset(\App\Http\Controllers\SegmentController::A2_INTRO[$categorie]))<a class="accent" href="{{ route('a2-motoren.segment', $categorie) }}">{{ $a2Count }}</a>@else{{ $a2Count }}@endif</dd></div>
                     <div><dt>Sterkste</dt><dd>{{ $strongest->power_hp }} <small>pk</small></dd><dd class="seg-facts__who">{{ $strongest->brand }} {{ $strongest->model }}</dd></div>
                     <div><dt>Lichtste</dt><dd>{{ $lightest->weight_kg }} <small>kg</small></dd><dd class="seg-facts__who">{{ $lightest->brand }} {{ $lightest->model }}</dd></div>
                 </dl>

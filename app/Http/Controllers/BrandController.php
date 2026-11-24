@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Motor;
+use App\Support\Alternatives;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -66,7 +67,34 @@ class BrandController extends Controller
         return view('brand-model-show', [
             'brandSlug' => $merk,
             'motor' => $motor,
+            'hasAlternatives' => Alternatives::isListed($motor),
             'comparisons' => $this->modelComparisons($motors, $motor),
+        ]);
+    }
+
+    /**
+     * Alternatieven voor één model (24-11-2026). Alleen voor de modellen in
+     * config/alternatieven.php, zie App\Support\Alternatives voor de keuze en het waarom.
+     */
+    public function alternatives(string $merk, string $model): View|RedirectResponse
+    {
+        if (isset(Motor::RENAMED_SLUGS[$model])) {
+            return redirect()->route('brands.alternatives', [$merk, Motor::RENAMED_SLUGS[$model]], 301);
+        }
+
+        $motors = Motor::query()->get();
+        $motor = $motors->first(fn (Motor $candidate) => Str::slug($candidate->brand) === $merk && $candidate->slug() === $model);
+
+        abort_if(! $motor || ! Alternatives::isListed($motor), 404);
+
+        $alternatives = Alternatives::for($motor, $motors);
+
+        abort_if($alternatives->count() < Alternatives::MIN, 404);
+
+        return view('alternatives', [
+            'brandSlug' => $merk,
+            'motor' => $motor,
+            'alternatives' => $alternatives,
         ]);
     }
 

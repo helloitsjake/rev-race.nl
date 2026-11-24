@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Alle ' . $brand . ' modellen en vergelijkingen - RevRace')
+@section('title', $brand . ' modellen: alle ' . $motors->count() . ' motoren op een rij - RevRace')
 {{--
     Model-aantal in de tekst i.p.v. een vaste zin: bij korte merknamen (BMW, KTM, SWM) kwam de
     vaste tekst onder Ahrefs' "meta description too short"-grens, bij langere merknamen net
@@ -31,7 +31,7 @@
                 <span>{{ $brand }}</span>
             </nav>
             <span class="eyebrow">Merk</span>
-            <h1>{{ $brand }}</h1>
+            <h1>{{ $brand }} modellen</h1>
             <p class="lede">{{ $motors->count() }} {{ $motors->count() === 1 ? 'model' : 'modellen' }} van {{ $brand }} in de RevRace-database.</p>
         </div>
     </header>

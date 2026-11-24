@@ -57,6 +57,7 @@ Route::get('/vergelijk/{slug}', [ComparisonController::class, 'show'])->middlewa
 Route::get('/toplijst/{slug}', [ToplijstController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('toplijst.show');
 Route::get('/merken', [BrandController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('brands.index');
 Route::get('/merken/{merk}', [BrandController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('brands.show');
+Route::get('/merken/{merk}/{model}/alternatieven', [BrandController::class, 'alternatives'])->middleware('cache.public:3600,86400,604800')->name('brands.alternatives');
 Route::get('/merken/{merk}/{model}', [BrandController::class, 'showModel'])->middleware('cache.public:3600,86400,604800')->name('brands.model');
 Route::post('/motoren/{motor}/melding', [MotorReportController::class, 'store'])
     ->middleware('throttle:5,1')
@@ -64,6 +65,7 @@ Route::post('/motoren/{motor}/melding', [MotorReportController::class, 'store'])
 Route::get('/segmenten', [SegmentController::class, 'index'])->middleware('cache.public:3600,86400,604800')->name('segments.index');
 Route::get('/segment/{categorie}', [SegmentController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('segments.show');
 Route::get('/a2-motoren', [PageController::class, 'a2Motoren'])->middleware('cache.public:3600,86400,604800')->name('a2-motoren');
+Route::get('/a2-motoren/{categorie}', [SegmentController::class, 'a2'])->middleware('cache.public:3600,86400,604800')->name('a2-motoren.segment');
 Route::get('/staat-van-de-nederlandse-motorrijder', [YearlyReportController::class, 'show'])->middleware('cache.public:3600,86400,604800')->name('yearly-report.show');
 
 Route::middleware('guest')->group(function (): void {

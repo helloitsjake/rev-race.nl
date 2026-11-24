@@ -22,6 +22,12 @@
     <url><loc>{{ route('brands.index') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
     <url><loc>{{ route('segments.index') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
     <url><loc>{{ route('a2-motoren') }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    @foreach($a2Segments as $key)
+        <url><loc>{{ route('a2-motoren.segment', $key) }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    @endforeach
+    @foreach($alternativeSlugs as $model)
+        <url><loc>{{ route('brands.alternatives', [$model['brand'], $model['model']]) }}</loc>{!! $lastmod($motorsLastmod) !!}</url>
+    @endforeach
     <url><loc>{{ route('yearly-report.show') }}</loc></url>
     @foreach($brandSlugs as $brand)
         <url><loc>{{ route('brands.show', $brand['slug']) }}</loc>{!! $lastmod($brand['lastmod']) !!}</url>

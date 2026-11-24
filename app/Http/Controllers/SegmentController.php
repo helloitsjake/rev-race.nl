@@ -48,6 +48,33 @@ class SegmentController extends Controller
         'retro' => 'Een retro motor kopen is vaak een keuze voor uitstraling, niet alleen voor specificaties. Vergelijk de modellen hieronder, of doe de :wizard als de techniek net zo zwaar moet wegen als het uiterlijk.',
     ];
 
+    /**
+     * A2 per segment (24-11-2026): eigen tekst per segment voor /a2-motoren/{categorie}. De
+     * zoekvraag bestaat aantoonbaar ("a2 sportmotor", "a2 adventure motor", "a2 cruiser" op
+     * positie 9 tot 13 in Search Console), maar landde tot nu toe op de algemene A2-pagina.
+     * Geen prijzen en geen oordeel dat de data niet draagt.
+     */
+    public const A2_INTRO = [
+        'naked' => 'De naked bike is de meest gekozen eerste motor. Je zit rechtop, je hebt overzicht in de stad en er zit geen kuip aan die scheurt als je hem een keer laat omvallen. Met A2 kies je hier uit volwaardige modellen.',
+        'sport' => 'Op een A2-sportmotor leer je wat een motor in de bocht doet, zonder dat het vermogen je voorbij rijdt. Je zit wel voorovergebogen. Rij er een middag op voor je beslist, want na een uur in de stad voel je dat in je polsen.',
+        'adventure' => 'Een A2-adventure is de motor voor wie na een paar maanden wil gaan toeren. Let op de zithoogte: adventuremotoren staan hoog op hun poten, en als je voeten net niet plat op de grond komen, wordt elk stoplicht een oefening.',
+        'cruiser' => 'Op een A2-cruiser zit je laag, met de voeten naar voren en het gewicht onderin. Dat maakt ze vriendelijk bij lage snelheid en bij het keren. Het aanbod is kleiner dan bij naked bikes: de meeste cruisers zijn te zwaar of te sterk voor A2.',
+        'retro' => 'Retro\'s zijn op A2 ruim vertegenwoordigd: vaak een eenvoudig, licht blok, een rechte zithouding en de looks van een motor uit de jaren zeventig. Je kiest hier meestal op uitstraling. Vergelijk daarna op gewicht, want daar zitten de verschillen.',
+    ];
+
+    /** Onder dit aantal A2-modellen krijgt een segment geen eigen A2-pagina (toermotor heeft er 0). */
+    public const A2_MIN = 3;
+
+    /** @return \Illuminate\Support\Collection<string, int> segment => aantal A2-modellen, alleen segmenten met een pagina */
+    public static function a2Segments(?\Illuminate\Support\Collection $motors = null): \Illuminate\Support\Collection
+    {
+        $motors ??= Motor::query()->get();
+
+        return collect(array_keys(self::A2_INTRO))
+            ->mapWithKeys(fn (string $key) => [$key => $motors->where('category', $key)->filter(fn (Motor $m) => $m->isA2Eligible())->count()])
+            ->filter(fn (int $count) => $count >= self::A2_MIN);
+    }
+
     public function index(): View
     {
         $motors = Motor::query()->get();
@@ -128,6 +155,39 @@ class SegmentController extends Controller
             'buyingIntro' => self::BUYING_INTRO[$categorie] ?? null,
             'motors' => $motors,
             'comparisons' => $comparisons,
+        ]);
+    }
+
+    public function a2(string $categorie): View
+    {
+        abort_unless(array_key_exists($categorie, self::A2_INTRO), 404);
+
+        $all = Motor::query()->get();
+        $segment = $all->where('category', $categorie)->values();
+        $motors = $segment
+            ->filter(fn (Motor $motor) => $motor->isA2Eligible())
+            ->sortByDesc(fn (Motor $motor) => $motor->powerToWeight())
+            ->values();
+
+        abort_if($motors->count() < self::A2_MIN, 404);
+
+        // Buren in de pk/kg-ranglijst, zelfde redenering als show().
+        $comparisons = $motors
+            ->map(fn (Motor $motor, int $i) => ($partner = $motors->get($i + 1))
+                ? ['motorA' => $motor, 'motorB' => $partner, 'slug' => ComparisonController::canonicalSlug($motor, $partner)]
+                : null)
+            ->filter()
+            ->values();
+
+        return view('a2-segment', [
+            'categorie' => $categorie,
+            'label' => Motor::CATEGORIES[$categorie],
+            'buyingLabel' => self::BUYING_LABEL[$categorie] ?? Str::lower(Motor::CATEGORIES[$categorie]),
+            'intro' => self::A2_INTRO[$categorie],
+            'motors' => $motors,
+            'segment' => $segment,
+            'comparisons' => $comparisons,
+            'otherSegments' => self::a2Segments($all)->except($categorie),
         ]);
     }
 }

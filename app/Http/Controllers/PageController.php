@@ -194,6 +194,7 @@ class PageController extends Controller
             'motors' => $motors,
             'byCategory' => $byCategory,
             'all' => $all,
+            'a2Segments' => SegmentController::a2Segments($all),
         ]);
     }
 
@@ -373,6 +374,13 @@ class PageController extends Controller
                 'modelSlugs' => $modelSlugs,
                 'segments' => $segments,
                 'motorsLastmod' => $motorsLastmod,
+                'a2Segments' => SegmentController::a2Segments($motors)->keys(),
+                // Alleen modellen die echt een pagina hebben (genoeg alternatieven), anders 404's in de sitemap.
+                'alternativeSlugs' => $motors
+                    ->filter(fn (Motor $motor) => \App\Support\Alternatives::isListed($motor)
+                        && \App\Support\Alternatives::for($motor, $motors)->count() >= \App\Support\Alternatives::MIN)
+                    ->map(fn (Motor $motor) => ['brand' => Str::slug($motor->brand), 'model' => $motor->slug()])
+                    ->values(),
             ])
             ->header('Content-Type', 'application/xml');
     }
