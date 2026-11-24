@@ -1,9 +1,15 @@
-// Cookie-toestemming: Ahrefs Web Analytics + Google Tag Manager laden pas na
-// expliciete toestemming, niet standaard. Zie ook resources/views/privacy.blade.php.
+// Meting, zie MEETPLAN.md. GTM en Ahrefs (cookieloos) laden altijd vanuit de layout; de
+// consent-standaard staat daar ook. Hier alleen de keuze van de bezoeker en de events.
+window.dataLayer = window.dataLayer || [];
+window.rrTrack = (event, params = {}) => {
+  // 'rr' eerst leegmaken: GTM voegt dataLayer-objecten samen, anders blijven velden van een
+  // vorig event (zoals motor) aan het volgende hangen.
+  window.dataLayer.push({ rr: null });
+  window.dataLayer.push({ event, rr: { event, ...params } });
+};
+
 (() => {
   const STORAGE_KEY = 'revrace_consent';
-  const GTM_ID = 'GTM-NFH7Z6V5';
-  const AHREFS_KEY = 'x3pTCkZRmLD0nmLUPg2tpg';
 
   const getConsent = () => {
     try {
@@ -18,47 +24,23 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ analytics, decidedAt: new Date().toISOString() }));
     } catch (e) {
-      // localStorage kan geblokkeerd zijn (privémodus); toestemming werkt dan niet
-      // persistent, maar de site blijft functioneren.
+      // localStorage kan geblokkeerd zijn (privémodus); de keuze geldt dan alleen deze pagina.
     }
-  };
-
-  const loadAnalytics = () => {
-    if (window.__revraceAnalyticsLoaded) return;
-    window.__revraceAnalyticsLoaded = true;
-
-    const ahrefs = document.createElement('script');
-    ahrefs.src = 'https://analytics.ahrefs.com/analytics.js';
-    ahrefs.async = true;
-    ahrefs.setAttribute('data-key', AHREFS_KEY);
-    document.head.appendChild(ahrefs);
-
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
-    const gtm = document.createElement('script');
-    gtm.async = true;
-    gtm.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}&l=dataLayer`;
-    document.head.appendChild(gtm);
+    const gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+    gtag('consent', 'update', { analytics_storage: analytics ? 'granted' : 'denied' });
+    window.dataLayer.push({ event: analytics ? 'consent_granted' : 'consent_denied' });
   };
 
   document.addEventListener('DOMContentLoaded', () => {
     const banner = document.getElementById('consent-banner');
-    const consent = getConsent();
-
-    if (consent && consent.analytics) {
-      loadAnalytics();
-    } else if (!consent && banner) {
-      banner.hidden = false;
-    }
+    if (!getConsent() && banner) banner.hidden = false;
 
     if (banner) {
       banner.addEventListener('click', (event) => {
         const action = event.target.closest('[data-consent-action]');
         if (!action) return;
-        const accept = action.dataset.consentAction === 'accept';
-        setConsent(accept);
+        setConsent(action.dataset.consentAction === 'accept');
         banner.hidden = true;
-        if (accept) loadAnalytics();
       });
     }
 
@@ -67,6 +49,32 @@
         if (banner) banner.hidden = false;
       });
     });
+
+    // Events die al in de HTML staan (bijvoorbeeld een wizard-uitslag): data-track-view.
+    document.querySelectorAll('[data-track-view]').forEach((el) => {
+      let params = {};
+      try { params = JSON.parse(el.dataset.trackParams || '{}'); } catch (e) { /* leeg laten */ }
+      window.rrTrack(el.dataset.trackView, params);
+    });
+  });
+
+  // Kliks, gedelegeerd zodat ook later ingevoegde knoppen (simulatie-uitslag) meetellen.
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href]');
+    if (a) {
+      let url;
+      try { url = new URL(a.href, location.href); } catch (e) { url = null; }
+      if (url) {
+        const naar = url.host === location.host && url.pathname.match(/^\/naar\/([^/]+)\/([^/]+)/);
+        if (naar) {
+          window.rrTrack('offer_click', { motor: naar[1], destination: naar[2], source: url.searchParams.get('van') || 'onbekend' });
+        } else if (url.searchParams.get('utm_source') === 'rev-race.nl') {
+          window.rrTrack('partner_click', { partner: url.hostname.replace(/^www\./, ''), link_url: url.origin + url.pathname });
+        }
+      }
+    }
+    const share = ev.target.closest('[data-share-social], [data-share-copy]');
+    if (share) window.rrTrack('share', { method: share.dataset.shareSocial || 'kopieer' });
   });
 })();
 
@@ -414,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         await minimum;
         btn.dataset.state = state === 'full' ? 'full' : 'done';
+        if (state !== 'full') window.rrTrack('garage_add', { motor_ids: btn.dataset.garage });
       } catch (e) {
         window.location = btn.href;
       }
