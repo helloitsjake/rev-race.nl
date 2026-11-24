@@ -132,4 +132,9 @@ Route::get('/ai-migratie/{token}', [AiUsageController::class, 'migrate'])
     ->name('ai-migrate');
 
 Route::get('/llms.txt', [PageController::class, 'llms'])->middleware('cache.public:3600,86400,604800')->name('llms');
-Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
+Route::middleware('cache.public:3600,86400,604800')->group(function (): void {
+    Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+    Route::get('/sitemaps/paginas.xml', [\App\Http\Controllers\SitemapController::class, 'pages'])->name('sitemaps.pages');
+    Route::get('/sitemaps/modellen.xml', [\App\Http\Controllers\SitemapController::class, 'models'])->name('sitemaps.models');
+    Route::get('/sitemaps/vergelijkingen-{n}.xml', [\App\Http\Controllers\SitemapController::class, 'comparisons'])->whereNumber('n')->name('sitemaps.comparisons');
+});

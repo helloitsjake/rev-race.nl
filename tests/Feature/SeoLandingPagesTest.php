@@ -92,13 +92,39 @@ class SeoLandingPagesTest extends TestCase
             ->assertSee('<title>' . e($motor->label()) . ': gewicht ' . $motor->weight_kg . ' kg, ' . $motor->power_hp . ' pk', false);
     }
 
-    public function test_sitemap_bevat_de_nieuwe_paginas(): void
+    public function test_sitemap_is_een_index_met_deelsitemaps(): void
     {
-        // De sitemap zelf (ruim 27.000 URL's) zit al rond 120 MB; de testomgeving erbovenop past niet in 128 MB.
-        ini_set('memory_limit', '512M');
-
         $this->get('/sitemap.xml')->assertOk()
+            ->assertSee('<sitemapindex', false)
+            ->assertSee(route('sitemaps.pages'), false)
+            ->assertSee(route('sitemaps.models'), false)
+            ->assertSee(route('sitemaps.comparisons', 1), false);
+
+        $this->get('/sitemaps/paginas.xml')->assertOk()
             ->assertSee(route('a2-motoren.segment', 'retro'), false)
             ->assertSee('/alternatieven</loc>', false);
+
+        $this->get('/sitemaps/modellen.xml')->assertOk()->assertSee('/merken/', false);
+        $this->get('/sitemaps/vergelijkingen-1.xml')->assertOk()->assertSee('-vs-', false);
+        $this->get('/sitemaps/vergelijkingen-999.xml')->assertNotFound();
+    }
+
+    public function test_vergelijkingssitemaps_bevatten_precies_alle_paren(): void
+    {
+        // Verwacht: elk paar binnen hetzelfde segment precies één keer (zoals ComparisonController::pairs()).
+        $expected = \App\Models\Motor::query()->whereNotNull('category')->get()->groupBy('category')
+            ->sum(fn ($group) => intdiv($group->count() * ($group->count() - 1), 2));
+        $found = [];
+        for ($n = 1; ; $n++) {
+            $response = $this->get("/sitemaps/vergelijkingen-{$n}.xml");
+            if ($response->status() === 404) {
+                break;
+            }
+            preg_match_all('#/vergelijk/([^<]+)</loc>#', $response->getContent(), $m);
+            $found = array_merge($found, $m[1]);
+        }
+
+        $this->assertCount($expected, $found);
+        $this->assertCount($expected, array_unique($found));
     }
 }
