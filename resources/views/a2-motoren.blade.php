@@ -1,5 +1,28 @@
 @extends('layouts.app')
 
+@php
+    /*
+     * 24-11-2026: FAQ met antwoorden uit de eigen database. "hoeveel cc met a2 rijbewijs" en
+     * "a2 motor kiezen" hadden vertoningen maar stonden op positie 57 tot 89: de pagina gaf het
+     * antwoord niet letterlijk.
+     */
+    $ccSorted = $motors->pluck('displacement_cc')->filter()->sort()->values();
+    $a2Faq = collect([
+        [
+            'q' => 'Hoeveel cc mag je rijden met een A2-rijbewijs?',
+            'a' => 'Voor A2 geldt geen grens in cc. De regels gaan over vermogen: maximaal 35 kW (ongeveer 47 pk) en maximaal 0,20 kW per kilo. In de praktijk hebben de ' . $motors->count() . ' A2-motoren in onze database tussen ' . $ccSorted->first() . ' en ' . $ccSorted->last() . ' cc, de helft zit onder ' . (int) $ccSorted->median() . ' cc.',
+        ],
+        [
+            'q' => 'Mag ik met A2 een motor rijden die gedrosseld is?',
+            'a' => 'Ja, zolang het originele vermogen niet hoger is dan 70 kW en de gedrosselde versie binnen 35 kW en 0,20 kW per kilo valt. De lijst op deze pagina toont alleen motoren die zonder drosselkit al binnen de grenzen vallen.',
+        ],
+        [
+            'q' => 'Hoe kies je een A2-motor?',
+            'a' => 'Begin bij het segment dat bij je rijstijl past (naked, sport, adventure, cruiser of retro), kijk daarna naar gewicht en zithoogte, en pas dan naar vermogen. Binnen A2 liggen de vermogens dicht bij elkaar; het gewicht verschilt meer en bepaalt hoe makkelijk de motor bij lage snelheid is.',
+        ],
+    ]);
+@endphp
+
 @section('title', 'A2 motoren: alle geschikte modellen op een rij - RevRace')
 @section('description', 'Alle motoren in de RevRace-database die voldoen aan de Europese A2-eisen: maximaal 35 kW en maximaal 0,20 kW per kilo.')
 
@@ -17,6 +40,17 @@
 @endpush
 
 @push('scripts')
+<script type="application/ld+json">
+{!! json_encode([
+    '@'.'context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => $a2Faq->map(fn (array $item) => [
+        '@type' => 'Question',
+        'name' => $item['q'],
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['a']],
+    ])->all(),
+]) !!}
+</script>
 <script src="{{ asset('js/overzicht.js') }}?v={{ filemtime(public_path('js/overzicht.js')) }}" defer></script>
 @endpush
 
@@ -75,16 +109,18 @@
             <div class="seg-cards">
                 @foreach($byCategory as $categorie => $categorieMotors)
                     @php $segLabel = \App\Models\Motor::CATEGORIES[$categorie] ?? $categorie; @endphp
-                    <a class="seg-card" id="{{ $categorie }}" href="{{ route('segments.show', $categorie) }}" data-reveal style="--d: {{ $loop->index * 60 }}ms">
+                    <a class="seg-card" id="{{ $categorie }}" href="{{ $a2Segments->has($categorie) ? route('a2-motoren.segment', $categorie) : route('segments.show', $categorie) }}" data-reveal style="--d: {{ $loop->index * 60 }}ms">
                         <span class="seg-card__count">{{ $categorieMotors->count() }}</span>
                         <h3>A2 {{ \App\Http\Controllers\SegmentController::BUYING_LABEL[$categorie] ?? Str::lower($segLabel) }}</h3>
                         <p>{{ \App\Http\Controllers\SegmentController::DESCRIPTIONS[$categorie] ?? '' }}</p>
-                        <span class="seg-card__go">Alle {{ Str::lower($segLabel) }}-modellen</span>
+                        <span class="seg-card__go">{{ $a2Segments->has($categorie) ? 'Alle A2 ' . (\App\Http\Controllers\SegmentController::BUYING_LABEL[$categorie] ?? Str::lower($segLabel)) . '-modellen' : 'Alle ' . Str::lower($segLabel) . '-modellen' }}</span>
                     </a>
                 @endforeach
             </div>
         </div>
     </section>
+
+    @include('partials.faq', ['faq' => $a2Faq, 'heading' => 'Over A2 motoren'])
 
     <section class="chapter chapter--dark chapter--tight">
         <div class="wrap cta-line">

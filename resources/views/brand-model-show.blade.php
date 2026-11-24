@@ -13,6 +13,8 @@
      * uiteindelijk meer clicks dan het oplevert.
      */
     $specSummary = $motor->top_speed_kmh ? 'vermogen, gewicht en topsnelheid' : 'vermogen, gewicht en specificaties';
+    // 24-11-2026: de cijfers zelf in de title. "mt07 gewicht" stond op positie 8 met 0 kliks:
+    // de title noemde het woord gewicht wel, maar niet het antwoord.
 
     /*
      * Eén bron voor zowel het zichtbare FAQ-blok als het FAQPage-schema, zodat de twee niet uit
@@ -45,7 +47,7 @@
     ])->filter()->values();
 @endphp
 
-@section('title', $motor->label() . ': ' . $specSummary . ' - RevRace')
+@section('title', $motor->label() . ': gewicht ' . $motor->weight_kg . ' kg, ' . $motor->power_hp . ' pk' . ($motor->top_speed_kmh ? ', topsnelheid ' . $motor->top_speed_kmh . ' km/u' : '') . ' - RevRace')
 @section('description', $motor->label() . ' levert ' . $motor->power_hp . ' pk bij ' . $motor->weight_kg . ' kg (' . number_format($motor->powerToWeight(), 2, ',', '.') . ' pk/kg)' . ($motor->top_speed_kmh ? ', topsnelheid ' . $motor->top_speed_kmh . ' km/u' : '') . '. Alle specificaties en directe vergelijkingen.')
 
 @push('scripts')
@@ -114,6 +116,9 @@
                     Op basis van deze specificaties A2-geschikt (zonder opvoerkit).
                 @endif
             </p>
+            @if($hasAlternatives ?? false)
+                <p><a class="accent" href="{{ route('brands.alternatives', [$brandSlug, $motor->slug()]) }}">Alternatieven voor de {{ $motor->shortLabel() }} bekijken &rarr;</a></p>
+            @endif
         </div>
     </header>
 
