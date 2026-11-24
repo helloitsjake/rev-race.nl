@@ -24,7 +24,8 @@ class GarageController extends Controller
     {
         $token = $request->user()->ensureGarageToken();
 
-        return back()->with('status', 'Je garage is nu deelbaar: ' . route('garage.public', $token));
+        return back()->with('status', 'Je garage is nu deelbaar: ' . route('garage.public', $token))
+            ->with('track', ['event' => 'share', 'method' => 'garage_link']);
     }
 
     public function publicShow(string $token): View

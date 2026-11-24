@@ -29,6 +29,7 @@ class PartnerApplicationController extends Controller
 
         Mail::to('jake@helloitsme.online')->send(new PartnerApplicationReceived($application));
 
-        return back()->with('status', 'Bedankt voor je aanmelding, we nemen snel contact met je op.');
+        return back()->with('status', 'Bedankt voor je aanmelding, we nemen snel contact met je op.')
+            ->with('track', ['event' => 'generate_lead', 'lead_type' => 'partner']);
     }
 }

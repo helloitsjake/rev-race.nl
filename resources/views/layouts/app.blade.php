@@ -1,12 +1,39 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    {{--
-        Ahrefs Web Analytics + Google Tag Manager laden pas na toestemming, via
-        consent.js (public/js/site.js). Zie CONSENT_STORAGE_KEY daar en de
-        privacypagina voor wat er precies geladen wordt en waarom.
-    --}}
     <meta charset="utf-8">
+    {{--
+        Meting (zie MEETPLAN.md): Consent Mode v2. GTM laadt altijd, maar alles staat standaard
+        op 'denied'; de GA4-tags in GTM vuren pas met analytics_storage = granted. De keuze staat
+        in localStorage 'revrace_consent' (site.js). Eigen events gaan via dataLayer met een
+        'rr'-object (rrTrack in site.js, of 'track' in de sessie voor events na een redirect).
+        ?intern=1 markeert dit apparaat als intern verkeer (?intern=0 zet het terug).
+    --}}
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    (function () {
+        var c = null, intern = false, m = location.search.match(/[?&]intern=([01])/);
+        try { c = JSON.parse(localStorage.getItem('revrace_consent')); } catch (e) {}
+        try { if (m) localStorage.setItem('revrace_intern', m[1]); intern = localStorage.getItem('revrace_intern') === '1'; } catch (e) {}
+        gtag('consent', 'default', {
+            analytics_storage: c && c.analytics ? 'granted' : 'denied',
+            ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+            functionality_storage: 'granted', security_storage: 'granted'
+        });
+        var d = { page_type: @json(Route::currentRouteName() ?? 'overig') };
+        if (intern) d.traffic_type = 'internal';
+        dataLayer.push(d);
+    })();
+    @if (is_array(session('track')))
+    dataLayer.push({ rr: null });
+    dataLayer.push(@json(['event' => session('track')['event'] ?? 'rr_event', 'rr' => session('track')]));
+    @endif
+    </script>
+    @unless($embedded ?? false)
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NFH7Z6V5');</script>
+    <script async src="https://analytics.ahrefs.com/analytics.js" data-key="x3pTCkZRmLD0nmLUPg2tpg"></script>
+    @endunless
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'RevRace - Motorsimulatie')</title>
@@ -46,7 +73,7 @@
     <div class="consent-banner__inner wrap">
         <div class="consent-banner__text">
             <p class="consent-banner__title">Cookies op RevRace</p>
-            <p>Bezoekers meten we met Google Tag Manager en Ahrefs Web Analytics, alleen als jij dat toestaat. Functionele cookies (inloggen, beveiliging) staan altijd aan. Meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
+            <p>Mag je bezoek meetellen in Google Analytics? Dat helpt ons RevRace beter te maken. Zonder toestemming tellen we alleen anoniem bezoek, zonder cookies. Functionele cookies (inloggen, beveiliging) staan altijd aan. Meer op de <a href="{{ route('privacy') }}">privacypagina</a>.</p>
         </div>
         <div class="consent-banner__actions">
             <button type="button" class="btn btn--ghost" data-consent-action="reject">Alleen noodzakelijk</button>

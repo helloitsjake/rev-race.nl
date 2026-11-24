@@ -118,7 +118,12 @@
         </form>
 
         <div>
-            <div class="result" id="advies" aria-live="polite" @if($anyMatches && $anyMatches->isNotEmpty()) data-lights-on-load @endif>
+            @php
+                $wizardTrack = ($anyMatches && $anyMatches->isNotEmpty())
+                    ? json_encode(['ervaring' => $selectedErvaring, 'voorkeur' => $selectedVoorkeur, 'terrein' => implode(',', (array) $selectedTerrein), 'merk' => $selectedMerk, 'matches' => $topMatches->count() + $moreMatches->count()])
+                    : '';
+            @endphp
+            <div class="result" id="advies" aria-live="polite" @if($anyMatches && $anyMatches->isNotEmpty()) data-lights-on-load data-track-view="wizard_complete" data-track-params="{{ $wizardTrack }}" @elseif($anyMatches !== null) data-track-view="wizard_no_match" @endif>
                 <div class="grid-head">
                     <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
                     @if($anyMatches && $anyMatches->isNotEmpty())

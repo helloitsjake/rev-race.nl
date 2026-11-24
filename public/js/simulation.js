@@ -565,6 +565,7 @@ async function runSimulation(event) {
   cfg.limit = data.limit;
   renderLimit(data.limit);
   renderResult(data.result);
+  if (window.rrTrack) window.rrTrack('race_complete', { mode: data.result.mode, motor_a: data.result.motor_a, motor_b: data.result.motor_b, source: 'paneel' });
   showMessage(
     data.result.mode === 'race'
       ? 'Simulatie opgeslagen. De deelbare link staat bij het resultaat.'

@@ -22,6 +22,7 @@ class ContactController extends Controller
             new ContactMessage($data['name'], $data['email'], $data['message'])
         );
 
-        return back()->with('status', 'Bedankt, je bericht is verstuurd.');
+        return back()->with('status', 'Bedankt, je bericht is verstuurd.')
+            ->with('track', ['event' => 'generate_lead', 'lead_type' => 'contact']);
     }
 }

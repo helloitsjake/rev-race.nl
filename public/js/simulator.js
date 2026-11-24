@@ -719,6 +719,7 @@
     showVerdict(r);
     renderOffers(r);
     renderHistory();
+    if (window.rrTrack) window.rrTrack('race_complete', { mode: r.mode, motor_a: r.motor_a, motor_b: r.motor_b, road_type: body.road_type, road_condition: body.road_condition, source: 'simulatie' });
     syncRun();
   };
   form.addEventListener('submit', start);

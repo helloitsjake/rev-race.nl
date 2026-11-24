@@ -75,10 +75,11 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         if ($redirect = $this->savePendingGarageMotor($request)) {
-            return $redirect;
+            return $redirect->with('track', ['event' => 'sign_up', 'method' => 'email', 'via' => 'garage']);
         }
 
-        return redirect()->route('profile.edit')->with('status', 'Account aangemaakt. Vul je rijdersprofiel verder aan.');
+        return redirect()->route('profile.edit')->with('status', 'Account aangemaakt. Vul je rijdersprofiel verder aan.')
+            ->with('track', ['event' => 'sign_up', 'method' => 'email']);
     }
 
     public function logout(Request $request): RedirectResponse
